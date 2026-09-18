@@ -35,6 +35,11 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'access' => 3,
       _ => 0,
     };
+    _themeMode = switch (Uri.base.queryParameters['theme']) {
+      'dark' => ThemeMode.dark,
+      'system' => ThemeMode.system,
+      _ => ThemeMode.light,
+    };
   }
 
   @override
@@ -46,13 +51,13 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        colorSchemeSeed: const Color(0xFF5B8DEF),
+        colorSchemeSeed: const Color(0xFF6B7C93),
         extensions: const [LiquidGlassTheme.light],
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        colorSchemeSeed: const Color(0xFF5B8DEF),
+        colorSchemeSeed: const Color(0xFF6B7C93),
         extensions: const [LiquidGlassTheme.dark],
       ),
       home: LingyunAdaptivity(
@@ -146,7 +151,7 @@ class DemoHome extends StatelessWidget {
         final useRail = !data.isCompact || data.isWideShort;
         final body = Stack(
           fit: StackFit.expand,
-          children: [const ColorfulWallpaper(), pages[index]],
+          children: [const SystemWallpaper(), pages[index]],
         );
 
         return Scaffold(

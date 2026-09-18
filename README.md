@@ -25,10 +25,11 @@ Example platforms in this repo: **iOS, macOS, web** (Android is included as a bo
 
 | API | Role |
 | --- | --- |
-| `GlassMaterialTier` | `thin` / `regular` / `thick` material recipes |
-| `LiquidGlassTokens` / `LiquidGlassMaterials` | Blur, saturation, tint, **specular** highlight, **refraction** rim, border, shadow, opaque fallback |
+| `GlassMaterialTier` | `thin` / `regular` / `thick` material recipes (Sketch-adjacent: Clear / Regular Large / Widget Glass) |
+| `GlassRadiusScale` / `LiquidGlassRadii` | `small` / `medium` / `large` corners (18 / 26 / 34) — not a flat 24 |
+| `LiquidGlassTokens` / `LiquidGlassMaterials` | Blur, saturation, tint, luminosity/lighten overlay, **specular** catch, **inner-lip** shadows, directional **refraction** rim, grey rim ring, multi-shadow, opaque fallback |
 | `LiquidGlassTheme` | `ThemeExtension` with light/dark material sets and `tokensOf(context, tier:)` |
-| `GlassSurface` / `GlassCard` | BackdropFilter glass + hover specular on pointer devices |
+| `GlassSurface` / `GlassCard` | Layered BackdropFilter glass + hover specular on pointer devices |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -37,9 +38,13 @@ Example platforms in this repo: **iOS, macOS, web** (Android is included as a bo
 
 Documented on `LiquidGlassTokens` and painted by `GlassSurface`:
 
-- **Specular** — directional wash on the glass *face*. Light is treated as coming from the **top-leading** corner and fading toward the bottom-trailing edge (`edgeHighlightColor`). Not a focus ring.
-- **Refraction** — thinner, brighter **inner rim** (`refractionColor`, `refractionWidth`) just inside the outer hairline border, suggesting light bending at the edge.
+- **Specular** — a *tight* top-leading catch (`edgeHighlightColor`) plus dark **inner-lip** bands (`innerShadowColor`) that approximate the kit's ±40 Y / −40 spread inner shadows. Not a full-face 2018 sheen or a focus ring.
+- **Refraction** — directional **inner rim** (bright top-leading → quiet bottom-trailing). Distinct from the outer **grey ring** (`rimColor`, zero-blur +0.5 spread) and side hairlines (Sketch "Plus Darker", ~1.25 / −0.75).
+- **Shadows** — soft deep drop (`shadowColor`, large blur, modest Y, negative spread) stacked with the crisp rim.
+- **Radius** — `GlassRadiusScale.large` (34, Regular Large), `medium` (26), `small` (18). Override with `GlassSurface.radiusScale` or `borderRadius`.
 - **Hover** (macOS / desktop web) may boost specular opacity. Touch devices never enter `MouseRegion`.
+
+Sketch style names (Clear, Lock Screen Time, Widget Glass, Regular Large / Medium / Small) are **comments only** — this package does not claim Apple's API.
 
 ### Accessibility
 
@@ -86,6 +91,7 @@ class Demo extends StatelessWidget {
           builder: (context, layout) {
             return GlassSurface(
               material: GlassMaterialTier.regular,
+              radiusScale: GlassRadiusScale.large,
               padding: const EdgeInsets.all(24),
               child: Text('Width class: ${layout.widthClass.name}'),
             );
@@ -123,7 +129,7 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (thin / regular / thick), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast).
+Pages: **Materials** (thin / regular / thick + Large / Medium / Small radius), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so materials read like kit previews.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 
