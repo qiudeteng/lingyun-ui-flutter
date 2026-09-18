@@ -6,15 +6,20 @@ import '../adaptivity/lingyun_adaptivity.dart';
 import '../theme/liquid_glass_theme.dart';
 import '../tokens/glass_material.dart';
 import '../tokens/liquid_glass_motion.dart';
+import '../tokens/liquid_glass_style.dart';
 import '../tokens/liquid_glass_tokens.dart';
 
-/// A frosted glass panel inspired by Apple Liquid Glass.
+/// A frosted panel that can paint **Materials** or **Liquid Glass**.
 ///
 /// Works on iPhone, foldables, iPad, macOS, and web. The public API is
 /// size-class and token based — it does not call device-model APIs.
 ///
+/// Resolve order: [tokens] → [style] (Liquid Glass) → [material]
+/// (Materials, default Regular). Do not pass a Materials tier when you
+/// mean a Liquid Glass style (or the reverse).
+///
 /// Layers (bottom → top):
-/// 1. Soft deep shadow + crisp grey rim + side hairlines
+/// 1. Soft deep shadow + crisp grey rim + side hairlines (~0.5px)
 /// 2. [BackdropFilter] blur (`TileMode.clamp`, no `bounds` named param)
 /// 3. Saturation [ColorFilter]
 /// 4. Tint fill
@@ -35,7 +40,8 @@ class GlassSurface extends StatefulWidget {
     super.key,
     required this.child,
     this.tokens,
-    this.material = GlassMaterialTier.regular,
+    this.material,
+    this.style,
     this.radiusScale,
     this.borderRadius,
     this.padding,
@@ -51,11 +57,20 @@ class GlassSurface extends StatefulWidget {
   /// Content drawn above the glass layers.
   final Widget child;
 
-  /// Optional token override; defaults to theme tokens for [material].
+  /// Optional token override; wins over [style] and [material].
   final LiquidGlassTokens? tokens;
 
-  /// Thin / regular / thick recipe. Ignored when [tokens] is set.
-  final GlassMaterialTier material;
+  /// **A. Materials** tier (Ultrathin / Thin / Regular / Thick).
+  ///
+  /// Ignored when [tokens] or [style] is set. Defaults to
+  /// [MaterialTier.regular] when both [style] and [tokens] are null.
+  final MaterialTier? material;
+
+  /// **B. Liquid Glass** kit style (Clear / Regular S·M·L / Dock / Widget).
+  ///
+  /// Wins over [material]. Ignored when [tokens] is set.
+  /// Button default is [LiquidGlassStyle.regularSmall] via [GlassButton].
+  final LiquidGlassStyle? style;
 
   /// Optional Large / Medium / Small corner override.
   ///
@@ -109,7 +124,12 @@ class _GlassSurfaceState extends State<GlassSurface> {
   Widget build(BuildContext context) {
     final resolved =
         widget.tokens ??
-        LiquidGlassTheme.tokensOf(context, tier: widget.material);
+        (widget.style != null
+            ? LiquidGlassTheme.styleOf(context, widget.style!)
+            : LiquidGlassTheme.materialOf(
+                context,
+                widget.material ?? MaterialTier.regular,
+              ));
     final radius = _radius(resolved);
     final useOpaque = GlassSurface.shouldUseOpaqueFallback(
       context,
@@ -260,7 +280,8 @@ class GlassCard extends StatelessWidget {
     super.key,
     required this.child,
     this.tokens,
-    this.material = GlassMaterialTier.regular,
+    this.material,
+    this.style,
     this.radiusScale,
     this.borderRadius,
     this.padding = const EdgeInsets.all(20),
@@ -270,7 +291,8 @@ class GlassCard extends StatelessWidget {
 
   final Widget child;
   final LiquidGlassTokens? tokens;
-  final GlassMaterialTier material;
+  final MaterialTier? material;
+  final LiquidGlassStyle? style;
   final GlassRadiusScale? radiusScale;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry padding;
@@ -282,6 +304,7 @@ class GlassCard extends StatelessWidget {
     return GlassSurface(
       tokens: tokens,
       material: material,
+      style: style,
       radiusScale: radiusScale,
       borderRadius: borderRadius,
       padding: padding,

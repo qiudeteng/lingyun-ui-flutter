@@ -9,6 +9,7 @@ void main() {
     await tester.pumpWidget(const LingyunGlassDemoApp());
     expect(find.text('Materials'), findsWidgets);
     expect(find.byKey(const Key('materials-title')), findsOneWidget);
+    expect(find.byKey(const Key('material-ultrathin')), findsOneWidget);
     expect(find.byKey(const Key('material-thin')), findsOneWidget);
     expect(find.byKey(const Key('material-regular')), findsOneWidget);
     expect(find.byKey(const Key('material-thick')), findsOneWidget);
@@ -18,8 +19,16 @@ void main() {
     expect(find.byKey(const Key('radius-large')), findsOneWidget);
   });
 
-  testWidgets('gallery can open Layout and Accessibility', (tester) async {
+  testWidgets('gallery can open Glass, Layout and Accessibility', (
+    tester,
+  ) async {
     await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('Glass').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
+    expect(find.text('Regular Small'), findsWidgets);
+
     await tester.tap(find.text('Layout').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('layout-title')), findsOneWidget);

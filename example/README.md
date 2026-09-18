@@ -1,6 +1,8 @@
 # lingyun-ui-flutter example
 
-Gallery for Phase 0: Materials, Themes, Layout (phone / Duo / iPad / macOS presets), Accessibility.
+Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
+(Clear / Regular S·M·L / Dock / Widget Glass + GlassButton), Themes,
+Layout (phone / Duo / iPad / macOS presets), Accessibility.
 
 ```bash
 flutter run -d chrome

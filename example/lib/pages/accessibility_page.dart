@@ -67,7 +67,7 @@ class AccessibilityPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         GlassSurface(
-          material: GlassMaterialTier.regular,
+          material: MaterialTier.regular,
           padding: const EdgeInsets.all(20),
           child: Text(
             reduceTransparency || highContrast

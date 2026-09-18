@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/glass_material.dart';
+import '../tokens/liquid_glass_catalog.dart';
+import '../tokens/liquid_glass_style.dart';
 import '../tokens/liquid_glass_tokens.dart';
+import '../tokens/material_catalog.dart';
 
-/// [ThemeExtension] that carries [LiquidGlassMaterials] for light and dark.
+/// [ThemeExtension] that carries **both** systems:
+///
+/// * [materials] — **A. Materials** (Ultrathin / Thin / Regular / Thick)
+/// * [glasses] — **B. Liquid Glass** (Clear / Regular S·M·L / Dock / Widget)
+///
+/// Do not treat Materials tiers as Liquid Glass styles.
 @immutable
 class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
-  const LiquidGlassTheme({required this.materials});
+  const LiquidGlassTheme({
+    required this.materials,
+    this.glasses = LiquidGlassCatalog.light,
+  });
 
-  final LiquidGlassMaterials materials;
+  /// Materials catalog (translucent fills).
+  final MaterialCatalog materials;
 
-  /// Regular-tier tokens (backward-compatible convenience).
-  LiquidGlassTokens get tokens => materials.regular;
+  /// Liquid Glass catalog (kit styles).
+  final LiquidGlassCatalog glasses;
+
+  /// Default Liquid Glass Regular Large tokens.
+  LiquidGlassTokens get tokens => glasses.regularLarge;
 
   /// Convenience accessor from a [BuildContext].
   static LiquidGlassTheme of(BuildContext context) {
@@ -23,41 +38,69 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     return extension!;
   }
 
-  /// Tokens for [tier], falling back to brightness-based materials.
+  /// Materials tokens for [tier].
+  ///
+  /// Prefer [materialOf] / [styleOf] so the two systems stay distinct.
   static LiquidGlassTokens tokensOf(
     BuildContext context, {
-    GlassMaterialTier tier = GlassMaterialTier.regular,
+    MaterialTier tier = MaterialTier.regular,
   }) {
+    return materialOf(context, tier);
+  }
+
+  /// **A. Materials** tokens for [tier].
+  static LiquidGlassTokens materialOf(BuildContext context, MaterialTier tier) {
     final extension = Theme.of(context).extension<LiquidGlassTheme>();
     if (extension != null) return extension.materials.resolve(tier);
     final brightness = Theme.of(context).brightness;
-    final materials = brightness == Brightness.dark
-        ? LiquidGlassMaterials.dark
-        : LiquidGlassMaterials.light;
-    return materials.resolve(tier);
+    final catalog = brightness == Brightness.dark
+        ? MaterialCatalog.dark
+        : MaterialCatalog.light;
+    return catalog.resolve(tier);
   }
 
-  /// Light theme extension using [LiquidGlassMaterials.light].
+  /// **B. Liquid Glass** tokens for [style].
+  static LiquidGlassTokens styleOf(
+    BuildContext context,
+    LiquidGlassStyle style,
+  ) {
+    final extension = Theme.of(context).extension<LiquidGlassTheme>();
+    if (extension != null) return extension.glasses.resolve(style);
+    final brightness = Theme.of(context).brightness;
+    final catalog = brightness == Brightness.dark
+        ? LiquidGlassCatalog.dark
+        : LiquidGlassCatalog.light;
+    return catalog.resolve(style);
+  }
+
+  /// Light theme: light Materials + light Liquid Glass.
   static const LiquidGlassTheme light = LiquidGlassTheme(
-    materials: LiquidGlassMaterials.light,
+    materials: MaterialCatalog.light,
+    glasses: LiquidGlassCatalog.light,
   );
 
-  /// Dark theme extension using [LiquidGlassMaterials.dark].
+  /// Dark theme: dark Materials + dark Liquid Glass.
   static const LiquidGlassTheme dark = LiquidGlassTheme(
-    materials: LiquidGlassMaterials.dark,
+    materials: MaterialCatalog.dark,
+    glasses: LiquidGlassCatalog.dark,
   );
 
   @override
   LiquidGlassTheme copyWith({
-    LiquidGlassMaterials? materials,
+    MaterialCatalog? materials,
+    LiquidGlassCatalog? glasses,
     LiquidGlassTokens? tokens,
   }) {
-    if (materials != null) {
-      return LiquidGlassTheme(materials: materials);
+    if (materials != null || glasses != null) {
+      return LiquidGlassTheme(
+        materials: materials ?? this.materials,
+        glasses: glasses ?? this.glasses,
+      );
     }
     if (tokens != null) {
       return LiquidGlassTheme(
         materials: this.materials.copyWith(regular: tokens),
+        glasses: this.glasses.copyWith(regularLarge: tokens),
       );
     }
     return this;
@@ -66,15 +109,20 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
   @override
   LiquidGlassTheme lerp(ThemeExtension<LiquidGlassTheme>? other, double t) {
     if (other is! LiquidGlassTheme) return this;
-    return LiquidGlassTheme(materials: materials.lerp(other.materials, t));
+    return LiquidGlassTheme(
+      materials: materials.lerp(other.materials, t),
+      glasses: glasses.lerp(other.glasses, t),
+    );
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is LiquidGlassTheme && other.materials == materials;
+    return other is LiquidGlassTheme &&
+        other.materials == materials &&
+        other.glasses == glasses;
   }
 
   @override
-  int get hashCode => materials.hashCode;
+  int get hashCode => Object.hash(materials, glasses);
 }
