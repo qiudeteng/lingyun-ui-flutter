@@ -64,6 +64,9 @@ class _MaterialCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = LiquidGlassTheme.materialOf(context, tier);
+    final fill = Color.alphaBlend(tokens.tintColor, tokens.opaqueFallbackColor);
+    final color = LiquidGlassLabels.contrastingOn(fill);
     return GlassSurface(
       key: Key('material-${tier.name}'),
       material: tier,
@@ -77,15 +80,23 @@ class _MaterialCard extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
+              color: color,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Materials · ${tier.kitName}',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
           ),
           const SizedBox(height: 12),
-          Text(tier.usage, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            tier.usage,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: color),
+          ),
         ],
       ),
     );

@@ -156,7 +156,7 @@ class _GlassButtonLabel extends StatelessWidget {
     final color = LiquidGlassLabels.primaryOf(context);
     final text = Text(label, textAlign: TextAlign.center);
     if (icon == null) {
-      return Center(child: text);
+      return text;
     }
     return Row(
       mainAxisSize: MainAxisSize.min,

@@ -542,8 +542,8 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens darkUltrathin = LiquidGlassTokens(
     blurSigma: 9,
     saturation: 1.03,
-    tintColor: Color(0x05000000),
-    overlayColor: Color(0x05000000),
+    tintColor: Color(0x2E000000),
+    overlayColor: Color(0x14000000),
     overlayBlend: BlendMode.srcOver,
     edgeHighlightColor: Color(0x26FFFFFF),
     refractionColor: Color(0x2EFFFFFF),

@@ -73,6 +73,14 @@ void main() {
     test('Liquid Glass labels are kit Primary colors', () {
       expect(LiquidGlassLabels.lightPrimary, const Color(0xFF1A1A1A));
       expect(LiquidGlassLabels.darkPrimary, const Color(0xFFEDEDED));
+      expect(
+        LiquidGlassLabels.contrastingOn(const Color(0xFFFFFFFF)),
+        LiquidGlassLabels.lightPrimary,
+      );
+      expect(
+        LiquidGlassLabels.contrastingOn(const Color(0xFF111111)),
+        LiquidGlassLabels.darkPrimary,
+      );
     });
 
     test('radius scale is Large / Medium / Small, not a flat 24', () {

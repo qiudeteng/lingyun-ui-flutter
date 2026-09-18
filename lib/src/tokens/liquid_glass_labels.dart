@@ -25,4 +25,9 @@ class LiquidGlassLabels {
   static Color primaryOf(BuildContext context) {
     return primaryFor(Theme.brightnessOf(context));
   }
+
+  /// Pick Primary so text stays readable on [background].
+  static Color contrastingOn(Color background) {
+    return background.computeLuminance() > 0.55 ? lightPrimary : darkPrimary;
+  }
 }
