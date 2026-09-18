@@ -21,6 +21,36 @@ void main() {
       expect(materials.resolve(GlassMaterialTier.thick), materials.thick);
     });
 
+    test('radius scale is Large / Medium / Small, not a flat 24', () {
+      expect(LiquidGlassRadii.large, 34);
+      expect(LiquidGlassRadii.medium, 26);
+      expect(LiquidGlassRadii.small, 18);
+      expect(LiquidGlassRadii.large, isNot(24));
+      final large = LiquidGlassTokens.light.withRadiusScale(
+        GlassRadiusScale.large,
+      );
+      final small = LiquidGlassTokens.light.withRadiusScale(
+        GlassRadiusScale.small,
+      );
+      expect(
+        large.borderRadius,
+        LiquidGlassRadii.borderRadius(GlassRadiusScale.large),
+      );
+      expect(
+        small.borderRadius,
+        LiquidGlassRadii.borderRadius(GlassRadiusScale.small),
+      );
+      expect(large.borderRadius, isNot(small.borderRadius));
+    });
+
+    test('shadow stack has deep shadow plus crisp rim', () {
+      final shadows = LiquidGlassTokens.light.shadows;
+      expect(shadows, hasLength(4));
+      expect(shadows.first.blurRadius, greaterThan(20));
+      expect(shadows[1].blurRadius, 0);
+      expect(shadows[1].spreadRadius, LiquidGlassTokens.light.rimSpread);
+    });
+
     test('boundedBlurFilter is distinct from unbounded blur', () {
       final a = LiquidGlassTokens.light.blurFilter;
       final b = LiquidGlassTokens.light.boundedBlurFilter(const Size(100, 80));
@@ -239,6 +269,21 @@ void main() {
       );
       expect(find.text('rt'), findsOneWidget);
       expect(find.byType(BackdropFilter), findsNothing);
+    });
+
+    testWidgets('radiusScale overrides token radius', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: GlassSurface(
+              radiusScale: GlassRadiusScale.small,
+              child: Text('radius-small'),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('radius-small'), findsOneWidget);
+      expect(find.byType(ClipRRect), findsWidgets);
     });
 
     testWidgets('material tier is applied', (tester) async {

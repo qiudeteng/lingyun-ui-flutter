@@ -1,60 +1,74 @@
 import 'package:flutter/material.dart';
 
-/// Vibrant multi-stop wallpaper so glass blur / tint / refraction reads clearly.
-class ColorfulWallpaper extends StatelessWidget {
-  const ColorfulWallpaper({super.key});
+/// Restrained, system-like wallpaper so glass reads like Apple kit
+/// previews — muted gradients, not a neon marketing poster.
+class SystemWallpaper extends StatelessWidget {
+  const SystemWallpaper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF6B9D),
-            Color(0xFFC44DFF),
-            Color(0xFF5B8DEF),
-            Color(0xFF2EE6A6),
-            Color(0xFFFFD56B),
-          ],
-          stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+          colors: dark
+              ? const [
+                  Color(0xFF1B1C22),
+                  Color(0xFF232833),
+                  Color(0xFF1A2230),
+                  Color(0xFF16181E),
+                ]
+              : const [
+                  Color(0xFFE7EEF4),
+                  Color(0xFFF4F0E8),
+                  Color(0xFFD9E3EE),
+                  Color(0xFFE8E4DC),
+                ],
+          stops: const [0.0, 0.35, 0.7, 1.0],
         ),
       ),
-      child: CustomPaint(painter: _BlobPainter(), child: SizedBox.expand()),
+      child: CustomPaint(
+        painter: _MutedWashPainter(dark: dark),
+        child: const SizedBox.expand(),
+      ),
     );
   }
 }
 
-class _BlobPainter extends CustomPainter {
-  const _BlobPainter();
+class _MutedWashPainter extends CustomPainter {
+  const _MutedWashPainter({required this.dark});
+
+  final bool dark;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    paint.color = const Color(0x66FF8A65);
+    paint.color = dark ? const Color(0x332A3344) : const Color(0x33B7C6D6);
     canvas.drawCircle(
-      Offset(size.width * 0.2, size.height * 0.3),
-      size.shortestSide * 0.35,
+      Offset(size.width * 0.18, size.height * 0.22),
+      size.shortestSide * 0.42,
       paint,
     );
 
-    paint.color = const Color(0x667C4DFF);
+    paint.color = dark ? const Color(0x28363A32) : const Color(0x2ED4C8B4);
     canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.25),
-      size.shortestSide * 0.4,
+      Offset(size.width * 0.86, size.height * 0.28),
+      size.shortestSide * 0.38,
       paint,
     );
 
-    paint.color = const Color(0x6640C4FF);
+    paint.color = dark ? const Color(0x2424303C) : const Color(0x29C5D0C8);
     canvas.drawCircle(
-      Offset(size.width * 0.6, size.height * 0.75),
-      size.shortestSide * 0.45,
+      Offset(size.width * 0.62, size.height * 0.82),
+      size.shortestSide * 0.5,
       paint,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MutedWashPainter oldDelegate) =>
+      oldDelegate.dark != dark;
 }

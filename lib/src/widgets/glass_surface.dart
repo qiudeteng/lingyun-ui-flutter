@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../adaptivity/lingyun_adaptivity.dart';
@@ -12,13 +14,15 @@ import '../tokens/liquid_glass_tokens.dart';
 /// size-class and token based — it does not call device-model APIs.
 ///
 /// Layers (bottom → top):
-/// 1. Soft drop shadow (optional)
-/// 2. [BackdropFilter] blur
+/// 1. Soft deep shadow + crisp grey rim + side hairlines
+/// 2. [BackdropFilter] blur (`TileMode.clamp`, no `bounds` named param)
 /// 3. Saturation [ColorFilter]
 /// 4. Tint fill
-/// 5. Specular highlight (top-leading → bottom-trailing)
-/// 6. Refraction inner rim + outer hairline border
-/// 7. [child]
+/// 5. Sketch-style overlay (Luminosity / Lighten)
+/// 6. Inner-lip shadows (kit specular) + tight top-leading catch
+/// 7. Directional inner refraction rim (not a second white border)
+/// 8. Quiet outer hairline
+/// 9. [child]
 ///
 /// Accessibility: [LingyunAdaptivity.useOpaqueFallback] — Reduce
 /// Transparency, high contrast ([MediaQuery] or gallery toggle), or
@@ -32,6 +36,8 @@ class GlassSurface extends StatefulWidget {
     required this.child,
     this.tokens,
     this.material = GlassMaterialTier.regular,
+    this.radiusScale,
+    this.borderRadius,
     this.padding,
     this.width,
     this.height,
@@ -51,6 +57,14 @@ class GlassSurface extends StatefulWidget {
   /// Thin / regular / thick recipe. Ignored when [tokens] is set.
   final GlassMaterialTier material;
 
+  /// Optional Large / Medium / Small corner override.
+  ///
+  /// When null, [borderRadius] or the token radius is used.
+  final GlassRadiusScale? radiusScale;
+
+  /// Optional explicit corner override (wins over [radiusScale]).
+  final BorderRadius? borderRadius;
+
   final EdgeInsetsGeometry? padding;
   final double? width;
   final double? height;
@@ -60,7 +74,7 @@ class GlassSurface extends StatefulWidget {
   /// Force the opaque accessibility fallback regardless of MediaQuery.
   final bool forceOpaque;
 
-  /// Whether to paint the soft drop shadow from tokens.
+  /// Whether to paint the token shadow stack.
   final bool showShadow;
 
   /// Boost specular opacity while a fine pointer hovers (macOS / desktop web).
@@ -83,11 +97,20 @@ class GlassSurface extends StatefulWidget {
 class _GlassSurfaceState extends State<GlassSurface> {
   bool _hover = false;
 
+  BorderRadius _radius(LiquidGlassTokens tokens) {
+    if (widget.borderRadius != null) return widget.borderRadius!;
+    if (widget.radiusScale != null) {
+      return LiquidGlassRadii.borderRadius(widget.radiusScale!);
+    }
+    return tokens.borderRadius;
+  }
+
   @override
   Widget build(BuildContext context) {
     final resolved =
         widget.tokens ??
         LiquidGlassTheme.tokensOf(context, tier: widget.material);
+    final radius = _radius(resolved);
     final useOpaque = GlassSurface.shouldUseOpaqueFallback(
       context,
       forceOpaque: widget.forceOpaque,
@@ -110,7 +133,7 @@ class _GlassSurfaceState extends State<GlassSurface> {
       LiquidGlassMotion.defaults.quickCurve,
     );
     final specularBoost = widget.enableHoverHighlight && _hover && !useOpaque
-        ? 1.18
+        ? 1.22
         : 1.0;
     final highlight = resolved.edgeHighlightColor.withValues(
       alpha: (resolved.edgeHighlightColor.a * specularBoost).clamp(0.0, 1.0),
@@ -121,7 +144,7 @@ class _GlassSurfaceState extends State<GlassSurface> {
       surface = Material(
         color: resolved.opaqueFallbackColor,
         shape: RoundedRectangleBorder(
-          borderRadius: resolved.borderRadius,
+          borderRadius: radius,
           side: BorderSide(
             color: resolved.borderColor,
             width: resolved.borderWidth,
@@ -133,11 +156,11 @@ class _GlassSurfaceState extends State<GlassSurface> {
       );
     } else {
       // iOS 27 Liquid Glass stack (platform-agnostic implementation):
-      // bounded blur → saturate backdrop → tint → face specular →
-      // top-edge sheen → refraction rim → hairline. Child is never
-      // ColorFiltered so labels stay readable on iPhone / Duo / iPad / macOS.
+      // clamp-tiled blur → saturate → tint → luminosity/lighten overlay →
+      // inner-lip + top-leading catch → directional refraction → quiet
+      // hairline. Child is never ColorFiltered so labels stay readable.
       surface = ClipRRect(
-        borderRadius: resolved.borderRadius,
+        borderRadius: radius,
         clipBehavior: widget.clipBehavior,
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -166,53 +189,25 @@ class _GlassSurfaceState extends State<GlassSurface> {
                     duration: duration,
                     curve: curve,
                     decoration: BoxDecoration(
-                      borderRadius: resolved.borderRadius,
+                      borderRadius: radius,
                       color: resolved.tintColor,
-                      border: Border.all(
-                        color: resolved.borderColor,
-                        width: resolved.borderWidth,
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          highlight,
-                          highlight.withValues(alpha: 0.18),
-                          highlight.withValues(alpha: 0),
-                        ],
-                        stops: const [0.0, 0.22, 0.55],
-                      ),
                     ),
                   ),
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: resolved.borderRadius,
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: const Alignment(0, -0.55),
-                          colors: [
-                            highlight.withValues(
-                              alpha: (highlight.a * 0.55).clamp(0.0, 1.0),
-                            ),
-                            highlight.withValues(alpha: 0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: resolved.borderRadius,
-                        border: Border.all(
-                          color: resolved.refractionColor,
-                          width: resolved.refractionWidth,
-                        ),
+                    child: CustomPaint(
+                      painter: _GlassLightingPainter(
+                        borderRadius: radius,
+                        overlayColor: resolved.overlayColor,
+                        overlayBlend: resolved.overlayBlend,
+                        innerShadowColor: resolved.innerShadowColor,
+                        innerShadowExtent: resolved.innerShadowExtent,
+                        specular: highlight,
+                        refractionColor: resolved.refractionColor,
+                        refractionWidth: resolved.refractionWidth,
+                        hairlineColor: resolved.borderColor,
+                        hairlineWidth: resolved.borderWidth,
                       ),
                     ),
                   ),
@@ -229,14 +224,8 @@ class _GlassSurfaceState extends State<GlassSurface> {
     if (widget.showShadow && !useOpaque) {
       result = DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: resolved.borderRadius,
-          boxShadow: [
-            BoxShadow(
-              color: resolved.shadowColor,
-              blurRadius: resolved.shadowBlurRadius,
-              offset: resolved.shadowOffset,
-            ),
-          ],
+          borderRadius: radius,
+          boxShadow: resolved.copyWith(borderRadius: radius).shadows,
         ),
         child: surface,
       );
@@ -272,6 +261,8 @@ class GlassCard extends StatelessWidget {
     required this.child,
     this.tokens,
     this.material = GlassMaterialTier.regular,
+    this.radiusScale,
+    this.borderRadius,
     this.padding = const EdgeInsets.all(20),
     this.forceOpaque = false,
     this.enableHoverHighlight = true,
@@ -280,6 +271,8 @@ class GlassCard extends StatelessWidget {
   final Widget child;
   final LiquidGlassTokens? tokens;
   final GlassMaterialTier material;
+  final GlassRadiusScale? radiusScale;
+  final BorderRadius? borderRadius;
   final EdgeInsetsGeometry padding;
   final bool forceOpaque;
   final bool enableHoverHighlight;
@@ -289,10 +282,145 @@ class GlassCard extends StatelessWidget {
     return GlassSurface(
       tokens: tokens,
       material: material,
+      radiusScale: radiusScale,
+      borderRadius: borderRadius,
       padding: padding,
       forceOpaque: forceOpaque,
       enableHoverHighlight: enableHoverHighlight,
       child: child,
     );
+  }
+}
+
+/// Paints overlay, inner-lip specular, directional refraction, hairline.
+class _GlassLightingPainter extends CustomPainter {
+  const _GlassLightingPainter({
+    required this.borderRadius,
+    required this.overlayColor,
+    required this.overlayBlend,
+    required this.innerShadowColor,
+    required this.innerShadowExtent,
+    required this.specular,
+    required this.refractionColor,
+    required this.refractionWidth,
+    required this.hairlineColor,
+    required this.hairlineWidth,
+  });
+
+  final BorderRadius borderRadius;
+  final Color overlayColor;
+  final BlendMode overlayBlend;
+  final Color innerShadowColor;
+  final double innerShadowExtent;
+  final Color specular;
+  final Color refractionColor;
+  final double refractionWidth;
+  final Color hairlineColor;
+  final double hairlineWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final bounds = Offset.zero & size;
+    final rrect = borderRadius.toRRect(bounds);
+    canvas.save();
+    canvas.clipRRect(rrect);
+
+    if (overlayColor.a > 0) {
+      canvas.drawRRect(
+        rrect,
+        Paint()
+          ..color = overlayColor
+          ..blendMode = overlayBlend,
+      );
+    }
+
+    final lip = math.min(innerShadowExtent, size.height * 0.42);
+    if (lip > 0 && innerShadowColor.a > 0) {
+      final top = Rect.fromLTWH(0, 0, size.width, lip);
+      canvas.drawRect(
+        top,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [innerShadowColor, innerShadowColor.withValues(alpha: 0)],
+          ).createShader(top),
+      );
+      final bottom = Rect.fromLTWH(0, size.height - lip, size.width, lip);
+      canvas.drawRect(
+        bottom,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [innerShadowColor, innerShadowColor.withValues(alpha: 0)],
+          ).createShader(bottom),
+      );
+    }
+
+    if (specular.a > 0) {
+      canvas.drawRRect(
+        rrect,
+        Paint()
+          ..shader = RadialGradient(
+            center: const Alignment(-0.78, -0.92),
+            radius: 0.72,
+            colors: [
+              specular,
+              specular.withValues(alpha: specular.a * 0.22),
+              specular.withValues(alpha: 0),
+            ],
+            stops: const [0.0, 0.22, 0.55],
+          ).createShader(bounds)
+          ..blendMode = BlendMode.softLight,
+      );
+    }
+
+    if (refractionWidth > 0 && refractionColor.a > 0) {
+      final inset = rrect.deflate(refractionWidth * 0.5 + 0.55);
+      canvas.drawRRect(
+        inset,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = refractionWidth
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              refractionColor,
+              refractionColor.withValues(alpha: refractionColor.a * 0.28),
+              refractionColor.withValues(alpha: 0.03),
+            ],
+            stops: const [0.0, 0.38, 1.0],
+          ).createShader(bounds),
+      );
+    }
+
+    if (hairlineWidth > 0 && hairlineColor.a > 0) {
+      canvas.drawRRect(
+        rrect.deflate(hairlineWidth * 0.5),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = hairlineWidth
+          ..color = hairlineColor,
+      );
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _GlassLightingPainter oldDelegate) {
+    return oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.overlayColor != overlayColor ||
+        oldDelegate.overlayBlend != overlayBlend ||
+        oldDelegate.innerShadowColor != innerShadowColor ||
+        oldDelegate.innerShadowExtent != innerShadowExtent ||
+        oldDelegate.specular != specular ||
+        oldDelegate.refractionColor != refractionColor ||
+        oldDelegate.refractionWidth != refractionWidth ||
+        oldDelegate.hairlineColor != hairlineColor ||
+        oldDelegate.hairlineWidth != hairlineWidth;
   }
 }

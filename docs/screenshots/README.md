@@ -1,8 +1,10 @@
 # Screenshots
 
-Phase 0 gallery captures (committed as PNGs in this folder):
+Gallery captures (committed as PNGs in this folder):
 
-- `materials.png` — thin / regular / thick glass on the colorful wallpaper
+- `materials_light.png` — thin / regular / thick + radius scale, light tokens
+- `materials_dark.png` — same page, dark tokens
+- `materials.png` — alias of the light materials capture
 - `layout_duo_inner.png` — Duo-like regular width with hinge-safe margins
 - `layout_duo_cover.png` — closed Duo wide-short, side-edge chrome
 - `layout_phone.png` — compact iPhone-style column

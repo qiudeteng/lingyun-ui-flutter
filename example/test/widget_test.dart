@@ -10,6 +10,9 @@ void main() {
     expect(find.byKey(const Key('material-thin')), findsOneWidget);
     expect(find.byKey(const Key('material-regular')), findsOneWidget);
     expect(find.byKey(const Key('material-thick')), findsOneWidget);
+    expect(find.byKey(const Key('radius-small')), findsOneWidget);
+    expect(find.byKey(const Key('radius-medium')), findsOneWidget);
+    expect(find.byKey(const Key('radius-large')), findsOneWidget);
   });
 
   testWidgets('gallery can open Layout and Accessibility', (tester) async {

@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1 — 2026-09-18
+
+Material fidelity pass against the public iOS 27 Sketch / Figma Liquid Glass
+layer styles (Clear, Regular Large / Medium / Small, Widget Glass). Descriptive
+labels only — not an official Apple API.
+
+### Changed
+
+- Retuned `LiquidGlassTokens` light/dark × thin/regular/thick: warmer Regular
+  veil (~60–70%), quieter hairline, grey rim ring, multi-shadow (soft deep +
+  crisp side hairlines), restrained saturation.
+- `GlassSurface` compositing: luminosity/lighten overlay, inner-lip shadows,
+  tight top-leading specular, directional inner refraction (not a double white
+  border). Still `ImageFilter.blur` + `TileMode.clamp` — no `bounds` named param.
+- Example gallery wallpaper is a muted system wash (light + dark) instead of
+  neon orbs.
+
+### Added
+
+- `GlassRadiusScale` / `LiquidGlassRadii` (`small` 18 / `medium` 26 / `large` 34).
+- `GlassSurface.radiusScale` / `borderRadius` and `LiquidGlassTokens.withRadiusScale`.
+- Token fields: `overlayColor`, `overlayBlend`, `shadowSpread`, `rimColor`,
+  `rimSpread`, `rimSideOffset`, `rimSideSpread`, `innerShadowColor`,
+  `innerShadowExtent`, plus `shadows` getter.
+
 ## 0.1.0 — 2026-09-18
 
 Phase 0 — materials, conventions, and multi-platform layout foundation.
