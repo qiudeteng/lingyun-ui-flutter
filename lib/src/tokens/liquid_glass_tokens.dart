@@ -191,8 +191,22 @@ class LiquidGlassTokens {
     };
   }
 
+  /// Unbounded Gaussian blur (tests / custom compositors).
   ImageFilter get blurFilter =>
       ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma);
+
+  /// iOS-style frosted blur: samples outside [size] are treated as
+  /// transparent so adjacent wallpaper does not bleed into the glass.
+  ///
+  /// Flutter's [ImageFilter.blur] `bounds` mode is the engine path
+  /// documented for iOS-style materials. Used by [GlassSurface].
+  ImageFilter boundedBlurFilter(Size size) {
+    return ImageFilter.blur(
+      sigmaX: blurSigma,
+      sigmaY: blurSigma,
+      bounds: Offset.zero & size,
+    );
+  }
 
   /// 5×4 color matrix that scales RGB saturation around luminance.
   List<double> get saturationMatrix {

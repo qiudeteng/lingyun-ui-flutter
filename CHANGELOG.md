@@ -24,6 +24,8 @@ No Phase 1+ components (buttons, etc.).
   cover / Duo inner / iPad / macOS presets), Accessibility toggles.
 - Multi-platform docs: iPhone, iPhone Duo, iPad, macOS. Example keeps ios,
   macos, web (android bonus).
+- `GlassSurface` uses bounded `ImageFilter.blur` (iOS-style frosted glass,
+  no neighbor bleed) plus a two-layer specular (face wash + top sheen).
 
 ### Public API (Phase 0)
 

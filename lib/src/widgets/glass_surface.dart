@@ -132,61 +132,95 @@ class _GlassSurfaceState extends State<GlassSurface> {
         child: content,
       );
     } else {
-      // Blur + saturation apply only to the backdrop. Child text stays crisp
-      // on iPhone, iPad, macOS, and web (ColorFiltered must not wrap labels).
+      // iOS 27 Liquid Glass stack (platform-agnostic implementation):
+      // bounded blur → saturate backdrop → tint → face specular →
+      // top-edge sheen → refraction rim → hairline. Child is never
+      // ColorFiltered so labels stay readable on iPhone / Duo / iPad / macOS.
       surface = ClipRRect(
         borderRadius: resolved.borderRadius,
         clipBehavior: widget.clipBehavior,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: resolved.blurFilter,
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.matrix(resolved.saturationMatrix),
-                  child: const ColoredBox(color: Color(0x00FFFFFF)),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: AnimatedContainer(
-                duration: duration,
-                curve: curve,
-                decoration: BoxDecoration(
-                  borderRadius: resolved.borderRadius,
-                  color: resolved.tintColor,
-                  border: Border.all(
-                    color: resolved.borderColor,
-                    width: resolved.borderWidth,
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      highlight,
-                      highlight.withValues(alpha: 0),
-                      resolved.tintColor.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.35, 1.0],
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: resolved.borderRadius,
-                    border: Border.all(
-                      color: resolved.refractionColor,
-                      width: resolved.refractionWidth,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final glassSize = Size(
+              constraints.maxWidth.isFinite ? constraints.maxWidth : 0,
+              constraints.maxHeight.isFinite ? constraints.maxHeight : 0,
+            );
+            final blur = glassSize.longestSide > 0
+                ? resolved.boundedBlurFilter(glassSize)
+                : resolved.blurFilter;
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: blur,
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.matrix(
+                        resolved.saturationMatrix,
+                      ),
+                      child: const ColoredBox(color: Color(0x00FFFFFF)),
                     ),
                   ),
                 ),
-              ),
-            ),
-            content,
-          ],
+                Positioned.fill(
+                  child: AnimatedContainer(
+                    duration: duration,
+                    curve: curve,
+                    decoration: BoxDecoration(
+                      borderRadius: resolved.borderRadius,
+                      color: resolved.tintColor,
+                      border: Border.all(
+                        color: resolved.borderColor,
+                        width: resolved.borderWidth,
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          highlight,
+                          highlight.withValues(alpha: 0.18),
+                          highlight.withValues(alpha: 0),
+                        ],
+                        stops: const [0.0, 0.22, 0.55],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: resolved.borderRadius,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: const Alignment(0, -0.55),
+                          colors: [
+                            highlight.withValues(
+                              alpha: (highlight.a * 0.55).clamp(0.0, 1.0),
+                            ),
+                            highlight.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: resolved.borderRadius,
+                        border: Border.all(
+                          color: resolved.refractionColor,
+                          width: resolved.refractionWidth,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                content,
+              ],
+            );
+          },
         ),
       );
     }
