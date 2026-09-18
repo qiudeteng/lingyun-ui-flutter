@@ -135,10 +135,10 @@ class LiquidGlassTokens {
   ///
   /// Sketch-adjacent: Liquid Glass Regular Large (light).
   static const LiquidGlassTokens light = LiquidGlassTokens(
-    blurSigma: 16,
-    saturation: 1.18,
-    tintColor: Color(0x9EF8F3EF),
-    overlayColor: Color(0x1ABFBFBF),
+    blurSigma: 20,
+    saturation: 1.16,
+    tintColor: Color(0x7AF8F3EF),
+    overlayColor: Color(0x14BFBFBF),
     overlayBlend: BlendMode.luminosity,
     edgeHighlightColor: Color(0x59FFFFFF),
     refractionColor: Color(0x73FFFFFF),
@@ -159,10 +159,10 @@ class LiquidGlassTokens {
   ///
   /// Sketch-adjacent: Liquid Glass Regular Large (dark).
   static const LiquidGlassTokens dark = LiquidGlassTokens(
-    blurSigma: 18,
-    saturation: 1.12,
-    tintColor: Color(0x9E1A1A1A),
-    overlayColor: Color(0xE61A1A1A),
+    blurSigma: 22,
+    saturation: 1.10,
+    tintColor: Color(0x731A1A1A),
+    overlayColor: Color(0x991A1A1A),
     overlayBlend: BlendMode.lighten,
     edgeHighlightColor: Color(0x40FFFFFF),
     refractionColor: Color(0x4DFFFFFF),
@@ -181,10 +181,10 @@ class LiquidGlassTokens {
 
   /// Light thin. Sketch-adjacent: Clear / Regular Small.
   static const LiquidGlassTokens lightThin = LiquidGlassTokens(
-    blurSigma: 10,
+    blurSigma: 12,
     saturation: 1.08,
-    tintColor: Color(0x3DFFFFFF),
-    overlayColor: Color(0x14747480),
+    tintColor: Color(0x2EFFFFFF),
+    overlayColor: Color(0x12747480),
     overlayBlend: BlendMode.luminosity,
     edgeHighlightColor: Color(0x40FFFFFF),
     refractionColor: Color(0x59FFFFFF),
@@ -205,10 +205,10 @@ class LiquidGlassTokens {
 
   /// Light thick. Sketch-adjacent: Widget Glass / elevated chrome.
   static const LiquidGlassTokens lightThick = LiquidGlassTokens(
-    blurSigma: 22,
-    saturation: 1.24,
-    tintColor: Color(0xC6F8F3EF),
-    overlayColor: Color(0x26BFBFBF),
+    blurSigma: 28,
+    saturation: 1.20,
+    tintColor: Color(0x99F8F3EF),
+    overlayColor: Color(0x1FBFBFBF),
     overlayBlend: BlendMode.luminosity,
     edgeHighlightColor: Color(0x66FFFFFF),
     refractionColor: Color(0x8CFFFFFF),
@@ -228,11 +228,11 @@ class LiquidGlassTokens {
 
   /// Dark thin. Sketch-adjacent: Clear / Regular Small (dark).
   static const LiquidGlassTokens darkThin = LiquidGlassTokens(
-    blurSigma: 12,
+    blurSigma: 14,
     saturation: 1.06,
-    tintColor: Color(0x381A1A1A),
+    tintColor: Color(0x2E1A1A1A),
     overlayColor: Color(0x1F767680),
-    overlayBlend: BlendMode.lighten,
+    overlayBlend: BlendMode.srcOver,
     edgeHighlightColor: Color(0x33FFFFFF),
     refractionColor: Color(0x33FFFFFF),
     refractionWidth: 0.55,
@@ -252,10 +252,10 @@ class LiquidGlassTokens {
 
   /// Dark thick. Sketch-adjacent: Widget Glass / elevated chrome (dark).
   static const LiquidGlassTokens darkThick = LiquidGlassTokens(
-    blurSigma: 24,
-    saturation: 1.16,
-    tintColor: Color(0xC21A1A1A),
-    overlayColor: Color(0xF21A1A1A),
+    blurSigma: 30,
+    saturation: 1.14,
+    tintColor: Color(0x991A1A1A),
+    overlayColor: Color(0xB31A1A1A),
     overlayBlend: BlendMode.lighten,
     edgeHighlightColor: Color(0x4DFFFFFF),
     refractionColor: Color(0x59FFFFFF),

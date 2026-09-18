@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Restrained, system-like wallpaper so glass reads like Apple kit
-/// previews — muted gradients, not a neon marketing poster.
+/// previews — muted photographic washes, not neon orbs.
 class SystemWallpaper extends StatelessWidget {
   const SystemWallpaper({super.key});
 
@@ -15,18 +15,18 @@ class SystemWallpaper extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: dark
               ? const [
-                  Color(0xFF1B1C22),
-                  Color(0xFF232833),
-                  Color(0xFF1A2230),
-                  Color(0xFF16181E),
+                  Color(0xFF1A2330),
+                  Color(0xFF2A3038),
+                  Color(0xFF243044),
+                  Color(0xFF1C2228),
                 ]
               : const [
-                  Color(0xFFE7EEF4),
-                  Color(0xFFF4F0E8),
-                  Color(0xFFD9E3EE),
-                  Color(0xFFE8E4DC),
+                  Color(0xFFB9C9D8),
+                  Color(0xFFE4D6C4),
+                  Color(0xFFC5D0C4),
+                  Color(0xFFD2C8BE),
                 ],
-          stops: const [0.0, 0.35, 0.7, 1.0],
+          stops: const [0.0, 0.32, 0.68, 1.0],
         ),
       ),
       child: CustomPaint(
@@ -46,24 +46,32 @@ class _MutedWashPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    paint.color = dark ? const Color(0x332A3344) : const Color(0x33B7C6D6);
+    paint.color = dark ? const Color(0x59344A66) : const Color(0x668FA8C0);
     canvas.drawCircle(
-      Offset(size.width * 0.18, size.height * 0.22),
-      size.shortestSide * 0.42,
+      Offset(size.width * 0.16, size.height * 0.2),
+      size.shortestSide * 0.48,
       paint,
     );
 
-    paint.color = dark ? const Color(0x28363A32) : const Color(0x2ED4C8B4);
+    // Sit behind the material cards so frost / tint can read.
+    paint.color = dark ? const Color(0x66405670) : const Color(0x7396B0C6);
     canvas.drawCircle(
-      Offset(size.width * 0.86, size.height * 0.28),
-      size.shortestSide * 0.38,
-      paint,
-    );
-
-    paint.color = dark ? const Color(0x2424303C) : const Color(0x29C5D0C8);
-    canvas.drawCircle(
-      Offset(size.width * 0.62, size.height * 0.82),
+      Offset(size.width * 0.58, size.height * 0.36),
       size.shortestSide * 0.5,
+      paint,
+    );
+
+    paint.color = dark ? const Color(0x4D4A4034) : const Color(0x5CC4B49A);
+    canvas.drawCircle(
+      Offset(size.width * 0.88, size.height * 0.26),
+      size.shortestSide * 0.44,
+      paint,
+    );
+
+    paint.color = dark ? const Color(0x40384A40) : const Color(0x52A8B8A8);
+    canvas.drawCircle(
+      Offset(size.width * 0.58, size.height * 0.86),
+      size.shortestSide * 0.56,
       paint,
     );
   }

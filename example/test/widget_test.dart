@@ -4,12 +4,15 @@ import 'package:example/main.dart';
 
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(const LingyunGlassDemoApp());
     expect(find.text('Materials'), findsWidgets);
     expect(find.byKey(const Key('materials-title')), findsOneWidget);
     expect(find.byKey(const Key('material-thin')), findsOneWidget);
     expect(find.byKey(const Key('material-regular')), findsOneWidget);
     expect(find.byKey(const Key('material-thick')), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const Key('radius-large')), 200);
     expect(find.byKey(const Key('radius-small')), findsOneWidget);
     expect(find.byKey(const Key('radius-medium')), findsOneWidget);
     expect(find.byKey(const Key('radius-large')), findsOneWidget);

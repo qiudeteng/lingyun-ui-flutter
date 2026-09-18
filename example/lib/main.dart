@@ -35,6 +35,11 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'access' => 3,
       _ => 0,
     };
+    _themeMode = switch (Uri.base.queryParameters['theme']) {
+      'dark' => ThemeMode.dark,
+      'system' => ThemeMode.system,
+      _ => ThemeMode.light,
+    };
   }
 
   @override
