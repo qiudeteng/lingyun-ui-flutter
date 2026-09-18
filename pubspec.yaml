@@ -1,0 +1,21 @@
+name: lingyun_ui_flutter
+description: Apple Liquid Glass inspired Flutter UI primitives — tokens, theme extension, and GlassSurface.
+version: 0.1.0
+homepage: https://github.com/qiudeteng/lingyun-ui-flutter
+repository: https://github.com/qiudeteng/lingyun-ui-flutter
+issue_tracker: https://github.com/qiudeteng/lingyun-ui-flutter/issues
+
+environment:
+  sdk: ^3.9.2
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
