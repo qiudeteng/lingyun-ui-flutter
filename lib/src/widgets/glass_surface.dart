@@ -133,9 +133,10 @@ class _GlassSurfaceState extends State<GlassSurface> {
       );
     } else {
       // iOS 27 Liquid Glass stack (platform-agnostic implementation):
-      // bounded blur → saturate backdrop → tint → face specular →
-      // top-edge sheen → refraction rim → hairline. Child is never
-      // ColorFiltered so labels stay readable on iPhone / Duo / iPad / macOS.
+      // frosted blur (TileMode.decal on Flutter 3.35.x; no `bounds`) →
+      // saturate backdrop → tint → face specular → top-edge sheen →
+      // refraction rim → hairline. Child is never ColorFiltered so
+      // labels stay readable on iPhone / Duo / iPad / macOS.
       surface = ClipRRect(
         borderRadius: resolved.borderRadius,
         clipBehavior: widget.clipBehavior,

@@ -1,4 +1,4 @@
-import 'dart:ui' show ImageFilter, lerpDouble;
+import 'dart:ui' show ImageFilter, TileMode, lerpDouble;
 
 import 'package:flutter/material.dart';
 
@@ -195,16 +195,22 @@ class LiquidGlassTokens {
   ImageFilter get blurFilter =>
       ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma);
 
-  /// iOS-style frosted blur: samples outside [size] are treated as
-  /// transparent so adjacent wallpaper does not bleed into the glass.
+  /// Frosted blur that treats samples outside the glass as transparent so
+  /// adjacent wallpaper does not bleed into the panel.
   ///
-  /// Flutter's [ImageFilter.blur] `bounds` mode is the engine path
-  /// documented for iOS-style materials. Used by [GlassSurface].
+  /// Newer Flutter engines expose `ImageFilter.blur(bounds: Offset.zero &
+  /// size)` for iOS-style materials. That named parameter is **not** on
+  /// Flutter 3.35.x stable (including web), so this uses [TileMode.decal]
+  /// — the closest stable-compatible approximation. [size] is kept for
+  /// API compatibility and to fall back to [blurFilter] when empty.
   ImageFilter boundedBlurFilter(Size size) {
+    if (size.isEmpty) {
+      return blurFilter;
+    }
     return ImageFilter.blur(
       sigmaX: blurSigma,
       sigmaY: blurSigma,
-      bounds: Offset.zero & size,
+      tileMode: TileMode.decal,
     );
   }
 

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1 — 2026-09-18
+
+### Fixed
+
+- Web / Flutter 3.35.x: `ImageFilter.blur(bounds:)` is not a named
+  parameter on that SDK. `boundedBlurFilter` now uses
+  `ImageFilter.blur(sigmaX/Y, tileMode: TileMode.decal)` so
+  `flutter build web` succeeds while keeping neighbor-bleed-free
+  frosted glass as close as possible.
+
 ## 0.1.0 — 2026-09-18
 
 Phase 0 — materials, conventions, and multi-platform layout foundation.
