@@ -204,6 +204,12 @@ class LingyunLayout {
   }
 }
 
+double _finiteMin(double a, double b) {
+  if (!a.isFinite) return b;
+  if (!b.isFinite) return a;
+  return math.min(a, b);
+}
+
 /// Rebuilds when the window size class or hinge geometry changes.
 class LingyunLayoutBuilder extends StatelessWidget {
   const LingyunLayoutBuilder({super.key, required this.builder});
@@ -215,11 +221,11 @@ class LingyunLayoutBuilder extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final mq = MediaQuery.of(context);
+        // Prefer the tighter of the local pane and the view (Split View,
+        // resized macOS windows, and MediaQuery overrides in tests).
         final size = Size(
-          constraints.maxWidth.isFinite ? constraints.maxWidth : mq.size.width,
-          constraints.maxHeight.isFinite
-              ? constraints.maxHeight
-              : mq.size.height,
+          _finiteMin(constraints.maxWidth, mq.size.width),
+          _finiteMin(constraints.maxHeight, mq.size.height),
         );
         return builder(
           context,

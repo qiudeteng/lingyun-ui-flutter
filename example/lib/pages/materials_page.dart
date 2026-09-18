@@ -49,8 +49,10 @@ class _MaterialCard extends StatelessWidget {
         children: [
           Text(
             tier.name.toUpperCase(),
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.2),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
           ),
           const SizedBox(height: 8),
           Text(

@@ -163,15 +163,19 @@ void main() {
     testWidgets('LingyunLayoutBuilder reports compact phone', (tester) async {
       late LingyunLayoutData data;
       await tester.pumpWidget(
-        const MediaQuery(
-          data: MediaQueryData(size: Size(390, 844)),
+        MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
           child: Directionality(
             textDirection: TextDirection.ltr,
-            child: LingyunLayoutBuilder(
-              builder: (_, captured) {
-                data = captured;
-                return const SizedBox();
-              },
+            child: SizedBox(
+              width: 390,
+              height: 844,
+              child: LingyunLayoutBuilder(
+                builder: (_, captured) {
+                  data = captured;
+                  return const SizedBox();
+                },
+              ),
             ),
           ),
         ),

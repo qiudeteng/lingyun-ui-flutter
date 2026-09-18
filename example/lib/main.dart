@@ -26,6 +26,18 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   int _index = 0;
 
   @override
+  void initState() {
+    super.initState();
+    final page = Uri.base.queryParameters['page'];
+    _index = switch (page) {
+      'themes' => 1,
+      'layout' => 2,
+      'access' => 3,
+      _ => 0,
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'lingyun-ui-flutter',

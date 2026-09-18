@@ -93,9 +93,12 @@ class _GlassSurfaceState extends State<GlassSurface> {
       forceOpaque: widget.forceOpaque,
     );
 
-    final content = Padding(
-      padding: widget.padding ?? EdgeInsets.zero,
-      child: widget.child,
+    final content = Material(
+      type: MaterialType.transparency,
+      child: Padding(
+        padding: widget.padding ?? EdgeInsets.zero,
+        child: widget.child,
+      ),
     );
 
     final duration = LiquidGlassMotion.durationOf(
@@ -129,46 +132,61 @@ class _GlassSurfaceState extends State<GlassSurface> {
         child: content,
       );
     } else {
+      // Blur + saturation apply only to the backdrop. Child text stays crisp
+      // on iPhone, iPad, macOS, and web (ColorFiltered must not wrap labels).
       surface = ClipRRect(
         borderRadius: resolved.borderRadius,
         clipBehavior: widget.clipBehavior,
-        child: BackdropFilter(
-          filter: resolved.blurFilter,
-          child: ColorFiltered(
-            colorFilter: ColorFilter.matrix(resolved.saturationMatrix),
-            child: AnimatedContainer(
-              duration: duration,
-              curve: curve,
-              decoration: BoxDecoration(
-                borderRadius: resolved.borderRadius,
-                color: resolved.tintColor,
-                border: Border.all(
-                  color: resolved.borderColor,
-                  width: resolved.borderWidth,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: resolved.blurFilter,
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.matrix(resolved.saturationMatrix),
+                  child: const ColoredBox(color: Color(0x00FFFFFF)),
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    highlight,
-                    highlight.withValues(alpha: 0),
-                    resolved.tintColor.withValues(alpha: 0),
-                  ],
-                  stops: const [0.0, 0.35, 1.0],
-                ),
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: resolved.borderRadius,
-                  border: Border.all(
-                    color: resolved.refractionColor,
-                    width: resolved.refractionWidth,
-                  ),
-                ),
-                child: content,
               ),
             ),
-          ),
+            Positioned.fill(
+              child: AnimatedContainer(
+                duration: duration,
+                curve: curve,
+                decoration: BoxDecoration(
+                  borderRadius: resolved.borderRadius,
+                  color: resolved.tintColor,
+                  border: Border.all(
+                    color: resolved.borderColor,
+                    width: resolved.borderWidth,
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      highlight,
+                      highlight.withValues(alpha: 0),
+                      resolved.tintColor.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 0.35, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: resolved.borderRadius,
+                    border: Border.all(
+                      color: resolved.refractionColor,
+                      width: resolved.refractionWidth,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            content,
+          ],
         ),
       );
     }

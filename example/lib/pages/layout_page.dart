@@ -10,7 +10,7 @@ enum LayoutPreset {
     Size(780, 360),
     'Closed / wide-short, side-edge chrome',
   ),
-  duoInner('Duo inner', Size(840, 640), 'Regular width + hinge band'),
+  duoInner('Duo inner', Size(820, 640), 'Regular width + hinge band'),
   ipad('iPad', Size(1024, 768), 'Expanded / Split View capable'),
   desktop('macOS', Size(1440, 900), 'Large window, pointer hover');
 
@@ -29,6 +29,20 @@ class LayoutPage extends StatefulWidget {
 
 class _LayoutPageState extends State<LayoutPage> {
   LayoutPreset _preset = LayoutPreset.duoInner;
+
+  @override
+  void initState() {
+    super.initState();
+    final name = Uri.base.queryParameters['preset'];
+    if (name != null) {
+      for (final preset in LayoutPreset.values) {
+        if (preset.name == name) {
+          _preset = preset;
+          break;
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +159,9 @@ class _LayoutStage extends StatelessWidget {
                       '${data.isWideShort ? ' · wide-short' : ''}'
                       '${data.avoidHinge ? ' · hinge-safe' : ''}',
                       key: const Key('layout-class-label'),
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -224,8 +239,9 @@ class _PaneCopy extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(body, style: Theme.of(context).textTheme.bodySmall),
