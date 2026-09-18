@@ -150,7 +150,7 @@ class _LayoutStage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   GlassSurface(
-                    material: GlassMaterialTier.thin,
+                    material: MaterialTier.thin,
                     padding: const EdgeInsets.all(12),
                     child: Text(
                       '${data.widthClass.name} · '
@@ -168,7 +168,7 @@ class _LayoutStage extends StatelessWidget {
                   Expanded(
                     child: LingyunSplitBody(
                       leading: GlassCard(
-                        material: GlassMaterialTier.regular,
+                        material: MaterialTier.regular,
                         child: _PaneCopy(
                           title: data.isCompact && !data.isWideShort
                               ? 'Single column'
@@ -177,7 +177,7 @@ class _LayoutStage extends StatelessWidget {
                         ),
                       ),
                       trailing: GlassCard(
-                        material: GlassMaterialTier.regular,
+                        material: MaterialTier.regular,
                         child: const _PaneCopy(
                           title: 'Trailing pane',
                           body:
@@ -258,18 +258,7 @@ class _EdgeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassSurface(
-      material: GlassMaterialTier.thick,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 4),
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
-        ],
-      ),
-    );
+    return GlassButton.label(label: label, icon: icon, onPressed: () {});
   }
 }
 

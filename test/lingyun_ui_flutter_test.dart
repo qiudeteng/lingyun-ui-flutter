@@ -13,12 +13,74 @@ void main() {
       );
     });
 
-    test('thin / regular / thick tiers differ', () {
-      final materials = LiquidGlassMaterials.light;
+    test('Materials Ultrathin / Thin / Regular / Thick differ', () {
+      final materials = MaterialCatalog.light;
+      expect(materials.ultrathin.blurSigma, lessThan(materials.thin.blurSigma));
       expect(materials.thin.blurSigma, lessThan(materials.regular.blurSigma));
       expect(materials.regular.blurSigma, lessThan(materials.thick.blurSigma));
-      expect(materials.resolve(GlassMaterialTier.thin), materials.thin);
-      expect(materials.resolve(GlassMaterialTier.thick), materials.thick);
+      expect(materials.resolve(MaterialTier.ultrathin), materials.ultrathin);
+      expect(materials.resolve(MaterialTier.thin), materials.thin);
+      expect(materials.resolve(MaterialTier.thick), materials.thick);
+    });
+
+    test('Materials tiers are not Liquid Glass styles', () {
+      expect(
+        MaterialTier.values.map((e) => e.name),
+        containsAll(['ultrathin', 'thin', 'regular', 'thick']),
+      );
+      expect(
+        LiquidGlassStyle.values.map((e) => e.name),
+        containsAll([
+          'clear',
+          'regularSmall',
+          'regularMedium',
+          'regularLarge',
+          'dock',
+          'widgetGlass',
+        ]),
+      );
+      expect(
+        MaterialCatalog.light.regular,
+        isNot(LiquidGlassCatalog.light.regularLarge),
+      );
+      expect(
+        MaterialCatalog.light.thick,
+        isNot(LiquidGlassCatalog.light.widgetGlass),
+      );
+      expect(MaterialCatalog.light.thin, isNot(LiquidGlassCatalog.light.clear));
+    });
+
+    test('rim is a 0.5 hairline — not linearly thickened by tier', () {
+      const hairline = LiquidGlassTokens.hairlineWidth;
+      expect(hairline, 0.5);
+      for (final tokens in [
+        MaterialCatalog.light.ultrathin,
+        MaterialCatalog.light.thin,
+        MaterialCatalog.light.regular,
+        MaterialCatalog.light.thick,
+        LiquidGlassCatalog.light.clear,
+        LiquidGlassCatalog.light.regularSmall,
+        LiquidGlassCatalog.light.regularLarge,
+        LiquidGlassCatalog.light.dock,
+        LiquidGlassCatalog.light.widgetGlass,
+      ]) {
+        expect(tokens.borderWidth, hairline);
+        expect(tokens.refractionWidth, hairline);
+        expect(tokens.rimSpread, hairline);
+      }
+    });
+
+    test('Liquid Glass labels are kit Primary colors', () {
+      expect(LiquidGlassLabels.lightPrimary, const Color(0xFF1A1A1A));
+      expect(LiquidGlassLabels.darkPrimary, const Color(0xFFEDEDED));
+      expect(
+        LiquidGlassLabels.contrastingOn(const Color(0xFFFFFFFF)),
+        LiquidGlassLabels.lightPrimary,
+      );
+      expect(
+        LiquidGlassLabels.contrastingOn(const Color(0xFF111111)),
+        LiquidGlassLabels.darkPrimary,
+      );
     });
 
     test('radius scale is Large / Medium / Small, not a flat 24', () {
@@ -57,18 +119,30 @@ void main() {
       expect(a, isNot(equals(b)));
     });
 
-    test('forTier maps onto the matching family', () {
+    test('forTier maps Materials; forStyle maps Liquid Glass', () {
       expect(
-        LiquidGlassTokens.light.forTier(GlassMaterialTier.thin),
+        LiquidGlassTokens.light.forTier(MaterialTier.thin),
         LiquidGlassTokens.lightThin,
       );
       expect(
-        LiquidGlassTokens.dark.forTier(GlassMaterialTier.thick),
+        LiquidGlassTokens.light.forTier(MaterialTier.ultrathin),
+        LiquidGlassTokens.lightUltrathin,
+      );
+      expect(
+        LiquidGlassTokens.dark.forTier(MaterialTier.thick),
         LiquidGlassTokens.darkThick,
       );
       expect(
-        LiquidGlassTokens.light.forTier(GlassMaterialTier.regular),
+        LiquidGlassTokens.light.forTier(MaterialTier.regular),
         LiquidGlassTokens.light,
+      );
+      expect(
+        LiquidGlassTokens.light.forStyle(LiquidGlassStyle.regularSmall),
+        LiquidGlassTokens.lightRegularSmall,
+      );
+      expect(
+        LiquidGlassTokens.dark.forStyle(LiquidGlassStyle.clear),
+        LiquidGlassTokens.darkClear,
       );
     });
 
@@ -100,26 +174,35 @@ void main() {
   });
 
   group('LiquidGlassTheme', () {
-    testWidgets('of / tokensOf resolve from ThemeData', (tester) async {
-      late LiquidGlassTokens resolved;
+    testWidgets('of / materialOf / styleOf resolve from ThemeData', (
+      tester,
+    ) async {
+      late LiquidGlassTokens materialRegular;
+      late LiquidGlassTokens glassDefault;
       late LiquidGlassTokens thin;
+      late LiquidGlassTokens button;
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
           home: Builder(
             builder: (context) {
-              resolved = LiquidGlassTheme.tokensOf(context);
-              thin = LiquidGlassTheme.tokensOf(
+              materialRegular = LiquidGlassTheme.tokensOf(context);
+              glassDefault = LiquidGlassTheme.of(context).tokens;
+              thin = LiquidGlassTheme.materialOf(context, MaterialTier.thin);
+              button = LiquidGlassTheme.styleOf(
                 context,
-                tier: GlassMaterialTier.thin,
+                LiquidGlassStyle.regularSmall,
               );
               return const SizedBox();
             },
           ),
         ),
       );
-      expect(resolved, LiquidGlassTokens.light);
+      expect(materialRegular, LiquidGlassTokens.materialLightRegular);
+      expect(glassDefault, LiquidGlassTokens.light);
+      expect(materialRegular, isNot(glassDefault));
       expect(thin, LiquidGlassTokens.lightThin);
+      expect(button, LiquidGlassTokens.lightRegularSmall);
     });
 
     test('lerp between light and dark', () {
@@ -292,7 +375,7 @@ void main() {
           theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
           home: const Scaffold(
             body: GlassSurface(
-              material: GlassMaterialTier.thin,
+              material: MaterialTier.thin,
               child: Text('thin'),
             ),
           ),
@@ -302,19 +385,60 @@ void main() {
       expect(find.byType(BackdropFilter), findsOneWidget);
     });
 
+    testWidgets('Liquid Glass style is applied', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: const Scaffold(
+            body: GlassSurface(
+              style: LiquidGlassStyle.clear,
+              child: Text('clear'),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('clear'), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+    });
+
     testWidgets('GlassCard applies padding and material', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: GlassCard(
-              material: GlassMaterialTier.thick,
-              child: Text('card'),
-            ),
+            body: GlassCard(material: MaterialTier.thick, child: Text('card')),
           ),
         ),
       );
       expect(find.text('card'), findsOneWidget);
       expect(find.byType(GlassSurface), findsOneWidget);
+    });
+
+    testWidgets('GlassButton defaults to Regular Small', (tester) async {
+      late LiquidGlassTokens resolved;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                resolved = LiquidGlassTheme.styleOf(
+                  context,
+                  LiquidGlassStyle.regularSmall,
+                );
+                return GlassButton.label(label: 'Do it', onPressed: () {});
+              },
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Do it'), findsOneWidget);
+      expect(find.byType(GlassSurface), findsOneWidget);
+      expect(resolved, LiquidGlassTokens.lightRegularSmall);
+      final text = tester.widget<Text>(find.text('Do it'));
+      expect(
+        text.style?.color ?? LiquidGlassLabels.lightPrimary,
+        LiquidGlassLabels.lightPrimary,
+      );
     });
   });
 }

@@ -25,8 +25,8 @@ class ThemesPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Light and dark Liquid Glass recipes. Toggle below; the same tokens '
-          'are used on every platform.',
+          'Light and dark recipes for both systems. Materials fills and '
+          'Liquid Glass styles each have Light / Dark. Same APIs on every platform.',
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -58,10 +58,10 @@ class ThemesPage extends StatelessWidget {
           children: [
             Expanded(
               child: GlassSurface(
-                material: GlassMaterialTier.thin,
+                material: MaterialTier.thin,
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  isDark ? 'Dark · thin' : 'Light · thin',
+                  isDark ? 'Dark · Materials Thin' : 'Light · Materials Thin',
                   style: textTheme.titleMedium,
                 ),
               ),
@@ -69,15 +69,23 @@ class ThemesPage extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: GlassSurface(
-                material: GlassMaterialTier.thick,
+                material: MaterialTier.thick,
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  isDark ? 'Dark · thick' : 'Light · thick',
+                  isDark ? 'Dark · Materials Thick' : 'Light · Materials Thick',
                   style: textTheme.titleMedium,
                 ),
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: GlassButton.label(
+            label: isDark ? 'Dark · Regular Small' : 'Light · Regular Small',
+            onPressed: () {},
+          ),
         ),
       ],
     );

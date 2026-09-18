@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 — 2026-09-18
+
+Split **Materials** and **Liquid Glass** into two named systems (Sketch /
+iOS 27 kit). Old Thin→Clear / Thick→Widget Glass mappings are gone.
+
+### Added
+
+- `MaterialTier.ultrathin` plus `MaterialCatalog` (Light / Dark × four fills).
+- `LiquidGlassStyle` / `LiquidGlassCatalog`: Clear, Regular Small / Medium /
+  Large, Dock, Widget Glass.
+- `LiquidGlassLabels` — Light Primary `#1A1A1A`, Dark Primary `#EDEDED`.
+- `GlassButton` / `GlassButton.label` — default **Regular Small** (Clear
+  optional). Materials Thick is not a button recipe.
+- `LiquidGlassTheme.materialOf` / `styleOf`; theme now carries both catalogs.
+- `GlassSurface.style` for Liquid Glass; `material` is Materials-only.
+- Gallery **Glass** page; Materials page no longer prints blur / sat as kit
+  values. Spec: `docs/SPEC.md`.
+
+### Changed
+
+- Rim is a shared ~0.5px hairline + Clear-like multi-layer specular. No
+  0.55→0.85 thickening by tier.
+- Radii 18 / 26 / 34 marked **待核验 (unverified vs Sketch)**.
+- `blurSigma` / `saturation` documented as implementation approximations,
+  not official Design Tokens.
+- `LiquidGlassTheme.tokens` is Liquid Glass Regular Large (not Materials
+  Regular). `tokensOf` resolves Materials.
+
+### Deprecated
+
+- `GlassMaterialTier` → `MaterialTier`
+- `LiquidGlassMaterials` → `MaterialCatalog`
+
 ## 0.1.1 — 2026-09-18
 
 Material fidelity pass against the public iOS 27 Sketch / Figma Liquid Glass

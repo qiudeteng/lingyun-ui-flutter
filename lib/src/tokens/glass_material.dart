@@ -1,35 +1,58 @@
 import 'package:flutter/painting.dart';
 
-/// Material thickness for Liquid Glass surfaces.
+/// **A. Materials** — translucent fills in the content layer.
 ///
-/// Inspired by the iOS 27 Liquid Glass material stack, but this enum is a
-/// **visual recipe**, not a UIKit / AppKit type. The same three tiers render
-/// on iPhone, foldables, iPad, macOS, and web.
+/// Official kit names (do **not** mix with [LiquidGlassStyle]):
+/// Ultrathin / Thin / Regular / Thick, each Light + Dark.
 ///
-/// Sketch / kit counterparts (descriptive labels only — not an official API):
-/// * [thin] ≈ Liquid Glass **Clear** / Regular Small (more wallpaper shows)
-/// * [regular] ≈ Liquid Glass **Regular** Large / Medium
-/// * [thick] ≈ Widget Glass / elevated chrome / dense desktop sheets
-enum GlassMaterialTier {
-  /// Light frost — more of the wallpaper / content shows through.
-  /// Typical uses: compact toolbars, inline chips, hover previews.
+/// These are **not** Liquid Glass styles. Thick is reserved for Sheet /
+/// Sidebar chrome — never the default button treatment.
+///
+/// Inspired by the iOS / iPadOS standard material stack, but this enum
+/// is a visual recipe, not a UIKit / AppKit type.
+enum MaterialTier {
+  /// Lightest content-layer frost. Most of the wallpaper shows through.
+  ultrathin,
+
+  /// Light frost — compact content chrome, inline grouping.
   thin,
 
-  /// Default panel / card material.
+  /// Default content-layer fill (not a Liquid Glass Regular style).
   regular,
 
-  /// Heavier frost for elevated chrome, sheets, and sidebars.
+  /// Heaviest fill. **Sheet / Sidebar chrome only** — not buttons.
   thick,
 }
 
-/// Corner-radius scale for glass surfaces.
+/// Official Materials kit label (Ultrathin / Thin / Regular / Thick).
+extension MaterialTierKit on MaterialTier {
+  String get kitName => switch (this) {
+    MaterialTier.ultrathin => 'Ultrathin',
+    MaterialTier.thin => 'Thin',
+    MaterialTier.regular => 'Regular',
+    MaterialTier.thick => 'Thick',
+  };
+
+  String get usage => switch (this) {
+    MaterialTier.ultrathin =>
+      'Lightest content fill; wallpaper-forward grouping.',
+    MaterialTier.thin => 'Light content frost; inline grouping.',
+    MaterialTier.regular => 'Default content-layer separation.',
+    MaterialTier.thick => 'Sheet / Sidebar chrome — not default buttons.',
+  };
+}
+
+/// @nodoc Backward-compatible alias. Prefer [MaterialTier].
+@Deprecated(
+  'Use MaterialTier. GlassMaterialTier mixed Materials fills with '
+  'Liquid Glass style names (Clear / Regular Large / Widget Glass).',
+)
+typedef GlassMaterialTier = MaterialTier;
+
+/// Corner-radius scale for glass and material surfaces.
 ///
-/// Sketch counterparts (descriptive labels only — not an official API):
-/// * [large] ≈ Liquid Glass Regular **Large** (kit measures 34pt)
-/// * [medium] ≈ mid-size nested panels (26pt). Kit Regular Medium measures
-///   the same 34pt as Large; we keep a tighter mid step so cards can nest.
-/// * [small] ≈ compact chrome (18pt). Kit Regular Small is often a 48pt
-///   capsule — use a stadium [BorderRadius] for pills.
+/// Values 18 / 26 / 34 are **待核验 (unverified vs Sketch)** until measured
+/// in the official Sketch UI Kit. They are working steps, not kit tokens.
 enum GlassRadiusScale {
   /// Compact chrome / chips.
   small,
@@ -37,21 +60,36 @@ enum GlassRadiusScale {
   /// Nested cards and mid-size panels.
   medium,
 
-  /// Sheets, prominent cards, Regular Large.
+  /// Sheets, prominent cards, Regular Large-sized panels.
   large,
 }
 
 /// Logical-pixel corner radii for [GlassRadiusScale].
+///
+/// **待核验 (unverified vs Sketch):** 18 / 26 / 34 are retained as useful
+/// working steps. Do not treat them as official Design Tokens until they
+/// are measured in
+/// https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02
 class LiquidGlassRadii {
   const LiquidGlassRadii._();
 
-  /// Compact chrome. Sketch-adjacent: Regular Small (rectangular).
+  /// Compact rectangular chrome.
+  ///
+  /// **待核验 (unverified vs Sketch)** — 18 is a working step. Kit Regular
+  /// Small is often a 48pt capsule; use a stadium [BorderRadius] for pills
+  /// (see [GlassButton]).
   static const double small = 18;
 
   /// Nested / mid-size panels.
+  ///
+  /// **待核验 (unverified vs Sketch)** — 26 is a working mid step. Some
+  /// public kit notes measure Regular Medium at the same 34 as Large.
   static const double medium = 26;
 
-  /// Regular Large / sheets. Measured 34pt in the iOS 27 kit.
+  /// Regular Large / sheets.
+  ///
+  /// **待核验 (unverified vs Sketch)** — 34 matches some public kit notes
+  /// for Regular Large, but is not yet verified in this repo's Sketch file.
   static const double large = 34;
 
   static double value(GlassRadiusScale scale) {

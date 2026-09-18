@@ -1,6 +1,8 @@
 # lingyun-ui-flutter
 
-Liquid Glass primitives for Flutter — design tokens, a `ThemeExtension`, a frosted `GlassSurface`, motion/accessibility helpers, and adaptive layout utilities.
+Materials + Liquid Glass primitives for Flutter — two **separate** systems, a `ThemeExtension`, frosted `GlassSurface`, `GlassButton`, motion/accessibility helpers, and adaptive layout utilities.
+
+规格说明：[`docs/SPEC.md`](docs/SPEC.md)（官方名 vs 实现备注）。
 
 **Dart package:** `lingyun_ui_flutter`  
 **License:** MIT  
@@ -21,15 +23,31 @@ Detection uses **Flutter size classes** (`MediaQuery.sizeOf` / `LayoutBuilder` +
 
 Example platforms in this repo: **iOS, macOS, web** (Android is included as a bonus).
 
+## Two systems (do not mix names)
+
+Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02).
+
+| System | Official names | API | Typical use |
+| --- | --- | --- | --- |
+| **A. Materials** | Ultrathin / Thin / Regular / Thick × Light / Dark | `MaterialTier` + `MaterialCatalog` | Content-layer fills. **Thick = Sheet / Sidebar only** |
+| **B. Liquid Glass** | Clear / Regular Small · Medium · Large / Dock / Widget Glass | `LiquidGlassStyle` + `LiquidGlassCatalog` | Floating controls. **Button default = Regular Small** (or Clear) |
+
+`GlassMaterialTier` / `LiquidGlassMaterials` remain as **deprecated aliases** of Materials. They no longer map Thin→Clear or Thick→Widget Glass.
+
+`blurSigma` / `saturation` are **implementation approximations — not official Design Tokens**. The gallery does not print them as kit values.
+
 ## Features
 
 | API | Role |
 | --- | --- |
-| `GlassMaterialTier` | `thin` / `regular` / `thick` material recipes (Sketch-adjacent: Clear / Regular Large / Widget Glass) |
-| `GlassRadiusScale` / `LiquidGlassRadii` | `small` / `medium` / `large` corners (18 / 26 / 34) — not a flat 24 |
-| `LiquidGlassTokens` / `LiquidGlassMaterials` | Blur, saturation, tint, luminosity/lighten overlay, **specular** catch, **inner-lip** shadows, directional **refraction** rim, grey rim ring, multi-shadow, opaque fallback |
-| `LiquidGlassTheme` | `ThemeExtension` with light/dark material sets and `tokensOf(context, tier:)` |
-| `GlassSurface` / `GlassCard` | Layered BackdropFilter glass + hover specular on pointer devices |
+| `MaterialTier` / `MaterialCatalog` | Materials Ultrathin / Thin / Regular / Thick × Light / Dark |
+| `LiquidGlassStyle` / `LiquidGlassCatalog` | Liquid Glass Clear / Regular S·M·L / Dock / Widget Glass |
+| `LiquidGlassLabels` | Labels — Liquid Glass Primary: Light `#1A1A1A`, Dark `#EDEDED` |
+| `GlassRadiusScale` / `LiquidGlassRadii` | `small` / `medium` / `large` corners (**18 / 26 / 34 待核验 vs Sketch**) |
+| `LiquidGlassTokens` | Shared visual recipe (blur/sat = implementation approximation) |
+| `LiquidGlassTheme` | `ThemeExtension` with **both** catalogs; `materialOf` / `styleOf` |
+| `GlassSurface` / `GlassCard` | `material:` **or** `style:` + hover specular on pointer devices |
+| `GlassButton` | First Liquid Glass Button — default Regular Small, capsule |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -41,10 +59,11 @@ Documented on `LiquidGlassTokens` and painted by `GlassSurface`:
 - **Specular** — a *tight* top-leading catch (`edgeHighlightColor`) plus dark **inner-lip** bands (`innerShadowColor`) that approximate the kit's ±40 Y / −40 spread inner shadows. Not a full-face 2018 sheen or a focus ring.
 - **Refraction** — directional **inner rim** (bright top-leading → quiet bottom-trailing). Distinct from the outer **grey ring** (`rimColor`, zero-blur +0.5 spread) and side hairlines (Sketch "Plus Darker", ~1.25 / −0.75).
 - **Shadows** — soft deep drop (`shadowColor`, large blur, modest Y, negative spread) stacked with the crisp rim.
-- **Radius** — `GlassRadiusScale.large` (34, Regular Large), `medium` (26), `small` (18). Override with `GlassSurface.radiusScale` or `borderRadius`.
+- **Rim** — ~0.5px hairline + multi-layer specular like Clear. **Not** linearly thickened by Materials tier (no 0.55→0.85).
+- **Radius** — `GlassRadiusScale` 18 / 26 / 34 is **待核验 (unverified vs Sketch)** until measured in the kit. Override with `GlassSurface.radiusScale` or `borderRadius`. Regular Small buttons use a 48pt capsule, not 18.
 - **Hover** (macOS / desktop web) may boost specular opacity. Touch devices never enter `MouseRegion`.
 
-Sketch style names (Clear, Lock Screen Time, Widget Glass, Regular Large / Medium / Small) are **comments only** — this package does not claim Apple's API.
+Official kit names are first-class enums. This package does not claim Apple's API.
 
 ### Accessibility
 
@@ -65,7 +84,7 @@ Or path / pub once published:
 
 ```yaml
 dependencies:
-  lingyun_ui_flutter: ^0.1.0
+  lingyun_ui_flutter: ^0.2.0
 ```
 
 ## Quick start
@@ -89,11 +108,20 @@ class Demo extends StatelessWidget {
       home: Scaffold(
         body: LingyunLayoutBuilder(
           builder: (context, layout) {
-            return GlassSurface(
-              material: GlassMaterialTier.regular,
-              radiusScale: GlassRadiusScale.large,
-              padding: const EdgeInsets.all(24),
-              child: Text('Width class: ${layout.widthClass.name}'),
+            return Column(
+              children: [
+                GlassButton.label(
+                  label: 'Regular Small',
+                  onPressed: () {},
+                ),
+                const SizedBox(height: 16),
+                GlassSurface(
+                  material: MaterialTier.regular,
+                  radiusScale: GlassRadiusScale.large,
+                  padding: const EdgeInsets.all(24),
+                  child: Text('Width class: ${layout.widthClass.name}'),
+                ),
+              ],
             );
           },
         ),
@@ -129,7 +157,7 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (thin / regular / thick + Large / Medium / Small radius), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so materials read like kit previews.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton`), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so fills and glass read like kit previews.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 

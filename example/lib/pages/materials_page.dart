@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
-/// Thin / regular / thick glass plus Large / Medium / Small radius.
+/// **A. Materials** — Ultrathin / Thin / Regular / Thick.
+///
+/// Not Liquid Glass styles. No raw blur / saturation numbers (those are
+/// implementation approximations, not official Design Tokens).
 class MaterialsPage extends StatelessWidget {
   const MaterialsPage({super.key});
 
@@ -18,14 +21,13 @@ class MaterialsPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Three Liquid Glass tiers on a muted system wallpaper. '
-          'Same API on iPhone, Duo, iPad, and macOS. '
-          'Sketch-adjacent labels (Clear / Regular Large / Widget Glass) '
-          'are comments only — not an official API.',
+          'A. Materials = translucent fills: Ultrathin / Thin / Regular / '
+          'Thick × Light / Dark. These are not Liquid Glass styles. '
+          'Thick is Sheet / Sidebar chrome — not the default button.',
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
-        for (final tier in GlassMaterialTier.values) ...[
+        for (final tier in MaterialTier.values) ...[
           _MaterialCard(tier: tier),
           const SizedBox(height: 16),
         ],
@@ -36,8 +38,8 @@ class MaterialsPage extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Large / Medium / Small corners (Regular Large measures 34pt in '
-          'the iOS 27 kit). Independent of thin / regular / thick.',
+          '18 / 26 / 34 are 待核验 (unverified vs Sketch) until measured in '
+          'the official Sketch UI Kit. Independent of Materials tiers.',
           style: textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -58,16 +60,13 @@ class MaterialsPage extends StatelessWidget {
 class _MaterialCard extends StatelessWidget {
   const _MaterialCard({required this.tier});
 
-  final GlassMaterialTier tier;
+  final MaterialTier tier;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = LiquidGlassTheme.tokensOf(context, tier: tier);
-    final sketch = switch (tier) {
-      GlassMaterialTier.thin => 'Clear / Regular Small',
-      GlassMaterialTier.regular => 'Regular Large',
-      GlassMaterialTier.thick => 'Widget Glass / chrome',
-    };
+    final tokens = LiquidGlassTheme.materialOf(context, tier);
+    final fill = Color.alphaBlend(tokens.tintColor, tokens.opaqueFallbackColor);
+    final color = LiquidGlassLabels.contrastingOn(fill);
     return GlassSurface(
       key: Key('material-${tier.name}'),
       material: tier,
@@ -77,28 +76,27 @@ class _MaterialCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            tier.name.toUpperCase(),
+            tier.kitName.toUpperCase(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
+              color: color,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'blur ${tokens.blurSigma.toStringAsFixed(0)}  ·  '
-            'sat ${tokens.saturation.toStringAsFixed(2)}  ·  '
-            'rim ${tokens.refractionWidth}px  ·  '
-            'Sketch-adjacent: $sketch',
-            style: Theme.of(context).textTheme.bodySmall,
+            'Materials · ${tier.kitName}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
           ),
           const SizedBox(height: 12),
-          Text(switch (tier) {
-            GlassMaterialTier.thin =>
-              'Light frost for compact chrome and inline chips.',
-            GlassMaterialTier.regular => 'Default cards and panels.',
-            GlassMaterialTier.thick =>
-              'Elevated sheets, sidebars, and dense desktop chrome.',
-          }, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            tier.usage,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: color),
+          ),
         ],
       ),
     );
@@ -115,11 +113,11 @@ class _RadiusChip extends StatelessWidget {
     final r = LiquidGlassRadii.value(scale);
     return GlassSurface(
       key: Key('radius-${scale.name}'),
-      material: GlassMaterialTier.regular,
+      material: MaterialTier.regular,
       radiusScale: scale,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Text(
-        '${scale.name}  ${r.toStringAsFixed(0)}',
+        '${scale.name}  ${r.toStringAsFixed(0)}  待核验',
         style: Theme.of(
           context,
         ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),

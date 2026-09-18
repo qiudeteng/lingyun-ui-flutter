@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import 'pages/accessibility_page.dart';
+import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/materials_page.dart';
 import 'pages/themes_page.dart';
@@ -30,9 +31,10 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     super.initState();
     final page = Uri.base.queryParameters['page'];
     _index = switch (page) {
-      'themes' => 1,
-      'layout' => 2,
-      'access' => 3,
+      'glass' => 1,
+      'themes' => 2,
+      'layout' => 3,
+      'access' => 4,
       _ => 0,
     };
     _themeMode = switch (Uri.base.queryParameters['theme']) {
@@ -114,6 +116,11 @@ class DemoHome extends StatelessWidget {
       label: 'Materials',
     ),
     NavigationDestination(
+      icon: Icon(Icons.auto_awesome_outlined),
+      selectedIcon: Icon(Icons.auto_awesome),
+      label: 'Glass',
+    ),
+    NavigationDestination(
       icon: Icon(Icons.brightness_6_outlined),
       selectedIcon: Icon(Icons.brightness_6),
       label: 'Themes',
@@ -134,6 +141,7 @@ class DemoHome extends StatelessWidget {
   Widget build(BuildContext context) {
     final pages = [
       const MaterialsPage(),
+      const GlassPage(),
       ThemesPage(themeMode: themeMode, onThemeModeChanged: onThemeModeChanged),
       const LayoutPage(),
       AccessibilityPage(
