@@ -1,25 +1,37 @@
 import 'package:flutter/material.dart';
 
+import '../adaptivity/lingyun_adaptivity.dart';
 import '../theme/liquid_glass_theme.dart';
+import '../tokens/glass_material.dart';
+import '../tokens/liquid_glass_motion.dart';
 import '../tokens/liquid_glass_tokens.dart';
 
 /// A frosted glass panel inspired by Apple Liquid Glass.
+///
+/// Works on iPhone, foldables, iPad, macOS, and web. The public API is
+/// size-class and token based — it does not call device-model APIs.
 ///
 /// Layers (bottom → top):
 /// 1. Soft drop shadow (optional)
 /// 2. [BackdropFilter] blur
 /// 3. Saturation [ColorFilter]
-/// 4. Tint fill + edge-highlight gradient + border
-/// 5. [child]
+/// 4. Tint fill
+/// 5. Specular highlight (top-leading → bottom-trailing)
+/// 6. Refraction inner rim + outer hairline border
+/// 7. [child]
 ///
-/// Accessibility: when [MediaQueryData.highContrast] is true, or when
-/// [forceOpaque] is set (e.g. user toggled Reduce Transparency in the demo),
-/// the surface paints [LiquidGlassTokens.opaqueFallbackColor] instead of blur.
-class GlassSurface extends StatelessWidget {
+/// Accessibility: [LingyunAdaptivity.useOpaqueFallback] — Reduce
+/// Transparency, high contrast ([MediaQuery] or gallery toggle), or
+/// [forceOpaque] — paints [LiquidGlassTokens.opaqueFallbackColor].
+///
+/// Pointer platforms: when [enableHoverHighlight] is true, hovering
+/// slightly boosts the specular wash. Touch devices ignore this.
+class GlassSurface extends StatefulWidget {
   const GlassSurface({
     super.key,
     required this.child,
     this.tokens,
+    this.material = GlassMaterialTier.regular,
     this.padding,
     this.width,
     this.height,
@@ -27,13 +39,17 @@ class GlassSurface extends StatelessWidget {
     this.clipBehavior = Clip.antiAlias,
     this.forceOpaque = false,
     this.showShadow = true,
+    this.enableHoverHighlight = true,
   });
 
   /// Content drawn above the glass layers.
   final Widget child;
 
-  /// Optional token override; defaults to [LiquidGlassTheme.tokensOf].
+  /// Optional token override; defaults to theme tokens for [material].
   final LiquidGlassTokens? tokens;
+
+  /// Thin / regular / thick recipe. Ignored when [tokens] is set.
+  final GlassMaterialTier material;
 
   final EdgeInsetsGeometry? padding;
   final double? width;
@@ -47,23 +63,55 @@ class GlassSurface extends StatelessWidget {
   /// Whether to paint the soft drop shadow from tokens.
   final bool showShadow;
 
+  /// Boost specular opacity while a fine pointer hovers (macOS / desktop web).
+  final bool enableHoverHighlight;
+
   static bool shouldUseOpaqueFallback(
     BuildContext context, {
     required bool forceOpaque,
   }) {
-    if (forceOpaque) return true;
-    return MediaQuery.highContrastOf(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final resolved = tokens ?? LiquidGlassTheme.tokensOf(context);
-    final useOpaque = shouldUseOpaqueFallback(
+    return LingyunAdaptivity.useOpaqueFallback(
       context,
       forceOpaque: forceOpaque,
     );
+  }
 
-    final content = Padding(padding: padding ?? EdgeInsets.zero, child: child);
+  @override
+  State<GlassSurface> createState() => _GlassSurfaceState();
+}
+
+class _GlassSurfaceState extends State<GlassSurface> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved =
+        widget.tokens ??
+        LiquidGlassTheme.tokensOf(context, tier: widget.material);
+    final useOpaque = GlassSurface.shouldUseOpaqueFallback(
+      context,
+      forceOpaque: widget.forceOpaque,
+    );
+
+    final content = Padding(
+      padding: widget.padding ?? EdgeInsets.zero,
+      child: widget.child,
+    );
+
+    final duration = LiquidGlassMotion.durationOf(
+      context,
+      LiquidGlassMotion.defaults.quick,
+    );
+    final curve = LiquidGlassMotion.curveOf(
+      context,
+      LiquidGlassMotion.defaults.quickCurve,
+    );
+    final specularBoost = widget.enableHoverHighlight && _hover && !useOpaque
+        ? 1.18
+        : 1.0;
+    final highlight = resolved.edgeHighlightColor.withValues(
+      alpha: (resolved.edgeHighlightColor.a * specularBoost).clamp(0.0, 1.0),
+    );
 
     final Widget surface;
     if (useOpaque) {
@@ -76,19 +124,21 @@ class GlassSurface extends StatelessWidget {
             width: resolved.borderWidth,
           ),
         ),
-        clipBehavior: clipBehavior,
+        clipBehavior: widget.clipBehavior,
         elevation: 0,
         child: content,
       );
     } else {
       surface = ClipRRect(
         borderRadius: resolved.borderRadius,
-        clipBehavior: clipBehavior,
+        clipBehavior: widget.clipBehavior,
         child: BackdropFilter(
           filter: resolved.blurFilter,
           child: ColorFiltered(
             colorFilter: ColorFilter.matrix(resolved.saturationMatrix),
-            child: DecoratedBox(
+            child: AnimatedContainer(
+              duration: duration,
+              curve: curve,
               decoration: BoxDecoration(
                 borderRadius: resolved.borderRadius,
                 color: resolved.tintColor,
@@ -100,14 +150,23 @@ class GlassSurface extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    resolved.edgeHighlightColor,
-                    resolved.edgeHighlightColor.withValues(alpha: 0),
+                    highlight,
+                    highlight.withValues(alpha: 0),
                     resolved.tintColor.withValues(alpha: 0),
                   ],
                   stops: const [0.0, 0.35, 1.0],
                 ),
               ),
-              child: content,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: resolved.borderRadius,
+                  border: Border.all(
+                    color: resolved.refractionColor,
+                    width: resolved.refractionWidth,
+                  ),
+                ),
+                child: content,
+              ),
             ),
           ),
         ),
@@ -115,7 +174,7 @@ class GlassSurface extends StatelessWidget {
     }
 
     Widget result = surface;
-    if (showShadow && !useOpaque) {
+    if (widget.showShadow && !useOpaque) {
       result = DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: resolved.borderRadius,
@@ -131,11 +190,23 @@ class GlassSurface extends StatelessWidget {
       );
     }
 
-    if (width != null || height != null) {
-      result = SizedBox(width: width, height: height, child: result);
+    if (widget.enableHoverHighlight && !useOpaque) {
+      result = MouseRegion(
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: result,
+      );
     }
-    if (alignment != null) {
-      result = Align(alignment: alignment!, child: result);
+
+    if (widget.width != null || widget.height != null) {
+      result = SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: result,
+      );
+    }
+    if (widget.alignment != null) {
+      result = Align(alignment: widget.alignment!, child: result);
     }
 
     return result;
@@ -148,21 +219,27 @@ class GlassCard extends StatelessWidget {
     super.key,
     required this.child,
     this.tokens,
+    this.material = GlassMaterialTier.regular,
     this.padding = const EdgeInsets.all(20),
     this.forceOpaque = false,
+    this.enableHoverHighlight = true,
   });
 
   final Widget child;
   final LiquidGlassTokens? tokens;
+  final GlassMaterialTier material;
   final EdgeInsetsGeometry padding;
   final bool forceOpaque;
+  final bool enableHoverHighlight;
 
   @override
   Widget build(BuildContext context) {
     return GlassSurface(
       tokens: tokens,
+      material: material,
       padding: padding,
       forceOpaque: forceOpaque,
+      enableHoverHighlight: enableHoverHighlight,
       child: child,
     );
   }

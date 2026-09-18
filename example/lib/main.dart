@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
+import 'pages/accessibility_page.dart';
+import 'pages/layout_page.dart';
+import 'pages/materials_page.dart';
+import 'pages/themes_page.dart';
+import 'wallpaper.dart';
+
 void main() {
   runApp(const LingyunGlassDemoApp());
 }
@@ -13,8 +19,11 @@ class LingyunGlassDemoApp extends StatefulWidget {
 }
 
 class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light;
   bool _reduceTransparency = false;
+  bool _reduceMotion = false;
+  bool _highContrast = false;
+  int _index = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +43,22 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         colorSchemeSeed: const Color(0xFF5B8DEF),
         extensions: const [LiquidGlassTheme.dark],
       ),
-      home: DemoHome(
-        themeMode: _themeMode,
+      home: LingyunAdaptivity(
         reduceTransparency: _reduceTransparency,
-        onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
-        onReduceTransparencyChanged: (v) =>
-            setState(() => _reduceTransparency = v),
+        reduceMotion: _reduceMotion,
+        highContrast: _highContrast,
+        child: DemoHome(
+          index: _index,
+          themeMode: _themeMode,
+          reduceTransparency: _reduceTransparency,
+          reduceMotion: _reduceMotion,
+          highContrast: _highContrast,
+          onIndexChanged: (i) => setState(() => _index = i),
+          onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
+          onReduceTransparency: (v) => setState(() => _reduceTransparency = v),
+          onReduceMotion: (v) => setState(() => _reduceMotion = v),
+          onHighContrast: (v) => setState(() => _highContrast = v),
+        ),
       ),
     );
   }
@@ -48,222 +67,107 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
 class DemoHome extends StatelessWidget {
   const DemoHome({
     super.key,
+    required this.index,
     required this.themeMode,
     required this.reduceTransparency,
+    required this.reduceMotion,
+    required this.highContrast,
+    required this.onIndexChanged,
     required this.onThemeModeChanged,
-    required this.onReduceTransparencyChanged,
+    required this.onReduceTransparency,
+    required this.onReduceMotion,
+    required this.onHighContrast,
   });
 
+  final int index;
   final ThemeMode themeMode;
   final bool reduceTransparency;
+  final bool reduceMotion;
+  final bool highContrast;
+  final ValueChanged<int> onIndexChanged;
   final ValueChanged<ThemeMode> onThemeModeChanged;
-  final ValueChanged<bool> onReduceTransparencyChanged;
+  final ValueChanged<bool> onReduceTransparency;
+  final ValueChanged<bool> onReduceMotion;
+  final ValueChanged<bool> onHighContrast;
+
+  static const _destinations = [
+    NavigationDestination(
+      icon: Icon(Icons.layers_outlined),
+      selectedIcon: Icon(Icons.layers),
+      label: 'Materials',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.brightness_6_outlined),
+      selectedIcon: Icon(Icons.brightness_6),
+      label: 'Themes',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.devices_outlined),
+      selectedIcon: Icon(Icons.devices),
+      label: 'Layout',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.accessibility_new_outlined),
+      selectedIcon: Icon(Icons.accessibility_new),
+      label: 'Access',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pages = [
+      const MaterialsPage(),
+      ThemesPage(themeMode: themeMode, onThemeModeChanged: onThemeModeChanged),
+      const LayoutPage(),
+      AccessibilityPage(
+        reduceTransparency: reduceTransparency,
+        reduceMotion: reduceMotion,
+        highContrast: highContrast,
+        onReduceTransparency: onReduceTransparency,
+        onReduceMotion: onReduceMotion,
+        onHighContrast: onHighContrast,
+      ),
+    ];
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          const _ColorfulWallpaper(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GlassSurface(
-                    forceOpaque: reduceTransparency,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.auto_awesome,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'lingyun-ui-flutter',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: 'Toggle light / dark',
-                          onPressed: () {
-                            onThemeModeChanged(
-                              isDark ? ThemeMode.light : ThemeMode.dark,
-                            );
-                          },
-                          icon: Icon(
-                            isDark
-                                ? Icons.light_mode_rounded
-                                : Icons.dark_mode_rounded,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GlassCard(
-                    forceOpaque: reduceTransparency,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Liquid Glass',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Backdrop blur, boosted saturation, soft tint, and an '
-                          'edge highlight — with an opaque fallback for '
-                          'reduce-transparency / high-contrast.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 16),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Reduce transparency'),
-                          subtitle: const Text(
-                            'Opaque glass fallback (accessibility)',
-                          ),
-                          value: reduceTransparency,
-                          onChanged: onReduceTransparencyChanged,
-                        ),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Dark mode'),
-                          value: isDark,
-                          onChanged: (v) => onThemeModeChanged(
-                            v ? ThemeMode.dark : ThemeMode.light,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GlassSurface(
-                            forceOpaque: reduceTransparency,
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Panel A',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  reduceTransparency
-                                      ? 'Opaque mode'
-                                      : 'Frosted blur',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GlassSurface(
-                            forceOpaque: reduceTransparency,
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Panel B',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                const Spacer(),
-                                const Icon(Icons.layers_rounded, size: 36),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return LingyunLayoutBuilder(
+      builder: (context, data) {
+        final useRail = !data.isCompact || data.isWideShort;
+        final body = Stack(
+          fit: StackFit.expand,
+          children: [const ColorfulWallpaper(), pages[index]],
+        );
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Row(
+            children: [
+              if (useRail)
+                NavigationRail(
+                  selectedIndex: index,
+                  onDestinationSelected: onIndexChanged,
+                  labelType: NavigationRailLabelType.all,
+                  backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  destinations: [
+                    for (final d in _destinations)
+                      NavigationRailDestination(
+                        icon: d.icon,
+                        selectedIcon: d.selectedIcon,
+                        label: Text(d.label),
+                      ),
+                  ],
+                ),
+              Expanded(child: body),
+            ],
           ),
-        ],
-      ),
+          bottomNavigationBar: useRail
+              ? null
+              : NavigationBar(
+                  selectedIndex: index,
+                  onDestinationSelected: onIndexChanged,
+                  destinations: _destinations,
+                ),
+        );
+      },
     );
   }
-}
-
-/// Vibrant multi-stop gradient wallpaper so glass blur / tint is visible.
-class _ColorfulWallpaper extends StatelessWidget {
-  const _ColorfulWallpaper();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF6B9D),
-            Color(0xFFC44DFF),
-            Color(0xFF5B8DEF),
-            Color(0xFF2EE6A6),
-            Color(0xFFFFD56B),
-          ],
-          stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-        ),
-      ),
-      child: CustomPaint(
-        painter: _BlobPainter(),
-        child: const SizedBox.expand(),
-      ),
-    );
-  }
-}
-
-class _BlobPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    paint.color = const Color(0x66FF8A65);
-    canvas.drawCircle(
-      Offset(size.width * 0.2, size.height * 0.3),
-      size.shortestSide * 0.35,
-      paint,
-    );
-
-    paint.color = const Color(0x667C4DFF);
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.25),
-      size.shortestSide * 0.4,
-      paint,
-    );
-
-    paint.color = const Color(0x6640C4FF);
-    canvas.drawCircle(
-      Offset(size.width * 0.6, size.height * 0.75),
-      size.shortestSide * 0.45,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
