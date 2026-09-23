@@ -6,6 +6,11 @@ variants: Regular Small, Clear, Destructive, Glass Prominent), **Tabs**
 (`GlassTabBar` standard + floating pill + tinted bar), Themes,
 Layout (phone / Duo / iPad / macOS presets), Accessibility.
 
+Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
+The **Canvas** chip on every page also selects muted wash, nature,
+abstract color, and a busy UI pattern. Query: `?bg=canvas|wash|meadow|abstract|busy`
+(with `page`, `theme`, `chrome=0`).
+
 ```bash
 flutter run -d chrome
 flutter run -d macos

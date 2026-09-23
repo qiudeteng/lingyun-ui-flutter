@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Gallery **Tabs** page adds a floating pill with 4 items. It uses the same 352pt cap as the 5-item pill.
+- Example gallery default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`). A control on every page switches canvas, muted wash, nature, abstract color, and a busy UI pattern (`?bg=`).
 
 ## 0.4.0 — 2026-09-23
 

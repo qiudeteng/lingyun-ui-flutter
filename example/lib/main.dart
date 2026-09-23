@@ -27,12 +27,14 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _highContrast = false;
   int _index = 0;
   bool _bare = false;
+  GalleryBackground _background = GalleryBackground.canvas;
 
   @override
   void initState() {
     super.initState();
     final page = Uri.base.queryParameters['page'];
     _bare = Uri.base.queryParameters['chrome'] == '0';
+    _background = GalleryBackground.fromQuery(Uri.base.queryParameters['bg']);
     _index = switch (page) {
       'glass' => 1,
       'tabs' => 2,
@@ -66,22 +68,28 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         colorSchemeSeed: const Color(0xFF6B7C93),
         extensions: const [LiquidGlassTheme.dark],
       ),
-      home: LingyunAdaptivity(
-        reduceTransparency: _reduceTransparency,
-        reduceMotion: _reduceMotion,
-        highContrast: _highContrast,
-        child: DemoHome(
-          index: _index,
-          bare: _bare,
-          themeMode: _themeMode,
+      home: GalleryBackgroundScope(
+        mode: _background,
+        child: LingyunAdaptivity(
           reduceTransparency: _reduceTransparency,
           reduceMotion: _reduceMotion,
           highContrast: _highContrast,
-          onIndexChanged: (i) => setState(() => _index = i),
-          onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
-          onReduceTransparency: (v) => setState(() => _reduceTransparency = v),
-          onReduceMotion: (v) => setState(() => _reduceMotion = v),
-          onHighContrast: (v) => setState(() => _highContrast = v),
+          child: DemoHome(
+            index: _index,
+            bare: _bare,
+            background: _background,
+            themeMode: _themeMode,
+            reduceTransparency: _reduceTransparency,
+            reduceMotion: _reduceMotion,
+            highContrast: _highContrast,
+            onIndexChanged: (i) => setState(() => _index = i),
+            onBackgroundChanged: (mode) => setState(() => _background = mode),
+            onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
+            onReduceTransparency: (v) =>
+                setState(() => _reduceTransparency = v),
+            onReduceMotion: (v) => setState(() => _reduceMotion = v),
+            onHighContrast: (v) => setState(() => _highContrast = v),
+          ),
         ),
       ),
     );
@@ -93,11 +101,13 @@ class DemoHome extends StatelessWidget {
     super.key,
     required this.index,
     required this.bare,
+    required this.background,
     required this.themeMode,
     required this.reduceTransparency,
     required this.reduceMotion,
     required this.highContrast,
     required this.onIndexChanged,
+    required this.onBackgroundChanged,
     required this.onThemeModeChanged,
     required this.onReduceTransparency,
     required this.onReduceMotion,
@@ -106,11 +116,13 @@ class DemoHome extends StatelessWidget {
 
   final int index;
   final bool bare;
+  final GalleryBackground background;
   final ThemeMode themeMode;
   final bool reduceTransparency;
   final bool reduceMotion;
   final bool highContrast;
   final ValueChanged<int> onIndexChanged;
+  final ValueChanged<GalleryBackground> onBackgroundChanged;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final ValueChanged<bool> onReduceTransparency;
   final ValueChanged<bool> onReduceMotion;
@@ -172,7 +184,24 @@ class DemoHome extends StatelessWidget {
         final useRail = !data.isCompact || data.isWideShort;
         final body = Stack(
           fit: StackFit.expand,
-          children: [const SystemWallpaper(), pages[index]],
+          children: [
+            const SystemWallpaper(),
+            pages[index],
+            if (!bare)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8, right: 8),
+                    child: GalleryBackgroundButton(
+                      mode: background,
+                      onChanged: onBackgroundChanged,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         );
 
         if (bare) {

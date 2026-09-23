@@ -160,9 +160,9 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` states Default / Pressed / Disabled and variants Regular Small, Clear, Destructive, Glass Prominent), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so fills and glass read like kit previews.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` states Default / Pressed / Disabled and variants Regular Small, Clear, Destructive, Glass Prominent), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
 
-Open the tab-bar page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture).
+Open a page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 
