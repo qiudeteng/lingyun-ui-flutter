@@ -2,8 +2,8 @@
 
 Gallery captures (committed as PNGs in this folder):
 
-- `materials_light.png` — Materials Ultrathin / Thin / Regular / Thick, light
-- `materials_dark.png` — same page, dark
+- `materials_light.png` — Materials Ultrathin / Thin / Regular / Thick, light, design canvas `#D1D1D6`
+- `materials_dark.png` — same page, dark, design canvas `#000000`
 - `materials.png` — alias of the light materials capture
 - `glass_button_light.png` — Liquid Glass page + GlassButton states and variants
 - `glass_button_dark.png` — same page, dark

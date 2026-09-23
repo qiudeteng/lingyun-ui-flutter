@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/main.dart';
+import 'package:example/wallpaper.dart';
 
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
@@ -68,5 +69,45 @@ void main() {
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);
     expect(find.text('Reduce transparency'), findsOneWidget);
     expect(find.text('Reduce motion'), findsOneWidget);
+  });
+
+  test('unknown bg query falls back to the design canvas', () {
+    expect(GalleryBackground.fromQuery(null), GalleryBackground.canvas);
+    expect(GalleryBackground.fromQuery('meadow'), GalleryBackground.meadow);
+    expect(GalleryBackground.fromQuery('nope'), GalleryBackground.canvas);
+    expect(GalleryCanvasColors.light, const Color(0xFFD1D1D6));
+    expect(GalleryCanvasColors.dark, const Color(0xFF000000));
+  });
+
+  testWidgets('background control stays across tabs', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+
+    expect(find.byKey(const Key('gallery-bg-control')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
+    final canvas = tester.widget<ColoredBox>(
+      find.descendant(
+        of: find.byKey(const Key('gallery-bg-canvas')),
+        matching: find.byType(ColoredBox),
+      ),
+    );
+    expect(canvas.color, GalleryCanvasColors.light);
+
+    await tester.tap(find.byKey(const Key('gallery-bg-control')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gallery-bg-option-meadow')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
+
+    await tester.tap(find.text('Glass').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
+
+    await tester.tap(find.text('Tabs').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-bg-meadow')), findsWidgets);
   });
 }
