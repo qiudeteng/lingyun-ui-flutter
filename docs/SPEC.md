@@ -32,6 +32,29 @@
 
 目录：`LiquidGlassCatalog`。组件：`GlassButton`（默认 Regular Small）。
 
+## GlassButton
+
+只有这一个按钮组件，不要另起 `LiquidGlassButton` / `ProminentButton`。
+
+| 官方名 | API | 用法 |
+| --- | --- | --- |
+| Glass | 默认 `style: LiquidGlassStyle.regularSmall` | 按钮默认，胶囊 |
+| Clear | `style: LiquidGlassStyle.clear` | 丰富媒体上的备选 |
+| Destructive | `role: GlassButtonRole.destructive` | 红色标签；与 Glass Prominent 叠加时为红色填充 + 白字 |
+| Glass Prominent | `prominence: GlassButtonProminence.prominent` | 填充 System Blue（tinted / filled），白字 |
+
+颜色在 `GlassButtonPalette` / `LiquidGlassTheme.buttons`（Light / Dark），不要在示例里写死。
+
+状态：
+
+| 状态 | 行为 |
+| --- | --- |
+| Default | 玻璃 + 主标签色 |
+| Pressed | 缩放到 0.97，加一层 press veil（实现近似，不是 kit token）。画廊可用 `forcePressed` 钉住 |
+| Disabled | `onPressed: null`。灰色标签。Glass Prominent 的彩色填充退回玻璃 |
+
+**禁止**对按钮使用 Materials Thick。Rim 仍是约 0.5px hairline，不按档位加粗。
+
 ## Labels — Liquid Glass
 
 | 官方名 | 值 |

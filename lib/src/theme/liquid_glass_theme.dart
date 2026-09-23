@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/glass_button_palette.dart';
 import '../tokens/glass_material.dart';
 import '../tokens/liquid_glass_catalog.dart';
 import '../tokens/liquid_glass_style.dart';
@@ -17,6 +18,7 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
   const LiquidGlassTheme({
     required this.materials,
     this.glasses = LiquidGlassCatalog.light,
+    this.buttons = GlassButtonPalette.light,
   });
 
   /// Materials catalog (translucent fills).
@@ -24,6 +26,11 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
 
   /// Liquid Glass catalog (kit styles).
   final LiquidGlassCatalog glasses;
+
+  /// GlassButton fills and label colors (Glass Prominent / Destructive).
+  ///
+  /// Not a Materials catalog. Buttons never use Materials Thick.
+  final GlassButtonPalette buttons;
 
   /// Default Liquid Glass Regular Large tokens.
   LiquidGlassTokens get tokens => glasses.regularLarge;
@@ -73,16 +80,25 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     return catalog.resolve(style);
   }
 
-  /// Light theme: light Materials + light Liquid Glass.
+  /// GlassButton palette (System Blue / Destructive / disabled label).
+  static GlassButtonPalette buttonPaletteOf(BuildContext context) {
+    final extension = Theme.of(context).extension<LiquidGlassTheme>();
+    if (extension != null) return extension.buttons;
+    return GlassButtonPalette.forBrightness(Theme.of(context).brightness);
+  }
+
+  /// Light theme: light Materials + light Liquid Glass + light buttons.
   static const LiquidGlassTheme light = LiquidGlassTheme(
     materials: MaterialCatalog.light,
     glasses: LiquidGlassCatalog.light,
+    buttons: GlassButtonPalette.light,
   );
 
-  /// Dark theme: dark Materials + dark Liquid Glass.
+  /// Dark theme: dark Materials + dark Liquid Glass + dark buttons.
   static const LiquidGlassTheme dark = LiquidGlassTheme(
     materials: MaterialCatalog.dark,
     glasses: LiquidGlassCatalog.dark,
+    buttons: GlassButtonPalette.dark,
   );
 
   @override
@@ -90,17 +106,28 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     MaterialCatalog? materials,
     LiquidGlassCatalog? glasses,
     LiquidGlassTokens? tokens,
+    GlassButtonPalette? buttons,
   }) {
+    final nextButtons = buttons ?? this.buttons;
     if (materials != null || glasses != null) {
       return LiquidGlassTheme(
         materials: materials ?? this.materials,
         glasses: glasses ?? this.glasses,
+        buttons: nextButtons,
       );
     }
     if (tokens != null) {
       return LiquidGlassTheme(
         materials: this.materials.copyWith(regular: tokens),
         glasses: this.glasses.copyWith(regularLarge: tokens),
+        buttons: nextButtons,
+      );
+    }
+    if (buttons != null) {
+      return LiquidGlassTheme(
+        materials: this.materials,
+        glasses: this.glasses,
+        buttons: nextButtons,
       );
     }
     return this;
@@ -112,6 +139,7 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     return LiquidGlassTheme(
       materials: materials.lerp(other.materials, t),
       glasses: glasses.lerp(other.glasses, t),
+      buttons: buttons.lerp(other.buttons, t),
     );
   }
 
@@ -120,9 +148,10 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     if (identical(this, other)) return true;
     return other is LiquidGlassTheme &&
         other.materials == materials &&
-        other.glasses == glasses;
+        other.glasses == glasses &&
+        other.buttons == buttons;
   }
 
   @override
-  int get hashCode => Object.hash(materials, glasses);
+  int get hashCode => Object.hash(materials, glasses, buttons);
 }

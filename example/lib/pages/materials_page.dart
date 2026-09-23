@@ -86,14 +86,16 @@ class _MaterialCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Materials · ${tier.kitName}',
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: color),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
           ),
           const SizedBox(height: 12),
           Text(
             tier.usage,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: color),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: color),
           ),
         ],
       ),
@@ -116,8 +118,9 @@ class _RadiusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Text(
         '${scale.name}  ${r.toStringAsFixed(0)}  待核验',
-        style: Theme.of(context).textTheme.labelLarge
-            ?.copyWith(fontWeight: FontWeight.w600),
+        style: Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

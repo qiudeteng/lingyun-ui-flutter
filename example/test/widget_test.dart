@@ -22,12 +22,27 @@ void main() {
   testWidgets('gallery can open Glass, Layout and Accessibility', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(const LingyunGlassDemoApp());
     await tester.tap(find.text('Glass').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
     expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-disabled')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-clear')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-destructive')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-prominent')), findsOneWidget);
     expect(find.text('Regular Small'), findsWidgets);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('glass-button-live')),
+      200,
+    );
+    await tester.tap(find.byKey(const Key('glass-button-live')));
+    await tester.pumpAndSettle();
+    expect(find.text('Tapped 1'), findsOneWidget);
 
     await tester.tap(find.text('Layout').last);
     await tester.pumpAndSettle();
