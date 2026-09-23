@@ -43,6 +43,7 @@ void main() {
     );
     expect(find.byKey(const Key('tab-stage-standard')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-floating-3')), findsOneWidget);
+    expect(find.byKey(const Key('tab-stage-floating-4')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-floating-5')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-tinted')), findsOneWidget);
     expect(find.textContaining('System Blue'), findsWidgets);
