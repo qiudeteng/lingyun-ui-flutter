@@ -5,7 +5,7 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import '../wallpaper.dart';
 
-/// iPhone-portrait Tab Bars: standard, floating pill (3 and 5), tinted.
+/// iPhone-portrait Tab Bars: standard, floating pill (3, 4, and 5), tinted.
 ///
 /// Chrome is Liquid Glass Dock. The gallery does not print blur / saturation.
 class TabBarPage extends StatefulWidget {
@@ -18,6 +18,7 @@ class TabBarPage extends StatefulWidget {
 class _TabBarPageState extends State<TabBarPage> {
   int _standard = 0;
   int _float3 = 1;
+  int _float4 = 0;
   int _float5 = 0;
   int _tinted = 2;
 
@@ -46,6 +47,21 @@ class _TabBarPageState extends State<TabBarPage> {
     GlassTabBarItem(icon: Icons.search, label: 'Search', badge: '3'),
     GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Library'),
     GlassTabBarItem(icon: Icons.play_circle_outline, label: 'Play'),
+    GlassTabBarItem(
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+      label: 'Profile',
+    ),
+  ];
+
+  static const _float4Items = <GlassTabBarItem>[
+    GlassTabBarItem(
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home_rounded,
+      label: 'Home',
+    ),
+    GlassTabBarItem(icon: Icons.search, label: 'Search', badge: '1'),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Library'),
     GlassTabBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
@@ -127,6 +143,19 @@ class _TabBarPageState extends State<TabBarPage> {
                     items: _float3Items,
                     currentIndex: _float3,
                     onChanged: (i) => setState(() => _float3 = i),
+                  ),
+                ),
+                _LabeledStage(
+                  width: stageWidth,
+                  kicker: 'Floating pill · 4',
+                  stageKey: const Key('tab-stage-floating-4'),
+                  child: GlassTabBar(
+                    key: const Key('tab-bar-floating-4'),
+                    style: GlassTabBarStyle.floatingPill,
+                    glassStyle: LiquidGlassStyle.dock,
+                    items: _float4Items,
+                    currentIndex: _float4,
+                    onChanged: (i) => setState(() => _float4 = i),
                   ),
                 ),
                 _LabeledStage(
