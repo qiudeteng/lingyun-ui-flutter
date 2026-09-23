@@ -159,9 +159,8 @@ class _LayoutStage extends StatelessWidget {
                       '${data.isWideShort ? ' · wide-short' : ''}'
                       '${data.avoidHinge ? ' · hinge-safe' : ''}',
                       key: const Key('layout-class-label'),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -239,9 +238,8 @@ class _PaneCopy extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(body, style: Theme.of(context).textTheme.bodySmall),

@@ -34,6 +34,19 @@ void main() {
     expect(find.byKey(const Key('layout-title')), findsOneWidget);
     expect(find.byKey(const Key('preset-duoInner')), findsOneWidget);
 
+    await tester.tap(find.text('Tabs').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('tab-stage-tinted')),
+      300,
+    );
+    expect(find.byKey(const Key('tab-stage-standard')), findsOneWidget);
+    expect(find.byKey(const Key('tab-stage-floating-3')), findsOneWidget);
+    expect(find.byKey(const Key('tab-stage-floating-5')), findsOneWidget);
+    expect(find.byKey(const Key('tab-stage-tinted')), findsOneWidget);
+    expect(find.textContaining('System Blue'), findsWidgets);
+
     await tester.tap(find.text('Access').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);

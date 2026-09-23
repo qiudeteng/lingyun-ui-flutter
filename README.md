@@ -1,6 +1,6 @@
 # lingyun-ui-flutter
 
-Materials + Liquid Glass primitives for Flutter — two **separate** systems, a `ThemeExtension`, frosted `GlassSurface`, `GlassButton`, motion/accessibility helpers, and adaptive layout utilities.
+Materials + Liquid Glass primitives for Flutter — two **separate** systems, a `ThemeExtension`, frosted `GlassSurface`, `GlassButton`, `GlassTabBar`, motion/accessibility helpers, and adaptive layout utilities.
 
 规格说明：[`docs/SPEC.md`](docs/SPEC.md)（官方名 vs 实现备注）。
 
@@ -48,6 +48,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LiquidGlassTheme` | `ThemeExtension` with **both** catalogs; `materialOf` / `styleOf` |
 | `GlassSurface` / `GlassCard` | `material:` **or** `style:` + hover specular on pointer devices |
 | `GlassButton` | First Liquid Glass Button — default Regular Small, capsule |
+| `GlassTabBar` | iOS 27 tab bar. Liquid Glass **Dock** (not Materials Thick): standard full-width bar, floating capsule, tinted whole bar. `GlassTabBarStyle.sidebar` is reserved |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -84,7 +85,7 @@ Or path / pub once published:
 
 ```yaml
 dependencies:
-  lingyun_ui_flutter: ^0.2.0
+  lingyun_ui_flutter: ^0.3.0
 ```
 
 ## Quick start
@@ -157,7 +158,9 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton`), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so fills and glass read like kit previews.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton`), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3 and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The gallery wallpaper is a muted light/dark system wash so fills and glass read like kit previews.
+
+Open the tab-bar page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture).
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 

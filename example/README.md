@@ -1,7 +1,8 @@
 # lingyun-ui-flutter example
 
 Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
-(Clear / Regular S·M·L / Dock / Widget Glass + GlassButton), Themes,
+(Clear / Regular S·M·L / Dock / Widget Glass + GlassButton), **Tabs**
+(`GlassTabBar` standard + floating pill + tinted bar), Themes,
 Layout (phone / Duo / iPad / macOS presets), Accessibility.
 
 ```bash
