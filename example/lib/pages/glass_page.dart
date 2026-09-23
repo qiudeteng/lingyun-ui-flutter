@@ -184,20 +184,24 @@ class _GlassStyleCard extends StatelessWidget {
         children: [
           Text(
             style.kitName,
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700, color: label),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: label,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Liquid Glass · ${style.kitName}',
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: label),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: label),
           ),
           const SizedBox(height: 12),
           Text(
             style.usage,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: label),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: label),
           ),
         ],
       ),
