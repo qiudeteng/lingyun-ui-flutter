@@ -434,11 +434,231 @@ void main() {
       expect(find.text('Do it'), findsOneWidget);
       expect(find.byType(GlassSurface), findsOneWidget);
       expect(resolved, LiquidGlassTokens.lightRegularSmall);
-      final text = tester.widget<Text>(find.text('Do it'));
+      final context = tester.element(find.text('Do it'));
       expect(
-        text.style?.color ?? LiquidGlassLabels.lightPrimary,
+        DefaultTextStyle.of(context).style.color,
         LiquidGlassLabels.lightPrimary,
       );
+    });
+
+    testWidgets('Clear stays on the Clear style path', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: Scaffold(
+            body: GlassButton.label(
+              label: 'Clear',
+              style: LiquidGlassStyle.clear,
+              onPressed: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Clear'), findsOneWidget);
+      expect(find.byType(GlassSurface), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+    });
+
+    testWidgets('Destructive, Prominent, Pressed, and Disabled', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: Scaffold(
+            body: Column(
+              children: [
+                GlassButton.label(
+                  key: const Key('std'),
+                  label: 'Save',
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('dest'),
+                  label: 'Delete',
+                  role: GlassButtonRole.destructive,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('prom'),
+                  label: 'Continue',
+                  prominence: GlassButtonProminence.prominent,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('prom-dest'),
+                  label: 'Remove',
+                  role: GlassButtonRole.destructive,
+                  prominence: GlassButtonProminence.prominent,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('off'),
+                  label: 'Off',
+                  prominence: GlassButtonProminence.prominent,
+                  onPressed: null,
+                ),
+                GlassButton.label(
+                  key: const Key('held'),
+                  label: 'Held',
+                  forcePressed: true,
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      Color labelOf(String text) {
+        return DefaultTextStyle.of(
+          tester.element(find.text(text)),
+        ).style.color!;
+      }
+
+      expect(labelOf('Delete'), GlassButtonPalette.light.systemRed);
+      expect(labelOf('Continue'), GlassButtonPalette.light.filledLabel);
+      expect(labelOf('Remove'), GlassButtonPalette.light.filledLabel);
+      expect(labelOf('Off'), GlassButtonPalette.light.disabledLabel);
+      expect(labelOf('Held'), LiquidGlassLabels.lightPrimary);
+
+      final held = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byKey(const Key('held')),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(held.scale, 0.97);
+
+      await tester.press(find.byKey(const Key('std')));
+      await tester.pump();
+      final pressed = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byKey(const Key('std')),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(pressed.scale, 0.97);
+
+      final disabled = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byKey(const Key('off')),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(disabled.scale, 1);
+
+      for (final material in tester.widgetList<Material>(
+        find.byType(Material),
+      )) {
+        expect(material.elevation, 0);
+      }
+      expect(find.byType(BackdropFilter), findsWidgets);
+    });
+  });
+
+  group('GlassButton treatments', () {
+    test('palette matches the Buttons page samples', () {
+      expect(GlassButtonPalette.light.systemBlue, const Color(0xFF0088FF));
+      expect(GlassButtonPalette.dark.systemBlue, const Color(0xFF0091FF));
+      expect(GlassButtonPalette.light.systemRed, const Color(0xFFFF383C));
+      expect(GlassButtonPalette.dark.systemRed, const Color(0xFFFF4245));
+      expect(GlassButtonPalette.light.filledLabel, const Color(0xFFFFFFFF));
+      expect(GlassButtonPalette.light.disabledLabel, const Color(0xFF6D6D6F));
+      expect(GlassButtonPalette.dark.disabledLabel, const Color(0xFF59595C));
+    });
+
+    test('Prominent tints Regular Small and never uses Materials Thick', () {
+      final base = LiquidGlassTokens.lightRegularSmall;
+      final prominent = GlassButton.resolveTokens(
+        base: base,
+        palette: GlassButtonPalette.light,
+        prominence: GlassButtonProminence.prominent,
+        role: GlassButtonRole.normal,
+        enabled: true,
+      );
+      expect(prominent.borderWidth, LiquidGlassTokens.hairlineWidth);
+      expect(prominent.refractionWidth, LiquidGlassTokens.hairlineWidth);
+      expect(prominent.borderRadius, base.borderRadius);
+      expect(
+        prominent.opaqueFallbackColor,
+        GlassButtonPalette.light.systemBlue,
+      );
+      expect(prominent, isNot(LiquidGlassTokens.lightThick));
+      expect(
+        prominent.tintColor,
+        isNot(LiquidGlassTokens.lightThick.tintColor),
+      );
+      expect(prominent.blurSigma, base.blurSigma);
+
+      final destructive = GlassButton.resolveTokens(
+        base: base,
+        palette: GlassButtonPalette.light,
+        prominence: GlassButtonProminence.prominent,
+        role: GlassButtonRole.destructive,
+        enabled: true,
+      );
+      expect(
+        destructive.opaqueFallbackColor,
+        GlassButtonPalette.light.systemRed,
+      );
+
+      final disabledProminent = GlassButton.resolveTokens(
+        base: base,
+        palette: GlassButtonPalette.light,
+        prominence: GlassButtonProminence.prominent,
+        role: GlassButtonRole.normal,
+        enabled: false,
+      );
+      expect(disabledProminent, base);
+
+      final glassDestructive = GlassButton.resolveTokens(
+        base: base,
+        palette: GlassButtonPalette.light,
+        prominence: GlassButtonProminence.glass,
+        role: GlassButtonRole.destructive,
+        enabled: true,
+      );
+      expect(glassDestructive, base);
+    });
+
+    test('dark destructive label uses the dark system red', () {
+      expect(
+        GlassButton.resolveLabelColor(
+          palette: GlassButtonPalette.dark,
+          brightness: Brightness.dark,
+          role: GlassButtonRole.destructive,
+          prominence: GlassButtonProminence.glass,
+          enabled: true,
+        ),
+        GlassButtonPalette.dark.systemRed,
+      );
+      expect(
+        GlassButton.resolveLabelColor(
+          palette: GlassButtonPalette.dark,
+          brightness: Brightness.dark,
+          role: GlassButtonRole.normal,
+          prominence: GlassButtonProminence.glass,
+          enabled: false,
+        ),
+        GlassButtonPalette.dark.disabledLabel,
+      );
+    });
+
+    testWidgets('buttonPaletteOf follows the theme extension', (tester) async {
+      late GlassButtonPalette palette;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.dark]),
+          home: Builder(
+            builder: (context) {
+              palette = LiquidGlassTheme.buttonPaletteOf(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(palette, GlassButtonPalette.dark);
     });
   });
 }

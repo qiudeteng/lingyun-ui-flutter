@@ -8,6 +8,32 @@ All notable changes to this project will be documented in this file.
 
 - Gallery **Tabs** page adds a floating pill with 4 items. It uses the same 352pt cap as the 5-item pill.
 
+## 0.4.0 — 2026-09-23
+
+`GlassButton` grows the Sketch Buttons treatments without a second widget.
+
+### Added
+
+- `GlassButtonRole.destructive` — kit **Destructive**. Red label on Glass;
+  filled system red + white label on Glass Prominent.
+- `GlassButtonProminence.prominent` — kit **Glass Prominent**, tinted /
+  filled System Blue, white label.
+- `GlassButtonPalette` on `LiquidGlassTheme.buttons` (Light / Dark System
+  Blue, system red, filled label, disabled label).
+- `GlassButton.forcePressed` so a gallery can pin the pressed treatment.
+- Gallery states Default / Pressed / Disabled and the variants above,
+  including a live tap row. Clear still sits on rich media.
+
+### Changed
+
+- Disabled no longer fades the whole control to 45% opacity. The label
+  switches to the kit muted color, and a disabled Glass Prominent fill
+  drops back to glass.
+- Pressed keeps the 0.97 scale and adds a press veil (implementation
+  approximation — not a Design Token).
+- Gallery Clear sits on a muted media plate. That color is not a focus
+  ring and not the Sketch Clear rim (still the shared ~0.5px hairline).
+
 ## 0.3.0 — 2026-09-23
 
 iOS 27 **Liquid Glass tab bar** (Sketch page 「Tab Bars」). Chrome is Dock glass, not Materials Thick and not a toolbar material.
