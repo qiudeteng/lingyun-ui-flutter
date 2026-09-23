@@ -5,6 +5,7 @@ import 'pages/accessibility_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/materials_page.dart';
+import 'pages/tab_bar_page.dart';
 import 'pages/themes_page.dart';
 import 'wallpaper.dart';
 
@@ -25,16 +26,19 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _reduceMotion = false;
   bool _highContrast = false;
   int _index = 0;
+  bool _bare = false;
 
   @override
   void initState() {
     super.initState();
     final page = Uri.base.queryParameters['page'];
+    _bare = Uri.base.queryParameters['chrome'] == '0';
     _index = switch (page) {
       'glass' => 1,
-      'themes' => 2,
-      'layout' => 3,
-      'access' => 4,
+      'tabs' => 2,
+      'themes' => 3,
+      'layout' => 4,
+      'access' => 5,
       _ => 0,
     };
     _themeMode = switch (Uri.base.queryParameters['theme']) {
@@ -68,6 +72,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         highContrast: _highContrast,
         child: DemoHome(
           index: _index,
+          bare: _bare,
           themeMode: _themeMode,
           reduceTransparency: _reduceTransparency,
           reduceMotion: _reduceMotion,
@@ -87,6 +92,7 @@ class DemoHome extends StatelessWidget {
   const DemoHome({
     super.key,
     required this.index,
+    required this.bare,
     required this.themeMode,
     required this.reduceTransparency,
     required this.reduceMotion,
@@ -99,6 +105,7 @@ class DemoHome extends StatelessWidget {
   });
 
   final int index;
+  final bool bare;
   final ThemeMode themeMode;
   final bool reduceTransparency;
   final bool reduceMotion;
@@ -119,6 +126,11 @@ class DemoHome extends StatelessWidget {
       icon: Icon(Icons.auto_awesome_outlined),
       selectedIcon: Icon(Icons.auto_awesome),
       label: 'Glass',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.view_carousel_outlined),
+      selectedIcon: Icon(Icons.view_carousel),
+      label: 'Tabs',
     ),
     NavigationDestination(
       icon: Icon(Icons.brightness_6_outlined),
@@ -142,6 +154,7 @@ class DemoHome extends StatelessWidget {
     final pages = [
       const MaterialsPage(),
       const GlassPage(),
+      const TabBarPage(),
       ThemesPage(themeMode: themeMode, onThemeModeChanged: onThemeModeChanged),
       const LayoutPage(),
       AccessibilityPage(
@@ -161,6 +174,10 @@ class DemoHome extends StatelessWidget {
           fit: StackFit.expand,
           children: [const SystemWallpaper(), pages[index]],
         );
+
+        if (bare) {
+          return Scaffold(backgroundColor: Colors.transparent, body: body);
+        }
 
         return Scaffold(
           backgroundColor: Colors.transparent,

@@ -6,6 +6,9 @@
 /// * **B. Liquid Glass** — [LiquidGlassStyle] Clear / Regular S·M·L /
 ///   Dock / Widget Glass
 ///
+/// [GlassTabBar] is Liquid Glass chrome (default Dock), not a Materials
+/// tier and not a toolbar material.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model or UIKit types.
 library;
@@ -22,3 +25,4 @@ export 'src/tokens/liquid_glass_tokens.dart';
 export 'src/tokens/material_catalog.dart';
 export 'src/widgets/glass_button.dart';
 export 'src/widgets/glass_surface.dart';
+export 'src/widgets/glass_tab_bar.dart';

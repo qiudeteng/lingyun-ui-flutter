@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.0 — 2026-09-23
+
+iOS 27 **Liquid Glass tab bar** (Sketch page 「Tab Bars」). Chrome is Dock glass, not Materials Thick and not a toolbar material.
+
+### Added
+
+- `GlassTabBar` / `LiquidGlassTabBar` — `items`, `currentIndex` / `onChanged`, `style` (`standard` / `floatingPill` / reserved `sidebar`), `glassStyle` (default Dock), `tint`, `brightness`, `tintedBar`.
+- Standard bar: full width, edge to bottom, icon + Caption, Home Indicator inset.
+- Floating pill: stadium capsule. On a 402pt board the content group is 266 (3 items) and 352 (4 and 5 share the side-inset cap).
+- Selected icon + caption use System Blue (`#0088FF` / `#0091FF`). Unselected copy is Liquid Glass Primary at reduced opacity. `tintedBar` fills the platter with that tint and uses white icons.
+- Short selection lens (not a Material indicator). Badges and disabled items.
+- Gallery **Tabs** page. Spec: `docs/SPEC.md`.
+
 ## 0.2.0 — 2026-09-18
 
 Split **Materials** and **Liquid Glass** into two named systems (Sketch /
