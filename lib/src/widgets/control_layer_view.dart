@@ -52,6 +52,10 @@ class ControlLayerView extends StatelessWidget {
 ///
 /// The stack does not clip. Blur 36 and the outside glow extend past
 /// [width] and [height]; the caller leaves room if those must stay visible.
+///
+/// Dark clicked borders are black. On a black canvas they leave no pixel,
+/// so a slider that passes [showRingOnBlack] keeps that same alpha and
+/// paints it white. The disk stays empty. That is not an idle fill.
 class ControlKnobStack extends StatelessWidget {
   const ControlKnobStack({
     super.key,
@@ -60,6 +64,7 @@ class ControlKnobStack extends StatelessWidget {
     required this.height,
     this.clicked = false,
     this.borderRadius,
+    this.showRingOnBlack = false,
   });
 
   final Brightness brightness;
@@ -68,6 +73,10 @@ class ControlKnobStack extends StatelessWidget {
   final bool clicked;
   final BorderRadius? borderRadius;
 
+  /// Dark pressed only. See the class dartdoc. Ignored when an idle knob
+  /// exists, and ignored while [clicked] is false.
+  final bool showRingOnBlack;
+
   @override
   Widget build(BuildContext context) {
     final catalog = ControlLayerCatalog.forBrightness(brightness);
@@ -75,7 +84,7 @@ class ControlKnobStack extends StatelessWidget {
       if (catalog.knob(ControlKnobLayer.idle) case final idle?) idle,
       if (clicked) ...[catalog.knobClickedShadow, catalog.knobClickedGlow],
     ];
-    return SizedBox(
+    final plate = SizedBox(
       width: width,
       height: height,
       child: Stack(
@@ -89,6 +98,13 @@ class ControlKnobStack extends StatelessWidget {
         ],
       ),
     );
+    if (showRingOnBlack && clicked && catalog.knobIdle == null) {
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xFFFFFFFF), BlendMode.srcIn),
+        child: plate,
+      );
+    }
+    return plate;
   }
 }
 

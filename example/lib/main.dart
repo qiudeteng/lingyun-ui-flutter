@@ -4,6 +4,7 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'pages/accessibility_page.dart';
 import 'pages/alerts_page.dart';
 import 'pages/controls_page.dart';
+import 'pages/form_controls_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/lists_page.dart';
@@ -32,6 +33,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _reduceMotion = false;
   bool _highContrast = false;
   int _index = 0;
+  FormControlPanel _formPanel = FormControlPanel.toggles;
   ThemesPanel _themesPanel = ThemesPanel.colors;
   bool _bare = false;
   GalleryBackground _background = GalleryBackground.canvas;
@@ -50,6 +52,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     final bg = query['bg'] ?? (envBg.isEmpty ? null : envBg);
     _bare = chrome == '0';
     _background = GalleryBackground.fromQuery(bg);
+    _formPanel = FormControlPanel.fromQuery(page) ?? FormControlPanel.toggles;
     _index = switch (page) {
       'glass' => 1,
       'tabs' => 2,
@@ -62,6 +65,12 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'lists' => 9,
       'fields' => 10,
       'progress' => 11,
+      'toggles' ||
+      'toggle' ||
+      'sliders' ||
+      'slider' ||
+      'steppers' ||
+      'stepper' => 12,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -103,6 +112,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
           highContrast: _highContrast,
           child: DemoHome(
             index: _index,
+            formPanel: _formPanel,
             themesPanel: _themesPanel,
             bare: _bare,
             background: _background,
@@ -128,6 +138,7 @@ class DemoHome extends StatelessWidget {
   const DemoHome({
     super.key,
     required this.index,
+    required this.formPanel,
     required this.themesPanel,
     required this.bare,
     required this.background,
@@ -144,6 +155,7 @@ class DemoHome extends StatelessWidget {
   });
 
   final int index;
+  final FormControlPanel formPanel;
   final ThemesPanel themesPanel;
   final bool bare;
   final GalleryBackground background;
@@ -219,6 +231,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.timelapse),
       label: '进度',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.toggle_on_outlined),
+      selectedIcon: Icon(Icons.toggle_on),
+      label: '开关',
+    ),
   ];
 
   @override
@@ -250,6 +267,11 @@ class DemoHome extends StatelessWidget {
       const ListsPage(),
       const TextFieldsPage(),
       const ProgressPage(),
+      FormControlsPage(
+        themeMode: themeMode,
+        onThemeModeChanged: onThemeModeChanged,
+        initialPanel: formPanel,
+      ),
     ];
 
     return LingyunTheme(

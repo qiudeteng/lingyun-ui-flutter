@@ -2,8 +2,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
 import 'package:example/main.dart';
+import 'package:example/pages/form_controls_page.dart';
 import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
+import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
@@ -329,5 +331,125 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpAndSettle();
+  });
+
+  test('form control query opens toggles, sliders, or steppers', () {
+    expect(FormControlPanel.fromQuery('toggles'), FormControlPanel.toggles);
+    expect(FormControlPanel.fromQuery('toggle'), FormControlPanel.toggles);
+    expect(FormControlPanel.fromQuery('sliders'), FormControlPanel.sliders);
+    expect(FormControlPanel.fromQuery('slider'), FormControlPanel.sliders);
+    expect(FormControlPanel.fromQuery('steppers'), FormControlPanel.steppers);
+    expect(FormControlPanel.fromQuery('stepper'), FormControlPanel.steppers);
+    expect(FormControlPanel.fromQuery('knob'), isNull);
+    expect(FormControlPanel.fromQuery(null), isNull);
+  });
+
+  testWidgets('toggle slider and stepper page covers the pinned states', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 1400);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('开关').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('form-controls-title')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-off-idle')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-on-idle')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-off-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-on-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-off-disabled')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-on-disabled')), findsOneWidget);
+    expect(find.text('开关、滑杆与步进器'), findsOneWidget);
+    expect(find.textContaining('不是材质四档'), findsOneWidget);
+    expect(find.textContaining('#0088FF'), findsWidgets);
+
+    final onKnob = find.descendant(
+      of: find.byKey(const Key('toggle-on-idle')),
+      matching: find.byType(ControlKnobStack),
+    );
+    final offPressed = find.descendant(
+      of: find.byKey(const Key('toggle-off-pressed')),
+      matching: find.byType(ControlKnobStack),
+    );
+    expect(onKnob, findsOneWidget);
+    expect(tester.getSize(onKnob), const Size(24, 24));
+    expect(tester.widget<ControlKnobStack>(offPressed).clicked, isTrue);
+
+    expect(find.text('实时：开'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('toggle-live')));
+    await tester.pumpAndSettle();
+    expect(find.text('实时：关'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('form-controls-brightness')),
+        matching: find.text('深色'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('toggle-on-idle')),
+        matching: find.byType(ControlKnobStack),
+      ),
+      findsNothing,
+    );
+    expect(offPressed, findsOneWidget);
+    expect(find.textContaining('#0091FF'), findsWidgets);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('form-controls-panel')),
+        matching: find.text('滑杆'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('slider-mid-idle')), findsOneWidget);
+    expect(find.byKey(const Key('slider-mid-pressed')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('slider-mid-idle')),
+        matching: find.byType(ControlKnobStack),
+      ),
+      findsNothing,
+    );
+    final pressedSlider = find.descendant(
+      of: find.byKey(const Key('slider-mid-pressed')),
+      matching: find.byType(ControlKnobStack),
+    );
+    expect(pressedSlider, findsOneWidget);
+    expect(tester.widget<ControlKnobStack>(pressedSlider).clicked, isTrue);
+    expect(tester.getSize(pressedSlider), const Size(24, 24));
+    expect(find.byKey(const Key('slider-disabled')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-off-idle')), findsNothing);
+    expect(find.text('实时：50%'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('form-controls-panel')),
+        matching: find.text('步进器'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('stepper-idle')), findsOneWidget);
+    expect(find.byKey(const Key('stepper-decrement-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('stepper-increment-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('stepper-disabled')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('stepper-idle')),
+        matching: find.byType(ControlKnobStack),
+      ),
+      findsNothing,
+    );
+    expect(find.text('实时：3。到 0 或到 8 时，对应一侧停用。'), findsOneWidget);
+
+    final live = tester.getRect(find.byKey(const Key('stepper-live')));
+    await tester.tapAt(Offset(live.right - 12, live.center.dy));
+    await tester.pumpAndSettle();
+    expect(find.text('实时：4。到 0 或到 8 时，对应一侧停用。'), findsOneWidget);
   });
 }

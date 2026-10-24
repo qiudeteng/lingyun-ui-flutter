@@ -17,6 +17,8 @@
 /// [ControlLayerCatalog] / [ControlLayerView] are the Sketch Controls
 /// knob and track layer styles (fills, borders, shadows). They are not
 /// Materials tiers and not Liquid Glass Clear / Regular / Dock.
+/// [LingyunToggle], [LingyunSlider], and [LingyunStepper] paint with
+/// those styles. The stepper has no knob of its own.
 ///
 /// Wave 1a form chrome is also Liquid Glass, not Materials Thick:
 /// [GlassList] inset platters use Regular Medium, [GlassTextField] uses
@@ -40,6 +42,7 @@ export 'src/theme/lingyun_material_theme.dart';
 export 'src/theme/lingyun_theme.dart';
 export 'src/theme/liquid_glass_theme.dart';
 export 'src/tokens/control_layer_style.dart';
+export 'src/tokens/control_metrics.dart';
 export 'src/tokens/glass_button_palette.dart';
 export 'src/tokens/glass_material.dart';
 export 'src/tokens/liquid_glass_catalog.dart';
@@ -58,3 +61,6 @@ export 'src/widgets/glass_surface.dart';
 export 'src/widgets/glass_tab_bar.dart';
 export 'src/widgets/glass_text_field.dart';
 export 'src/widgets/lingyun_alert.dart';
+export 'src/widgets/lingyun_slider.dart';
+export 'src/widgets/lingyun_stepper.dart';
+export 'src/widgets/lingyun_toggle.dart';

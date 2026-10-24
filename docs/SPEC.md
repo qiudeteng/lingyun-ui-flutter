@@ -216,7 +216,7 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 | Controls 按下层叠加顺序 | **待核验**。阴影在下、发光在上。 |
 | Figma Controls 层样式 | **未复读**。本轮 MCP 限流。以 Sketch `Controls/*` 为准。 |
 | 深色静止旋钮 | **稿面没有共享层样式**。不把开关画板上的白旋钮写成令牌。 |
-| 步进器轨道 | **没有独立层样式名**。42 个层样式里没有 Stepper。 |
+| 步进器轨道 | **没有独立层样式名**。`LingyunStepper` 复用未着色轨道，不画旋钮。 |
 
 ## D. Page 壳
 
@@ -260,3 +260,5 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 渲染：`ControlLayerView`、`ControlKnobStack`。圆角由调用方传入；层样式里没有圆角，默认直角。叠层不裁剪，模糊 36 的阴影和外侧发光可以画出外形。按下阴影的高斯半径 3 用 Flutter 阴影的 radius→sigma 换算，标为待核验，不是 backdrop σ。Plus Darker 记在令牌上，描边先按颜色本身画。细节与 8-bit 透明度见 [`docs/CONTROLS.md`](CONTROLS.md)。
 
 示例：导航「旋钮」，`?page=knob`（`track` / `controls` 同样打开）。浅色 / 深色可切。文案是简体中文。示意是圆旋钮叠在开关和滑杆轨道上，不是分开的扁条和 64×36 方块。
+
+控件：`LingyunToggle`、`LingyunSlider`、`LingyunStepper`。尺寸在 `ControlMetrics`（旋钮 ⌀24，开关轨 64×28，滑杆轨高 6，步进器 92×32），不是新的颜色或圆角令牌。导航「开关」。`?page=toggles`、`?page=sliders`、`?page=steppers`。不是 Materials，也不是 Liquid Glass。

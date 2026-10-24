@@ -113,3 +113,25 @@ flutter test tool/capture_control_screenshots.dart
 ```
 
 导航里点「旋钮」。地址 `?page=knob&theme=light&chrome=0`，深色把 `theme` 换成 `dark`。`page=track` 和 `page=controls` 打开同一页。
+
+开关、滑杆、步进器（导航「开关」，文案为简体中文）：
+
+- `form_controls_toggles_light.png` / `form_controls_toggles_dark.png` — 开关：关/开、静止/按下/禁用，可点按。浅色画布 `#D1D1D6`，深色 `#000000`，1280×1500。
+- `form_controls_sliders_light.png` / `form_controls_sliders_dark.png` — 滑杆中部静止、按下、禁用，可拖动。
+- `form_controls_steppers_light.png` / `form_controls_steppers_dark.png` — 步进器静止、减少按下、增加按下、禁用，可点按。步进器没有旋钮。
+
+四周留白是为了看见模糊 36 的阴影，不是令牌。深色静止旋钮不画。重新生成（在 `example/` 里）：
+
+```bash
+flutter test tool/capture_form_control_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_form_control_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_form_control_screenshots.dart
+```
+
+地址 `?page=toggles&theme=light&chrome=0`。滑杆把 `page` 换成 `sliders`，步进器换成 `steppers`。深色把 `theme` 换成 `dark`。页上的分段也能切。

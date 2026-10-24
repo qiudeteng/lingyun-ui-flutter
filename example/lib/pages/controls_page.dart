@@ -397,6 +397,7 @@ class _SliderSpecimen extends StatelessWidget {
                   width: _knobDiameter,
                   height: _knobDiameter,
                   clicked: clicked,
+                  showRingOnBlack: true,
                   borderRadius: _stadium(_knobDiameter),
                 ),
               ),

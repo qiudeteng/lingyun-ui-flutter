@@ -18,6 +18,9 @@ text specimens with `?page=text` or the 文本 segment. Light / dark is
 **旋钮** (`?page=knob`, also `track` / `controls`): Controls knob and track
 layer styles, composed as a circular knob on a toggle or slider track.
 浅色 / 深色. Titles and notes are Simplified Chinese.
+**开关** (`?page=toggles`, also `sliders` / `steppers`): live `LingyunToggle`,
+`LingyunSlider`, and `LingyunStepper` on those styles. 浅色 / 深色. The
+segment switches 开关 / 滑杆 / 步进器. Copy is Simplified Chinese.
 
 **列表** / **文本框** / **进度**（`?page=lists|fields|progress`）的标题、按钮、标签、占位符和辅助说明是简体中文。代码标识保持英文。
 
