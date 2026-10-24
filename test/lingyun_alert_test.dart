@@ -68,12 +68,10 @@ void main() {
   test(
     'alerts source uses cupertino_ui and not the in-framework design libraries',
     () {
-      final library = File(
-        'lib/src/widgets/lingyun_alert.dart',
-      ).readAsStringSync();
-      final gallery = File(
-        'example/lib/pages/alerts_page.dart',
-      ).readAsStringSync();
+      final library = File('lib/src/widgets/lingyun_alert.dart')
+          .readAsStringSync();
+      final gallery = File('example/lib/pages/alerts_page.dart')
+          .readAsStringSync();
       for (final source in [library, gallery]) {
         final imports = source
             .split('\n')
@@ -128,18 +126,15 @@ void main() {
       final confirm = tester.getRect(find.text('确认'));
       expect(cancel.left, lessThan(confirm.left));
 
-      final confirmStyle = DefaultTextStyle.of(
-        tester.element(find.text('确认')),
-      ).style;
-      final cancelStyle = DefaultTextStyle.of(
-        tester.element(find.text('取消')),
-      ).style;
+      final confirmStyle = DefaultTextStyle.of(tester.element(find.text('确认')))
+          .style;
+      final cancelStyle = DefaultTextStyle.of(tester.element(find.text('取消')))
+          .style;
       expect(confirmStyle.fontWeight, FontWeight.w600);
       expect(cancelStyle.fontWeight, isNot(FontWeight.w600));
 
-      final titleStyle = DefaultTextStyle.of(
-        tester.element(find.text('短标题最好')),
-      ).style;
+      final titleStyle = DefaultTextStyle.of(tester.element(find.text('短标题最好')))
+          .style;
       final messageStyle = DefaultTextStyle.of(
         tester.element(find.text('信息应简短完整。')),
       ).style;
