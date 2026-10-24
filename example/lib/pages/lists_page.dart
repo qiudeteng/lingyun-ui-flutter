@@ -21,7 +21,8 @@ class ListsPage extends StatelessWidget {
           '内嵌分组的每一节共用一块液态玻璃托盘，尺寸为常规中号。'
           '通栏列表只有分隔线，没有托盘。'
           '标题使用主标签色：浅色 #1A1A1A，深色 #EDEDED。'
-          '副标题、右侧数值和分隔线使用三级标签色：浅色 #BFBFBF，深色 #404040。'
+          '副标题和右侧数值使用二级标签色：浅色 #727272，深色 #8A8A8A。'
+          '分隔线和节脚注使用三级标签色：浅色 #BFBFBF，深色 #404040。'
           '托盘不是厚材质。',
           style: LingyunTextStyles.body(color: primary),
         ),

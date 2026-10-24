@@ -79,7 +79,7 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 | Light Tertiary | `#BFBFBF` |
 | Dark Tertiary | `#404040` |
 
-表单控件从 `LingyunTheme.colorsOf` 读取 `liquidGlassLabels`，不在控件里写死这些色值。`LiquidGlassLabels` 仍只保留 Primary 常量，供更早的按钮代码使用。三级色用于副标题、占位符、辅助说明、列表分隔线和进度轨道。它不是 Materials 档位。
+表单控件从 `LingyunTheme.colorsOf` 读取 `liquidGlassLabels`，不在控件里写死这些色值。`LiquidGlassLabels` 仍只保留 Primary 常量，供更早的按钮代码使用。二级色（浅 `#727272` / 深 `#8A8A8A`）用于列表副标题和右侧值。三级色用于占位符、辅助说明、列表分隔线、节脚注和进度轨道。它不是 Materials 档位。
 
 ## 表单控件（Wave 1a）
 
@@ -92,7 +92,7 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 | 文本框 | `GlassTextField` | `CupertinoTextField.borderless` 放进 `LiquidGlassStyle.regularSmall`。去掉 Cupertino 白/黑填充 |
 | 进度 | `GlassProgressIndicator` | 内容层指示器，不是玻璃填充。`kind` 为 `linear` / `circular`。`value == null` 为不确定进度 |
 
-颜色与字阶都走主题，不在控件里写死 `#1A1A1A` 或字号。标签色是 `LingyunTheme.colorsOf(context).liquidGlassLabels`（主色与三级色）。字阶是 `LingyunTextStyles` 的 Large：行标题与右侧数值为 Body，副标题为 Subheadline，节头和字段标签为强调 Footnote，节脚为 Footnote，辅助说明为 Caption 1，画廊页标题为强调 Large Title。系统蓝和系统红取同一 `LingyunColors.system`，不用另一套字面量。
+颜色与字阶都走主题，不在控件里写死 `#1A1A1A` 或字号。标签色是 `LingyunTheme.colorsOf(context).liquidGlassLabels`（主色、二级色与三级色）。字阶是 `LingyunTextStyles` 的 Large：行标题为 Body 主色，副标题为 Subheadline 二级色，右侧值为 Body 二级色，节头和字段标签为强调 Footnote，节脚为 Footnote 三级色，辅助说明为 Caption 1，画廊页标题为强调 Large Title。系统蓝和系统红取同一 `LingyunColors.system`，不用另一套字面量。
 
 列表行：leading / 标题 / 副标题 / `trailingText` / `trailing` / 可选 `CupertinoListTileChevron`。节有 header / footer。按下加一层主色 10% 的 veil（实现近似，不是 kit token）。
 
@@ -100,7 +100,7 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 
 进度：默认着色为主题系统蓝。线性确定进度用 `CupertinoLinearActivityIndicator`（轨道颜色由该组件绘制，没有轨道色参数）。线性不确定进度用三级色轨道加一段滑动高亮，周期 1400ms，是实现近似，不是 kit token；减少动态效果时停在静态片段。圆形确定进度是圆环（三级色轨道 + 着色弧），不是活动指示器的短刻度。圆形不确定进度用 `CupertinoActivityIndicator`。减少动态效果时圆形停止旋转。`tint` 覆盖在圆环或横条本身上。
 
-列表副标题是 Subheadline、右侧值是 Body，颜色是不透明的液态玻璃三级色，不走 Cupertino `secondaryLabel`。内嵌节的脚注画在托盘外面，不被托盘的圆角裁切。
+列表副标题是 Subheadline、右侧值是 Body，颜色是不透明的液态玻璃二级色（`liquidGlassLabels.secondary`），不走 Cupertino `secondaryLabel`，也不再用三级色。内嵌节的脚注仍是三级色，画在托盘外面，不被托盘的圆角裁切。
 
 `blurSigma` / `saturation` 仍是 GlassSurface 的实现近似，不写进画廊当 kit 值。本轮不做 Toggle / Slider / Stepper / Segmented / Page Control。
 

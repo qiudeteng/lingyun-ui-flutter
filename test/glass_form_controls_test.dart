@@ -58,6 +58,14 @@ void main() {
         LingyunColors.dark.liquidGlassLabels.tertiary,
         const Color(0xFF404040),
       );
+      expect(
+        LingyunColors.light.liquidGlassLabels.secondary,
+        const Color(0xFF727272),
+      );
+      expect(
+        LingyunColors.dark.liquidGlassLabels.secondary,
+        const Color(0xFF8A8A8A),
+      );
     });
   });
 
@@ -125,7 +133,7 @@ void main() {
       expect(subtitle.style?.inherit, isFalse);
       expect(
         subtitle.style?.color,
-        LingyunColors.light.liquidGlassLabels.tertiary,
+        LingyunColors.light.liquidGlassLabels.secondary,
       );
       expect(
         subtitle.style?.fontSize,
@@ -135,7 +143,7 @@ void main() {
       expect(trailing.style?.inherit, isFalse);
       expect(
         trailing.style?.color,
-        LingyunColors.light.liquidGlassLabels.tertiary,
+        LingyunColors.light.liquidGlassLabels.secondary,
       );
       expect(trailing.style?.fontSize, LingyunTextStyles.body().fontSize);
       final footerText = tester.widget<Text>(find.text('Known networks'));
@@ -166,7 +174,7 @@ void main() {
       );
     });
 
-    testWidgets('dark subtitles use dark tertiary', (tester) async {
+    testWidgets('dark subtitles use dark secondary', (tester) async {
       await tester.pumpWidget(
         host(
           const GlassList(
@@ -182,7 +190,7 @@ void main() {
       final subtitle = tester.widget<Text>(find.text('Home'));
       expect(
         subtitle.style?.color,
-        LingyunColors.dark.liquidGlassLabels.tertiary,
+        LingyunColors.dark.liquidGlassLabels.secondary,
       );
       final title = tester.widget<Text>(find.text('Wi-Fi'));
       expect(title.style?.color, LingyunColors.dark.liquidGlassLabels.primary);

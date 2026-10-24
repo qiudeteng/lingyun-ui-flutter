@@ -71,8 +71,9 @@ class GlassListSection {
 /// iOS 27 **Liquid Glass** list.
 ///
 /// Rows are [CupertinoListTile]s inside [CupertinoListSection] (inset
-/// grouped or plain). Separators use that section's divider metrics and
-/// [LingyunTheme] liquid-glass tertiary (`#BFBFBF` / `#404040`).
+/// grouped or plain). Subtitle and trailing value use liquid-glass
+/// **secondary** from [LingyunTheme] (light `#727272`, dark `#8A8A8A`).
+/// Separators and the section footer stay liquid-glass tertiary.
 ///
 /// Inset chrome is one [GlassSurface] per section at
 /// [LiquidGlassStyle.regularMedium]. The section decoration is cleared so
@@ -112,6 +113,7 @@ class GlassList extends StatelessWidget {
   Widget build(BuildContext context) {
     final labels = LingyunTheme.colorsOf(context).liquidGlassLabels;
     final primary = labels.primary;
+    final secondary = labels.secondary;
     final tertiary = labels.tertiary;
     final disabled = tertiary;
     final separator = showSeparators ? tertiary : const Color(0x00000000);
@@ -128,6 +130,7 @@ class GlassList extends StatelessWidget {
               glassStyle: glassStyle,
               forceOpaque: forceOpaque,
               primary: primary,
+              secondary: secondary,
               tertiary: tertiary,
               disabled: disabled,
               separator: separator,
@@ -146,6 +149,7 @@ class _GlassListSectionView extends StatelessWidget {
     required this.glassStyle,
     required this.forceOpaque,
     required this.primary,
+    required this.secondary,
     required this.tertiary,
     required this.disabled,
     required this.separator,
@@ -156,6 +160,7 @@ class _GlassListSectionView extends StatelessWidget {
   final LiquidGlassStyle glassStyle;
   final bool forceOpaque;
   final Color primary;
+  final Color secondary;
   final Color tertiary;
   final Color disabled;
   final Color separator;
@@ -175,6 +180,7 @@ class _GlassListSectionView extends StatelessWidget {
           tile,
           notched: _inset,
           primary: primary,
+          secondary: secondary,
           tertiary: tertiary,
           disabled: disabled,
         ),
@@ -251,6 +257,7 @@ class _GlassListSectionView extends StatelessWidget {
     GlassListTile tile, {
     required bool notched,
     required Color primary,
+    required Color secondary,
     required Color tertiary,
     required Color disabled,
   }) {
@@ -268,7 +275,7 @@ class _GlassListSectionView extends StatelessWidget {
             tile.subtitle!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: _opaque(LingyunTextStyles.subheadline(color: tertiary)),
+            style: _opaque(LingyunTextStyles.subheadline(color: secondary)),
           );
     final info = tile.trailingText == null
         ? null
@@ -276,7 +283,7 @@ class _GlassListSectionView extends StatelessWidget {
             tile.trailingText!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: _opaque(LingyunTextStyles.body(color: tertiary)),
+            style: _opaque(LingyunTextStyles.body(color: secondary)),
           );
     final leading = tile.leading == null
         ? null
@@ -311,12 +318,13 @@ class _GlassListSectionView extends StatelessWidget {
     );
   }
 
-  /// Labels-LG tertiary at the Large role, opaque.
+  /// Opaque Large-role style.
   ///
   /// [CupertinoListTile] wraps subtitle / additional info in a
   /// [DefaultTextStyle] of [CupertinoColors.secondaryLabel] (60% label)
   /// at 12–14px. `inherit: false` keeps Subheadline 15 / Body 17 and the
-  /// solid tertiary (`#BFBFBF` / `#404040`) from being faded again.
+  /// theme color — secondary for subtitle and trailing value, tertiary
+  /// for the section footer — from being faded again.
   static TextStyle _opaque(TextStyle style) {
     return TextStyle(
       inherit: false,
