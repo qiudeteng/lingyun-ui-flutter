@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `ControlLayerCatalog`, `ControlLayerView`, and `ControlKnobStack` — Sketch iOS 27 Controls layer styles for form tracks and knobs (`Controls/Light` and `Controls/Dark`: Knobs - Toggle, Tracks). Filled tracks use System Blue. Light idle knob is white with the kit shadow (blur 36, offset `(0, 3)`, black 5%). Clicked glow and clicked shadow (gaussian radius 3) are included. Dark idle knob and filled-disabled tracks are absent from the kit and stay null. Not Materials, not Liquid Glass Clear / Regular / Dock. No backdrop sigma and no corner radius on the style. See [`docs/CONTROLS.md`](docs/CONTROLS.md).
+- Example **旋钮** page (`?page=knob`, also `track` / `controls`) with 浅色 / 深色. Gallery copy is Simplified Chinese.
 - iOS `LYPage` host under `ios/` (Flutter plugin). Layout uses horizontal size class and the view's bounds. System `TabView` and `NavigationSplitView` are always compiled. `ArrangementView`, `UIArrangementViewController`, and `reservedRegions` compile only with `-D LY_IOS_27_1_SDK` on the iOS 27.1 SDK.
 - Shared contract: `LingyunPageSpec`, `LingyunPageWidthBucket`, `LingyunNativePage`. No Duo pose enum. Native mapping: [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
 - `LingyunPage` Flutter skeleton for non-iOS and for size-class simulation. It consumes that spec. Compact → tab + stack (bottom Dock). Regular → sidebar + split. Wide sidebar → three columns. Arrangement is a note, not a drawn hinge. [`docs/PAGE.md`](docs/PAGE.md).

@@ -3,6 +3,7 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import 'pages/accessibility_page.dart';
 import 'pages/alerts_page.dart';
+import 'pages/controls_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/materials_page.dart';
@@ -54,6 +55,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'access' => 5,
       'native' => 6,
       'alerts' => 7,
+      'knob' || 'track' || 'controls' => 8,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -191,6 +193,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.notifications),
       label: '提示',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.tune_outlined),
+      selectedIcon: Icon(Icons.tune),
+      label: '旋钮',
+    ),
   ];
 
   @override
@@ -215,6 +222,10 @@ class DemoHome extends StatelessWidget {
       ),
       const NativePage(),
       AlertsPage(brightness: Theme.of(context).brightness),
+      ControlsPage(
+        themeMode: themeMode,
+        onThemeModeChanged: onThemeModeChanged,
+      ),
     ];
 
     return LingyunLayoutBuilder(

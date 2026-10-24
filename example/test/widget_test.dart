@@ -254,4 +254,42 @@ void main() {
     expect(find.text('凌云界面'), findsWidgets);
     expect(find.textContaining('大标题'), findsWidgets);
   });
+
+  testWidgets('knob and track page switches brightness', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 1200);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('旋钮').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('controls-title')), findsOneWidget);
+    expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
+    expect(find.byKey(const Key('track-filled-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('track-unfilled-idle')), findsOneWidget);
+    expect(find.byKey(const Key('track-unfilled-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('track-unfilled-disabled')), findsOneWidget);
+    expect(
+      find.byKey(const Key('track-filled-disabled-missing')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('knob-idle')), findsOneWidget);
+    expect(find.byKey(const Key('knob-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('knob-idle-missing')), findsNothing);
+    expect(find.text('旋钮与轨道'), findsOneWidget);
+    expect(find.textContaining('不是材质四档'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('controls-brightness')),
+        matching: find.text('深色'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('knob-idle')), findsNothing);
+    expect(find.byKey(const Key('knob-idle-missing')), findsOneWidget);
+    expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
+    expect(find.textContaining('#0091FF'), findsWidgets);
+  });
 }

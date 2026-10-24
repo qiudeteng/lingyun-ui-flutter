@@ -185,6 +185,13 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 | `x. Kit`（Canvas / Symbol BG） | **不进 Theme**。稿面辅助色，不是系统色。 |
 | Material `secondary` / `tertiary` | **桥接，待核验**。没有单独的 Sketch 强调色，ColorScheme 里暂时重复 System Blue，避免把 Material 默认紫当成系统色。 |
 | Tab Caption 10 / Semibold | **不在本批**。文本样式里没有 10pt。`GlassTabBar` 不改。 |
+| Controls 旋钮 / 轨道圆角 | **未收录**。Sketch 层样式没有圆角字段。画廊高度和宽度是示意。 |
+| Controls 高斯半径 3 的 σ | **待核验**。检查器给的是 gaussian radius，不是 backdrop σ。渲染用了 Flutter 阴影的半径换算。 |
+| Controls Plus Darker | **待核验**。令牌记下了混合模式。描边先按颜色画。 |
+| Controls 按下层叠加顺序 | **待核验**。阴影在下、发光在上。 |
+| Figma Controls 层样式 | **未复读**。本轮 MCP 限流。以 Sketch `Controls/*` 为准。 |
+| 深色静止旋钮 | **稿面没有共享层样式**。不把开关画板上的白旋钮写成令牌。 |
+| 步进器轨道 | **没有独立层样式名**。42 个层样式里没有 Stepper。 |
 
 ## D. Page 壳
 
@@ -209,3 +216,22 @@ Dart 契约是 `LingyunPageSpec` / `LingyunNativePage`（[IOS-LYPAGE.md](IOS-LYP
 | 仅消息 | 只传 `message` |
 
 遮罩不自定义，沿用 `kCupertinoModalBarrierColor`（浅色 `0x33000000`，深色 `0x7A000000`）。示例页与截图里的演示文案是简体中文。细节见 [`docs/ALERTS.md`](ALERTS.md)。
+
+## F. Controls 旋钮与轨道
+
+权威：Sketch UI Kit 层样式 `Controls/Light` 与 `Controls/Dark`（Knobs - Toggle、Tracks）。这不是 Materials 四档，也不是 Liquid Glass Clear / Regular / Dock / Widget Glass。不要把它们的填充写进 `LiquidGlassTokens.blurSigma`。
+
+Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读（MCP Starter 额度用尽，`get_metadata` 失败）。冲突时仍以 Sketch 为准；Figma 没有读到，所以没有 Figma 数字可冲突。
+
+| 稿面 | API |
+| --- | --- |
+| 着色轨道静止 / 按下 | `ControlLayerCatalog.track(ControlTrackFill.filled, idle \| clicked)` |
+| 未着色轨道静止 / 按下 / 禁用 | `track(ControlTrackFill.unfilled, …)` |
+| 着色轨道禁用 | 返回 null。稿没有这一层 |
+| 浅色旋钮静止 | `knob(ControlKnobLayer.idle)`。白填充 + 阴影模糊 36、偏移 (0, 3)、黑色 5% |
+| 深色旋钮静止 | 返回 null。稿没有 `Controls/Dark/Knobs - Toggle/01 - Idle` |
+| 按下发光 / 按下阴影 | `clickedGlow` / `clickedShadow` |
+
+渲染：`ControlLayerView`、`ControlKnobStack`。圆角由调用方传入；层样式里没有圆角，默认直角。按下阴影的高斯半径 3 用 Flutter 阴影的 radius→sigma 换算，标为待核验，不是 backdrop σ。Plus Darker 记在令牌上，描边先按颜色本身画。细节与 8-bit 透明度见 [`docs/CONTROLS.md`](CONTROLS.md)。
+
+示例：导航「旋钮」，`?page=knob`（`track` / `controls` 同样打开）。浅色 / 深色可切。文案是简体中文。

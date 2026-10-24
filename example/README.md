@@ -15,6 +15,9 @@ Demo titles, buttons, and messages on that page are Simplified Chinese.
 **主题** (`?page=themes` or the nav item): color swatches by default, Large
 text specimens with `?page=text` or the 文本 segment. Light / dark is
 浅色 / 深色. Titles, buttons, group names, and samples are Simplified Chinese.
+**旋钮** (`?page=knob`, also `track` / `controls`): Controls knob and track
+layer styles. 浅色 / 深色. Titles and notes are Simplified Chinese. The gray
+band behind each plate is a specimen field, not a token.
 
 Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
 The **Canvas** chip on every page also selects muted wash, nature,
