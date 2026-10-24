@@ -45,6 +45,15 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     return extension!;
   }
 
+  /// Host brightness for Liquid Glass and the Cupertino controls it wraps.
+  ///
+  /// [CupertinoTheme] otherwise follows platform brightness. Controls in
+  /// this library follow the app theme so a dark theme stays dark on a
+  /// light device.
+  static Brightness brightnessOf(BuildContext context) {
+    return Theme.brightnessOf(context);
+  }
+
   /// Materials tokens for [tier].
   ///
   /// Prefer [materialOf] / [styleOf] so the two systems stay distinct.
