@@ -2,9 +2,17 @@
 
 Gallery captures (committed as PNGs in this folder):
 
-- `materials_light.png` — Materials Ultrathin / Thin / Regular / Thick, light, design canvas `#D1D1D6`, 1280×1200. Gray bands behind each plate are the specimen field (Figma Materials page), not a token.
-- `materials_dark.png` — same page, dark, design canvas `#000000`, 1280×1200
-- `materials.png` — alias of the light materials capture
+- `materials_light.png` — 材质 超薄 / 薄 / 常规 / 厚，浅色，设计画布 `#D1D1D6`，1280×1200。板后灰条是材质页样张，不是令牌。越薄越能看见条纹，越厚越不透明。
+- `materials_dark.png` — 同一页，深色，设计画布 `#000000`，1280×1200
+- `materials.png` — 浅色材质截图的副本
+
+示例材质页文案只有简体中文。隐藏系统栏后重拍（Linux）：
+
+```bash
+cd example
+flutter build linux --debug --dart-define=GALLERY_CHROME=0 --dart-define=GALLERY_THEME=light
+# 深色把 GALLERY_THEME 换成 dark。窗口 1280×1200。
+```
 - `glass_button_light.png` — GlassButton gallery (sizes Small / Medium / Large, states, Clear, Destructive, Glass Prominent, Symbol) on design canvas `#D1D1D6`
 - `glass_button_dark.png` — same button gallery, dark, design canvas `#000000`
 - `tab_bar_light.png` — Tab Bars: standard, floating pill (3, 4, and 5), tinted, light, design canvas `#D1D1D6`

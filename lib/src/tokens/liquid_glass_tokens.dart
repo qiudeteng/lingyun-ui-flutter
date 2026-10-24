@@ -685,6 +685,11 @@ class LiquidGlassTokens {
   }
 
   /// Soft deep shadow + crisp grey ring + side hairlines.
+  ///
+  /// The zero-blur entries are filled plates in the shadow color. Do not
+  /// put them under a [BackdropFilter] — use [dropShadows] for the underlay
+  /// and paint the ring as a foreground stroke. On Linux and web the filter
+  /// samples that fill, so Materials tiers collapse to one milky color.
   List<BoxShadow> get shadows => [
     BoxShadow(
       color: shadowColor,
@@ -705,6 +710,15 @@ class LiquidGlassTokens {
       offset: Offset(-rimSideOffset, 0),
       spreadRadius: rimSideSpread,
     ),
+  ];
+
+  /// Blurred drop shadows safe to paint *under* a backdrop filter.
+  ///
+  /// Excludes zero-blur rims. Those are opaque (or nearly opaque) filled
+  /// plates, not strokes. See [shadows].
+  List<BoxShadow> get dropShadows => [
+    for (final shadow in shadows)
+      if (shadow.blurRadius > 0) shadow,
   ];
 
   /// Unbounded Gaussian blur (tests / custom compositors).
