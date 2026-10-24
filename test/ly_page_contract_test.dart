@@ -101,8 +101,9 @@ void main() {
 
   test('wide threshold matches LingyunBreakpoints.large', () {
     expect(LingyunBreakpoints.large, 1200);
-    final metrics = File('ios/Classes/LYPage/LYPageMetrics.swift')
-        .readAsStringSync();
+    final metrics = File(
+      'ios/Classes/LYPage/LYPageMetrics.swift',
+    ).readAsStringSync();
     expect(
       metrics,
       contains(

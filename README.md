@@ -6,7 +6,7 @@ Materials + Liquid Glass primitives for Flutter — two **separate** systems, a 
 
 **Dart package:** `lingyun_ui_flutter`  
 **License:** MIT  
-**Dependencies:** Flutter SDK only (no third-party runtime packages)
+**Dependencies:** Flutter SDK, [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) (preferred), and [`material_ui`](https://pub.dev/packages/material_ui) for Material APIs (`ThemeExtension`, `Icons`, `Material`). Not `package:flutter/material.dart` or `package:flutter/cupertino.dart`.
 
 ## Platforms
 
@@ -89,14 +89,18 @@ Or path / pub once published:
 
 ```yaml
 dependencies:
+  cupertino_icons: ^2.0.0
   lingyun_ui_flutter: ^0.4.0
+  material_ui: ^1.8.0
 ```
+
+`ThemeData` / `MaterialApp` come from `material_ui`. `cupertino_icons` supplies the font for the few Cupertino glyphs Material still draws. Set `uses-material-design: true` if you use `Icons`.
 
 ## Quick start
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 class Demo extends StatelessWidget {
   const Demo({super.key});

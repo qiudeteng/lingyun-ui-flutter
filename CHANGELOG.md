@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Design libraries moved off the Flutter SDK. `lib/` and `example/` no longer import `package:flutter/material.dart` or `package:flutter/cupertino.dart`. Files that do not need a Material API import `package:cupertino_ui/cupertino_ui.dart`. Material APIs (`Theme` / `ThemeExtension`, `Icons`, `Colors`, `Material`, gallery `Scaffold` / `NavigationBar`) stay on `package:material_ui/material_ui.dart`. The example depends on `cupertino_icons` so the few Cupertino glyphs Material still draws have a font. No `CompatibilityBridge`. `environment.sdk` / `environment.flutter` floors are unchanged. Materials and Liquid Glass names are unchanged.
 - `GlassButton` matches the Figma Liquid Glass button matrix (acceptance brief): control sizes Small / Medium / Large (about 28 / 34 / 50, padding 10×5 / 12×8 / 20×16), default size Small, capsule radius 1000 rather than panel radii 18 / 26 / 34. Regular Small stays the **material**.
 - Glass Prominent is White Backing plus an opaque System Blue (`#0088FF` light) or system red, white label, SF Pro Medium weight on the ambient font. Disabled Prominent keeps that fill at 50% opacity. Disabled Glass uses tertiary `#BFBFBF` in light and Labels-LG Dark Tertiary `#404040` in dark.
 - `GlassButton.icon` is the Symbol variant (circle at the text size's height).

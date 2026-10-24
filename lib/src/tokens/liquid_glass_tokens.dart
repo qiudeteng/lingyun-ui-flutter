@@ -1,6 +1,6 @@
 import 'dart:ui' show BlendMode, ImageFilter, TileMode, lerpDouble;
 
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 import 'glass_material.dart';
 import 'liquid_glass_style.dart';
