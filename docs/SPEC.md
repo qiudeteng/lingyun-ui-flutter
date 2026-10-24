@@ -138,3 +138,19 @@ Dart 契约是 `LingyunPageSpec` / `LingyunNativePage`（[IOS-LYPAGE.md](IOS-LYP
 - 桶：`LingyunPageWidthBucket` = `compact` / `regular` / `wide`。wide 与 `LingyunBreakpoints.large`（**1200**）对齐，不是 kit token。没有 Duo 姿态枚举。
 - 非 iOS：Compact 建议 `tab` + 底 Dock。Regular / wide 建议 `sidebar` + `GlassTabBarStyle.sidebar` 玻璃 rail（不是 Materials Thick，也不是 iOS 27.1 竖向系统条）。
 - iOS：同一个 `LingyunPageSpec` 交给 `LingyunNativePage`。竖向系统 chrome、`ArrangementView`、真实 `reservedRegions` 只在 `LY_IOS_27_1_SDK=1` 时链接。
+
+## E. Alerts（系统对话框，cupertino_ui）
+
+权威：Sketch UI Kit 页面「Alerts」。这不是 Liquid Glass，也不是 Materials。
+
+实现是 **iOS 包系统**：`showLingyunAlert` → `package:cupertino_ui` 的 `showCupertinoDialog` + `CupertinoAlertDialog`。不自绘一套假 Liquid Glass Alert，不套 GlassButton / Dock / Materials Thick。新代码不 import `package:flutter/cupertino.dart` 或 `package:flutter/material.dart`，也不使用 `CupertinoUiCompatibilityBridge`。
+
+| 稿面状态 | API |
+| --- | --- |
+| 单按钮 | 一个 `LingyunAlertAction.confirm` |
+| 双按钮 | 取消在 leading（LTR 在左）。`LingyunAlert.arrangedIndices` 会把 cancel 放到前面，即使调用方先写确认 |
+| 破坏性确认 | `LingyunAlertAction.destructive` → `CupertinoDialogAction.isDestructiveAction`（系统红，不加粗） |
+| 标题 + 消息 | `title` 与 `message` 都传 |
+| 仅消息 | 只传 `message` |
+
+遮罩不自定义，沿用 `kCupertinoModalBarrierColor`（浅色 `0x33000000`，深色 `0x7A000000`）。示例页与截图里的演示文案是简体中文。细节见 [`docs/ALERTS.md`](ALERTS.md)。

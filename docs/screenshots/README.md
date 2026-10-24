@@ -9,6 +9,14 @@ Gallery captures (committed as PNGs in this folder):
 - `glass_button_dark.png` — same button gallery, dark, design canvas `#000000`
 - `tab_bar_light.png` — Tab Bars: standard, floating pill (3, 4, and 5), tinted, light, design canvas `#D1D1D6`
 - `tab_bar_dark.png` — same page, dark, design canvas `#000000`
+- `alerts_light.png` — Alerts probe: system `cupertino_ui` dialogs (one button, two buttons with cancel leading, destructive, title + message, message only) on `kCupertinoModalBarrierColor`, design canvas `#D1D1D6`. Demo copy is Simplified Chinese.
+- `alerts_dark.png` — same states, dark, design canvas `#000000`. Demo copy is Simplified Chinese.
+
+Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. The typeface is Flutter's desktop fallback, not SF Pro on device. Regenerate from `example/`:
+
+```bash
+flutter test tool/capture_alert_screenshots.dart
+```
 
 The color around **Clear** on `glass_button_light.png` / `glass_button_dark.png` is the gallery rich-media plate behind `LiquidGlassStyle.clear`. It is not a selection or focus ring, and it is not the button rim. Sketch Clear keeps the shared ~0.5px hairline; the plate is only there so the translucent style stays visible. It is a muted wash, not a saturated rainbow stroke. The page behind that plate is the design canvas.
 

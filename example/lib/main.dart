@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import 'pages/accessibility_page.dart';
+import 'pages/alerts_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/materials_page.dart';
@@ -43,6 +44,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'layout' => 4,
       'access' => 5,
       'native' => 6,
+      'alerts' => 7,
       _ => 0,
     };
     _themeMode = switch (Uri.base.queryParameters['theme']) {
@@ -166,6 +168,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.phone_iphone),
       label: 'Native',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.notifications_outlined),
+      selectedIcon: Icon(Icons.notifications),
+      label: '提示',
+    ),
   ];
 
   @override
@@ -185,6 +192,7 @@ class DemoHome extends StatelessWidget {
         onHighContrast: onHighContrast,
       ),
       const NativePage(),
+      AlertsPage(brightness: Theme.of(context).brightness),
     ];
 
     return LingyunLayoutBuilder(

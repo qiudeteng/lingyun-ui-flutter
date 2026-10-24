@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - `LingyunPage` Flutter skeleton for non-iOS and for size-class simulation. It consumes that spec. Compact → tab + stack (bottom Dock). Regular → sidebar + split. Wide sidebar → three columns. Arrangement is a note, not a drawn hinge. [`docs/PAGE.md`](docs/PAGE.md).
 - Layout gallery presets: compact, compact bounds with an explicit size class, regular, regular + division, wide.
 - Example gallery **Native** page (`?page=native`). The UIKit skeleton runs on iOS only.
+- Wave 2 Alerts probe. `showLingyunAlert` / `LingyunAlertDialog` present the iOS system alert through `package:cupertino_ui` (`showCupertinoDialog` + `CupertinoAlertDialog`). Sketch states: one button, two buttons (Cancel leading), destructive (system red), title + message, message only. Not Liquid Glass, not a glass button, not Materials Thick. No `CupertinoUiCompatibilityBridge`. Gallery demo copy is Simplified Chinese. See `docs/ALERTS.md`.
 
 ### Notes
 
