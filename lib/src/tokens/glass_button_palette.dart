@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 /// * **Glass Prominent** fill — System Blue, white label
 /// * **Destructive** — system red label, or a system-red fill when combined
 ///   with Glass Prominent
-/// * **Disabled** — muted label; the colored fill drops back to glass
+/// * **Disabled** — Glass uses a tertiary label (light `#BFBFBF`). Glass
+///   Prominent keeps the accent fill; the widget fades it to about 50%.
 ///
 /// [pressedVeil] is an **implementation approximation — not an official
 /// Design Token**. It only makes the pressed state readable. Do not print
@@ -43,13 +44,26 @@ class GlassButtonPalette {
   /// Label on a filled Glass Prominent button (kit: white).
   static const Color filledLabelColor = Color(0xFFFFFFFF);
 
-  /// Light disabled label. Sampled from
-  /// `Buttons/Light/Large/Glass/Disabled` (`#6D6D6F`).
-  static const Color disabledLabelLight = Color(0xFF6D6D6F);
+  /// White plate under a Glass Prominent tint (Figma "White Backing").
+  ///
+  /// The accent tint is opaque, so the plate does not shift the fill. It is
+  /// flattened with the tint before the disabled 50% fade.
+  static const Color prominentBacking = Color(0xFFFFFFFF);
 
-  /// Dark disabled label. Sampled from
-  /// `Buttons/Dark/Large/Glass Prominent/Disabled` (`#59595C`).
-  static const Color disabledLabelDark = Color(0xFF59595C);
+  /// Light disabled Glass label.
+  ///
+  /// Acceptance brief: Vibrant Controls Tertiary ≈ `#BFBFBF`
+  /// (Is Enabled = False on Style Glass). Replaces the earlier composited
+  /// sample `#6D6D6F`.
+  static const Color disabledLabelLight = Color(0xFFBFBFBF);
+
+  /// Dark disabled Glass label.
+  ///
+  /// The acceptance brief published one tertiary, `#BFBFBF`. The old
+  /// `#59595C` sample came from Dark Glass Prominent Disabled, which is
+  /// the 50% fade of the accent fill, not this label. Dark uses the same
+  /// tertiary until a separate dark value is re-read.
+  static const Color disabledLabelDark = Color(0xFFBFBFBF);
 
   /// Light palette.
   static const GlassButtonPalette light = GlassButtonPalette(
@@ -57,7 +71,9 @@ class GlassButtonPalette {
     systemRed: systemRedLight,
     filledLabel: filledLabelColor,
     disabledLabel: disabledLabelLight,
-    pressedVeil: Color(0x66000000),
+    // Press wash. Approximation — not a kit token. Kept light enough
+    // that the capsule, rim, and label stay readable.
+    pressedVeil: Color(0x33000000),
   );
 
   /// Dark palette.
@@ -66,7 +82,7 @@ class GlassButtonPalette {
     systemRed: systemRedDark,
     filledLabel: filledLabelColor,
     disabledLabel: disabledLabelDark,
-    pressedVeil: Color(0x73FFFFFF),
+    pressedVeil: Color(0x40FFFFFF),
   );
 
   static GlassButtonPalette forBrightness(Brightness brightness) {

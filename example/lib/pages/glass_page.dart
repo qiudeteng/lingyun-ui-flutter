@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 /// **B. Liquid Glass** — Clear / Regular S·M·L / Dock / Widget Glass +
-/// [GlassButton] (Glass, Clear, Destructive, Glass Prominent).
+/// [GlassButton] (Glass, Clear, Destructive, Glass Prominent, Symbol).
 class GlassPage extends StatelessWidget {
   const GlassPage({super.key});
 
@@ -24,10 +24,11 @@ class GlassPage extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'B. Liquid Glass = Clear / Regular Small · Medium · Large / '
-          'Dock / Widget Glass. GlassButton default is Regular Small. '
-          'Clear sits over rich media. Labels — Liquid Glass: Light '
-          'Primary #1A1A1A, Dark Primary #EDEDED. Filled Glass Prominent '
-          'uses a white label.',
+          'Dock / Widget Glass. GlassButton default material is Regular '
+          'Small (Style Glass), not Materials Thick. The control size '
+          'default is Small. Clear sits over rich media. Labels — Liquid '
+          'Glass: Light Primary #1A1A1A, Dark Primary #EDEDED. Filled '
+          'Glass Prominent uses a white label.',
           style: textTheme.bodyMedium?.copyWith(color: label),
         ),
         const SizedBox(height: 20),
@@ -41,11 +42,76 @@ class GlassPage extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'One component. Materials Thick is not a button recipe. '
-          'Hold a live button to see Pressed; the Pressed chip below is pinned.',
+          'One component. Capsule, not the unverified panel radii. '
+          'Sizes Small / Medium / Large. Hold a live button to see '
+          'Pressed; the Pressed chips are pinned. The press wash is an '
+          'approximation, not a kit value.',
           style: textTheme.bodySmall?.copyWith(color: label),
         ),
         const SizedBox(height: 16),
+        Text(
+          'Sizes',
+          key: const Key('glass-button-sizes'),
+          style: textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: label,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          children: [
+            _Specimen(
+              caption: 'Regular Small',
+              button: GlassButton.label(
+                key: const Key('glass-button-regular-small'),
+                label: 'Small',
+                onPressed: _noop,
+              ),
+            ),
+            _Specimen(
+              caption: 'Medium',
+              button: GlassButton.label(
+                key: const Key('glass-button-medium'),
+                label: 'Medium',
+                size: GlassButtonSize.medium,
+                onPressed: _noop,
+              ),
+            ),
+            _Specimen(
+              caption: 'Large',
+              button: GlassButton.label(
+                key: const Key('glass-button-large'),
+                label: 'Large',
+                size: GlassButtonSize.large,
+                onPressed: _noop,
+              ),
+            ),
+            _Specimen(
+              caption: 'Symbol',
+              button: GlassButton.icon(
+                key: const Key('glass-button-symbol'),
+                icon: Icons.add,
+                semanticLabel: 'Add',
+                onPressed: _noop,
+              ),
+            ),
+            _Specimen(
+              caption: 'Symbol Large',
+              button: GlassButton.icon(
+                key: const Key('glass-button-symbol-large'),
+                icon: Icons.add,
+                semanticLabel: 'Add large',
+                size: GlassButtonSize.large,
+                prominence: GlassButtonProminence.prominent,
+                onPressed: _noop,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
         Text(
           'States',
           key: const Key('glass-button-states'),
@@ -58,6 +124,7 @@ class GlassPage extends StatelessWidget {
         Wrap(
           spacing: 12,
           runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             GlassButton.label(
               key: const Key('glass-button-default'),
@@ -76,6 +143,13 @@ class GlassPage extends StatelessWidget {
               label: 'Disabled',
               onPressed: null,
             ),
+            GlassButton.label(
+              key: const Key('glass-button-prominent-pressed'),
+              label: 'Prominent Pressed',
+              prominence: GlassButtonProminence.prominent,
+              forcePressed: true,
+              onPressed: _noop,
+            ),
           ],
         ),
         const SizedBox(height: 18),
@@ -90,7 +164,8 @@ class GlassPage extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Regular Small (Glass) · Clear · Destructive · Glass Prominent '
-          '(tinted / filled System Blue).',
+          '(White Backing + System Blue). Prominent Disabled keeps the '
+          'fill at about 50% opacity.',
           style: textTheme.bodySmall?.copyWith(color: label),
         ),
         const SizedBox(height: 8),
@@ -99,17 +174,18 @@ class GlassPage extends StatelessWidget {
           runSpacing: 12,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            GlassButton.label(
-              key: const Key('glass-button-regular-small'),
-              label: 'Regular Small',
-              onPressed: _noop,
-            ),
             const _ClearOnMedia(),
             GlassButton.label(
               key: const Key('glass-button-destructive'),
               label: 'Destructive',
               role: GlassButtonRole.destructive,
               onPressed: _noop,
+            ),
+            GlassButton.label(
+              key: const Key('glass-button-destructive-disabled'),
+              label: 'Destructive Off',
+              role: GlassButtonRole.destructive,
+              onPressed: null,
             ),
             GlassButton.label(
               key: const Key('glass-button-prominent'),
@@ -129,6 +205,13 @@ class GlassPage extends StatelessWidget {
               label: 'Prominent Disabled',
               prominence: GlassButtonProminence.prominent,
               onPressed: null,
+            ),
+            GlassButton.label(
+              key: const Key('glass-button-prominent-large'),
+              label: 'Prominent Large',
+              size: GlassButtonSize.large,
+              prominence: GlassButtonProminence.prominent,
+              onPressed: _noop,
             ),
           ],
         ),
@@ -162,6 +245,32 @@ class GlassPage extends StatelessWidget {
           const SizedBox(height: 16),
         ],
         const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _Specimen extends StatelessWidget {
+  const _Specimen({required this.caption, required this.button});
+
+  final String caption;
+  final Widget button;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = LiquidGlassLabels.primaryOf(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        button,
+        const SizedBox(height: 6),
+        Text(
+          caption,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: label,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -214,8 +323,8 @@ void _noop() {}
 /// Clear over a muted media plate.
 ///
 /// The plate is gallery context so [LiquidGlassStyle.clear] stays
-/// readable. It is not a focus ring and not the button rim — Sketch
-/// Clear keeps the shared ~0.5px hairline.
+/// readable. It is not a focus ring and not the button rim — Clear keeps
+/// the shared ~0.5px hairline and the button capsule.
 class _ClearOnMedia extends StatelessWidget {
   const _ClearOnMedia();
 
@@ -231,7 +340,7 @@ class _ClearOnMedia extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: GlassButton.label(
           key: const Key('glass-button-clear'),
           label: 'Clear',
