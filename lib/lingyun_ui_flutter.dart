@@ -9,6 +9,11 @@
 /// [GlassTabBar] is Liquid Glass chrome (default Dock), not a Materials
 /// tier and not a toolbar material.
 ///
+/// Alerts ([showLingyunAlert] / [LingyunAlertDialog]) are the iOS system
+/// dialog from `package:cupertino_ui` (showCupertinoDialog +
+/// CupertinoAlertDialog). They are not Liquid Glass and not a Materials
+/// tier.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -33,3 +38,4 @@ export 'src/tokens/material_catalog.dart';
 export 'src/widgets/glass_button.dart';
 export 'src/widgets/glass_surface.dart';
 export 'src/widgets/glass_tab_bar.dart';
+export 'src/widgets/lingyun_alert.dart';

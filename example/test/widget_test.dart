@@ -157,4 +157,35 @@ void main() {
     expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsWidgets);
   });
+
+  testWidgets('alerts page shows system dialog states', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('提示').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('alert-title')), findsOneWidget);
+    expect(find.text('提示'), findsWidgets);
+    expect(find.byKey(const Key('alert-stage-single')), findsOneWidget);
+    expect(find.byKey(const Key('alert-stage-dual')), findsOneWidget);
+    expect(find.byKey(const Key('alert-stage-destructive')), findsOneWidget);
+    expect(find.byKey(const Key('alert-stage-title-message')), findsOneWidget);
+    expect(find.byKey(const Key('alert-stage-message-only')), findsOneWidget);
+
+    final dual = find.byKey(const Key('alert-stage-dual'));
+    final cancel = find.descendant(of: dual, matching: find.text('取消'));
+    final confirm = find.descendant(of: dual, matching: find.text('确认'));
+    expect(tester.getRect(cancel).left, lessThan(tester.getRect(confirm).left));
+
+    expect(find.textContaining('尚未弹出'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('alert-live-single')));
+    await tester.pumpAndSettle();
+    expect(find.text('已保存'), findsWidgets);
+    await tester.tap(find.text('好').last);
+    await tester.pumpAndSettle();
+    expect(find.text('实时路由 · 上次结果：好'), findsOneWidget);
+  });
 }

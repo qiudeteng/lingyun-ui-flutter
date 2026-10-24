@@ -52,6 +52,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `GlassButton` | Liquid Glass Button — Style Glass (material Regular Small, control size Small) / Clear / Destructive / Glass Prominent / Symbol. Sizes Small 28, Medium 34, Large 50, capsule |
 | `GlassTabBar` | iOS 27 tab bar. Liquid Glass **Dock** (not Materials Thick): standard full-width bar, floating capsule, tinted whole bar. `GlassTabBarStyle.sidebar` is the Flutter glass rail on `LingyunPage`, not iOS 27.1 vertical system chrome |
 | `LingyunPage` | Flutter page shell on `LingyunPageSpec`. Compact → bottom Dock tab. Regular / wide → glass sidebar rail. On iOS, the same spec goes to `LingyunNativePage` |
+| `showLingyunAlert` / `LingyunAlertDialog` | Sketch **Alerts** via `cupertino_ui` (`showCupertinoDialog` + `CupertinoAlertDialog`). One button, two buttons (Cancel leading), destructive system red, title + message, message only. Not Liquid Glass. Gallery copy is Simplified Chinese. See [`docs/ALERTS.md`](docs/ALERTS.md) |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -207,9 +208,9 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (`LingyunPage` compact / compact-bounds / regular / division / wide presets + live window), **Access** (reduce transparency / motion / high contrast), **Native** (`?page=native`, iOS `LYPage` host). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (`LingyunPage` compact / compact-bounds / regular / division / wide presets + live window), **Access** (reduce transparency / motion / high contrast), **Native** (`?page=native`, iOS `LYPage` host), **Alerts** (system `cupertino_ui` dialog: one button, two buttons, destructive, title + message, message only; demo copy is Simplified Chinese). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
 
-Open a page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
+Open a page directly: `?page=tabs` or `?page=alerts` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 
