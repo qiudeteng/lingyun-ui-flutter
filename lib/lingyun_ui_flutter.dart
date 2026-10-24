@@ -14,6 +14,10 @@
 /// CupertinoAlertDialog). They are not Liquid Glass and not a Materials
 /// tier.
 ///
+/// [ControlLayerCatalog] / [ControlLayerView] are the Sketch Controls
+/// knob and track layer styles (fills, borders, shadows). They are not
+/// Materials tiers and not Liquid Glass Clear / Regular / Dock.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -29,6 +33,7 @@ export 'src/page/lingyun_page_spec.dart';
 export 'src/theme/lingyun_material_theme.dart';
 export 'src/theme/lingyun_theme.dart';
 export 'src/theme/liquid_glass_theme.dart';
+export 'src/tokens/control_layer_style.dart';
 export 'src/tokens/glass_button_palette.dart';
 export 'src/tokens/glass_material.dart';
 export 'src/tokens/liquid_glass_catalog.dart';
@@ -39,6 +44,7 @@ export 'src/tokens/liquid_glass_motion.dart';
 export 'src/tokens/liquid_glass_style.dart';
 export 'src/tokens/liquid_glass_tokens.dart';
 export 'src/tokens/material_catalog.dart';
+export 'src/widgets/control_layer_view.dart';
 export 'src/widgets/glass_button.dart';
 export 'src/widgets/glass_surface.dart';
 export 'src/widgets/glass_tab_bar.dart';
