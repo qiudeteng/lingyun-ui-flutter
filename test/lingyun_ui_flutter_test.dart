@@ -23,6 +23,44 @@ void main() {
       expect(materials.resolve(MaterialTier.thick), materials.thick);
     });
 
+    test('Materials fill alphas step, and Dock is not Thick', () {
+      double alpha(Color color) => color.a;
+      final light = MaterialCatalog.light;
+      expect(
+        alpha(light.ultrathin.tintColor),
+        lessThan(alpha(light.thin.tintColor)),
+      );
+      expect(
+        alpha(light.thin.tintColor),
+        lessThan(alpha(light.regular.tintColor)),
+      );
+      expect(
+        alpha(light.regular.tintColor),
+        lessThan(alpha(light.thick.tintColor)),
+      );
+      final dark = MaterialCatalog.dark;
+      expect(
+        alpha(dark.ultrathin.tintColor),
+        lessThan(alpha(dark.thin.tintColor)),
+      );
+      expect(
+        alpha(dark.thin.tintColor),
+        lessThan(alpha(dark.regular.tintColor)),
+      );
+      expect(
+        alpha(dark.regular.tintColor),
+        lessThan(alpha(dark.thick.tintColor)),
+      );
+      expect(alpha(dark.thick.tintColor), greaterThan(0.7));
+      expect(LiquidGlassCatalog.light.dock, isNot(MaterialCatalog.light.thick));
+      expect(
+        LiquidGlassCatalog.light.dock.tintColor,
+        isNot(MaterialCatalog.light.thick.tintColor),
+      );
+      expect(LiquidGlassCatalog.light.dock.borderWidth, 0.5);
+      expect(LiquidGlassCatalog.dark.dock.borderWidth, 0.5);
+    });
+
     test('Materials tiers are not Liquid Glass styles', () {
       expect(
         MaterialTier.values.map((e) => e.name),
