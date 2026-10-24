@@ -49,6 +49,9 @@ class ControlLayerView extends StatelessWidget {
 /// Sketch does not say which clicked layer is on top. Shadow under glow is
 /// this painter’s order and is **待核验**. Dark idle is omitted when the
 /// catalog has no idle style; pass [clicked] to still draw the rings.
+///
+/// The stack does not clip. Blur 36 and the outside glow extend past
+/// [width] and [height]; the caller leaves room if those must stay visible.
 class ControlKnobStack extends StatelessWidget {
   const ControlKnobStack({
     super.key,
@@ -70,16 +73,16 @@ class ControlKnobStack extends StatelessWidget {
     final catalog = ControlLayerCatalog.forBrightness(brightness);
     final layers = <ControlLayerStyle>[
       if (catalog.knob(ControlKnobLayer.idle) case final idle?) idle,
-      if (clicked) ...[
-        catalog.knobClickedShadow,
-        catalog.knobClickedGlow,
-      ],
+      if (clicked) ...[catalog.knobClickedShadow, catalog.knobClickedGlow],
     ];
     return SizedBox(
       width: width,
       height: height,
       child: Stack(
         fit: StackFit.expand,
+        // Idle blur is 36. A hard clip at the shape leaves only the 3pt
+        // offset, which reads as no shadow.
+        clipBehavior: Clip.none,
         children: [
           for (final style in layers)
             ControlLayerView(style: style, borderRadius: borderRadius),

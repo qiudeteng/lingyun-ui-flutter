@@ -276,9 +276,12 @@ void main() {
     );
     expect(find.byKey(const Key('knob-idle')), findsOneWidget);
     expect(find.byKey(const Key('knob-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('slider-idle')), findsOneWidget);
+    expect(find.byKey(const Key('slider-clicked')), findsOneWidget);
     expect(find.byKey(const Key('knob-idle-missing')), findsNothing);
     expect(find.text('旋钮与轨道'), findsOneWidget);
     expect(find.textContaining('不是材质四档'), findsOneWidget);
+    expect(find.textContaining('圆旋钮叠在轨道上'), findsOneWidget);
 
     await tester.tap(
       find.descendant(
@@ -289,6 +292,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('knob-idle')), findsNothing);
     expect(find.byKey(const Key('knob-idle-missing')), findsOneWidget);
+    expect(find.byKey(const Key('knob-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('slider-clicked')), findsOneWidget);
     expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
     expect(find.textContaining('#0091FF'), findsWidgets);
   });

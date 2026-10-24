@@ -45,7 +45,7 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 
 | 项 | 状态 |
 | --- | --- |
-| 圆角 | **未收录**。层样式没有圆角字段。`ControlLayerView.borderRadius` 由调用方传入，不传就是直角。画廊上的 28 高、64×36 旋钮是示意尺寸。 |
+| 圆角 | **未收录**。层样式没有圆角字段。`ControlLayerView.borderRadius` 由调用方传入，不传就是直角。画廊把旋钮画成直径 24 的圆（符号里旋钮的高度），叠在胶囊轨道上。开关轨道用画板 64×28，滑杆轨道条高 6。这不是新的令牌。 |
 | 背景模糊 σ | **稿面没有**。不要从 Frost / Depth 反推。 |
 | 高斯半径 3 的 σ | **待核验**。检查器写的是 gaussian `radius: 3`。DTCG 导出把这个效果漏掉了，数值仍来自同一层样式的检查器。绘制时用 Flutter `BoxShadow` 的半径换算（`radius * 0.57735 + 0.5`）。这不是稿里的 σ。 |
 | 模糊饱和度 0 | **只存储**。不把它解释成去色。 |
@@ -55,7 +55,7 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 | 深色静止旋钮 | **稿面没有** `Controls/Dark/Knobs - Toggle/01 - Idle`。`knob(idle)` 在深色返回 null。开关画板上的旋钮看起来是白的，不升成令牌。 |
 | 着色轨道的禁用 | **稿面没有**。`track(filled, disabled)` 返回 null。 |
 | 步进器 | **没有独立层样式**。42 个层样式里没有 Stepper。步进器以后如果复用轨道，由那个控件自己决定。 |
-| 符号外框 | **不是圆角**。只记在这里供下一轮量控件：开关画板 64×28，滑杆画板 402×52，滑杆轨道符号 370×22，滑杆旋钮符号静止 37×24，开关旋钮符号 59×37，步进器画板 92×32。外框不等于圆角。 |
+| 符号外框 | **不是圆角，也不是旋钮的实心尺寸**。开关画板 64×28，滑杆画板 402×52，滑杆轨道符号 370×22（里面的轨道条约高 6，其余是刻度留白），滑杆旋钮符号静止 37×24，开关旋钮符号 59×37（含按下光晕，静止填充大约高 24）。步进器画板 92×32。外框不等于圆角。画廊不把 59×37 或 64×36 涂成一块。 |
 | Figma Controls 层样式 | **未复读**。见上。 |
 
 ## API
@@ -65,6 +65,6 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 - `knob(ControlKnobLayer)` → `ControlLayerStyle?`
 - `ControlLayerView` 画一层。`ControlKnobStack` 按上面的顺序叠旋钮。
 
-画廊：主 example 导航「旋钮」，或 `?page=knob`。`page=track` 和 `page=controls` 打开同一页。浅色 / 深色用页上的切换。灰色衬底是对照底，不是填充令牌。
+画廊：主 example 导航「旋钮」，或 `?page=knob`。`page=track` 和 `page=controls` 打开同一页。浅色 / 深色用页上的切换。示意是开关（关 / 开，静止 / 按下）和滑杆（中部，静止 / 按下）：胶囊轨道上叠直径 24 的圆旋钮。四周留空，让模糊 36 的阴影落在画布上。不再用灰色衬底，那块灰会把 5% 黑阴影吃掉。深色静止旋钮仍然不画。
 
 截图：[`screenshots/controls_knob_track_light.png`](screenshots/controls_knob_track_light.png)、[`screenshots/controls_knob_track_dark.png`](screenshots/controls_knob_track_dark.png)。
