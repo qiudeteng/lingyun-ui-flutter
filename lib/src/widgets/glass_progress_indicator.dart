@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 
 import '../theme/lingyun_theme.dart';
@@ -11,8 +13,9 @@ enum GlassProgressKind {
   /// no indeterminate linear — on a Tertiary track.
   linear,
 
-  /// [CupertinoActivityIndicator]. Determinate uses
-  /// [CupertinoActivityIndicator.partiallyRevealed].
+  /// Determinate is a ring (tertiary track + tinted arc). Indeterminate
+  /// is [CupertinoActivityIndicator] — the system activity spinner, not
+  /// a short tick and not a linear bar.
   circular,
 }
 
@@ -27,8 +30,11 @@ enum GlassProgressKind {
 /// * Linear indeterminate — Tertiary track (`#BFBFBF` / `#404040`) and a
 ///   tinted segment. The cycle duration is an implementation approximation,
 ///   not a kit token. Reduce motion holds a static segment.
-/// * Circular — [CupertinoActivityIndicator], tinted. Reduce motion stops
-///   the spin (`animating: false`).
+/// * Circular determinate — a ring. The track is liquid-glass Tertiary.
+///   The arc uses [tint]. [radius] is the ring's outer radius, so the
+///   box is `radius * 2` on each side (not an ~18px activity tick).
+/// * Circular indeterminate — [CupertinoActivityIndicator], tinted.
+///   Reduce motion stops the spin (`animating: false`).
 class GlassProgressIndicator extends StatelessWidget {
   const GlassProgressIndicator({
     super.key,
@@ -52,7 +58,10 @@ class GlassProgressIndicator extends StatelessWidget {
   /// Linear thickness. Matches [CupertinoLinearActivityIndicator]'s 4.5.
   final double height;
 
-  /// Circular spinner radius. Matches [CupertinoActivityIndicator]'s 10.
+  /// Circular size.
+  ///
+  /// Determinate: outer radius of the ring. Indeterminate: radius passed
+  /// to [CupertinoActivityIndicator] (its default is 10).
   final double radius;
 
   final String? semanticLabel;
@@ -94,12 +103,12 @@ class GlassProgressIndicator extends StatelessWidget {
         height: height,
         reduceMotion: reduceMotion,
       ),
-      GlassProgressKind.circular when progress != null =>
-        CupertinoActivityIndicator.partiallyRevealed(
-          progress: progress,
-          radius: radius,
-          color: tint,
-        ),
+      GlassProgressKind.circular when progress != null => _DeterminateRing(
+        progress: progress,
+        tint: tint,
+        track: colors.liquidGlassLabels.tertiary,
+        radius: radius,
+      ),
       GlassProgressKind.circular => CupertinoActivityIndicator(
         radius: radius,
         color: tint,
@@ -242,5 +251,83 @@ class _IndeterminateLinearPainter extends CustomPainter {
         oldDelegate.track != track ||
         oldDelegate.start != start ||
         oldDelegate.extent != extent;
+  }
+}
+
+/// Determinate circular progress: a full tertiary track and a tinted arc.
+///
+/// Not [CupertinoActivityIndicator.partiallyRevealed] — that draws spinner
+/// ticks, which collapse to a short dash at the default radius.
+class _DeterminateRing extends StatelessWidget {
+  const _DeterminateRing({
+    required this.progress,
+    required this.tint,
+    required this.track,
+    required this.radius,
+  });
+
+  final double progress;
+  final Color tint;
+  final Color track;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final diameter = radius * 2;
+    final stroke = (radius * 0.2).clamp(2.5, 4.0);
+    return SizedBox(
+      width: diameter,
+      height: diameter,
+      child: CustomPaint(
+        painter: _RingPainter(
+          progress: progress,
+          tint: tint,
+          track: track,
+          strokeWidth: stroke,
+        ),
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  const _RingPainter({
+    required this.progress,
+    required this.tint,
+    required this.track,
+    required this.strokeWidth,
+  });
+
+  final double progress;
+  final Color tint;
+  final Color track;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final rect = (Offset.zero & size).deflate(strokeWidth / 2);
+    if (rect.width <= 0 || rect.height <= 0) return;
+    final trackPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.butt
+      ..color = track;
+    canvas.drawArc(rect, 0, math.pi * 2, false, trackPaint);
+    if (progress <= 0) return;
+    final arcPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = progress >= 1 ? StrokeCap.butt : StrokeCap.round
+      ..color = tint;
+    canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * progress, false, arcPaint);
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.tint != tint ||
+        oldDelegate.track != track ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

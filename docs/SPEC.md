@@ -96,9 +96,11 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 
 列表行：leading / 标题 / 副标题 / `trailingText` / `trailing` / 可选 `CupertinoListTileChevron`。节有 header / footer。按下加一层主色 10% 的 veil（实现近似，不是 kit token）。
 
-文本框层级：标签在字段上方；正文与占位符为 Body；`errorText` 替换辅助说明，颜色为主题系统红。聚焦与错误使用共用 `LiquidGlassTokens.hairlineWidth`（0.5）发丝描边，颜色为主题系统蓝或系统红。`forceFocused` 可钉住聚焦描边。清除按钮默认 `OverlayVisibilityMode.editing`。`obscureToggle` 提供眼睛按钮。禁用时标签改用液态玻璃三级色，并隐藏清除按钮。
+文本框层级：标签在字段上方；正文与占位符为 Body；`errorText` 替换辅助说明，颜色为主题系统红。聚焦与错误使用共用 `LiquidGlassTokens.hairlineWidth`（0.5）发丝描边，颜色为主题系统蓝或系统红。`forceFocused` 可钉住聚焦描边。清除按钮默认 `OverlayVisibilityMode.editing`。`obscureToggle` 提供眼睛按钮。禁用时标签和已输入的值仍用液态玻璃主色，字段装饰保持透明，不用 Cupertino 的不透明禁用底，并隐藏清除按钮。
 
-进度：默认着色为主题系统蓝。线性确定进度用 `CupertinoLinearActivityIndicator`（轨道颜色由该组件绘制，没有轨道色参数）。线性不确定进度用三级色轨道加一段滑动高亮，周期 1400ms，是实现近似，不是 kit token；减少动态效果时停在静态片段。圆形确定进度用 `CupertinoActivityIndicator.partiallyRevealed`，不确定进度用 `CupertinoActivityIndicator`。减少动态效果时圆形停止旋转。`tint` 可覆盖系统蓝。
+进度：默认着色为主题系统蓝。线性确定进度用 `CupertinoLinearActivityIndicator`（轨道颜色由该组件绘制，没有轨道色参数）。线性不确定进度用三级色轨道加一段滑动高亮，周期 1400ms，是实现近似，不是 kit token；减少动态效果时停在静态片段。圆形确定进度是圆环（三级色轨道 + 着色弧），不是活动指示器的短刻度。圆形不确定进度用 `CupertinoActivityIndicator`。减少动态效果时圆形停止旋转。`tint` 覆盖在圆环或横条本身上。
+
+列表副标题是 Subheadline、右侧值是 Body，颜色是不透明的液态玻璃三级色，不走 Cupertino `secondaryLabel`。内嵌节的脚注画在托盘外面，不被托盘的圆角裁切。
 
 `blurSigma` / `saturation` 仍是 GlassSurface 的实现近似，不写进画廊当 kit 值。本轮不做 Toggle / Slider / Stepper / Segmented / Page Control。
 

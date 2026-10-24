@@ -17,10 +17,15 @@ import 'glass_surface.dart';
 /// Materials Thick and not the Cupertino white/black field fill.
 ///
 /// Label hierarchy:
-/// * [label] — liquid-glass Primary from [LingyunTheme], above the field
-/// * entered text — liquid-glass Primary, [LingyunTextStyles.body]
+/// * [label] and the entered value — liquid-glass Primary from
+///   [LingyunTheme], including when [enabled] is false
 /// * [placeholder] and [helperText] — liquid-glass Tertiary
 /// * [errorText] — [LingyunColors.system] red, replaces the helper
+///
+/// Disabled does not swap in the Cupertino disabled fill
+/// (`#FAFAFA` / `#050505`). The field keeps the same Regular Small
+/// capsule as an enabled field; the control's own decoration stays
+/// transparent so that fill never paints.
 ///
 /// Focused and error draw the shared ~0.5px hairline in System Blue or
 /// system red. That accent is not a per-tier rim and not a blur token.
@@ -197,7 +202,10 @@ class _GlassTextFieldState extends State<GlassTextField> {
       error: colors.system.red,
     );
     final tokens = LiquidGlassTheme.styleOf(context, widget.glassStyle);
-    final valueColor = widget.enabled ? primary : tertiary;
+    // Label and value stay Primary when disabled. Tertiary is only for
+    // placeholder / helper. A null decoration lets Cupertino paint an
+    // opaque disabled fill over the glass; keep the box transparent.
+    const clearDecoration = BoxDecoration(color: Color(0x00000000));
     final caption = widget.hasError ? widget.errorText : widget.helperText;
     final captionColor = widget.hasError ? colors.system.red : tertiary;
 
@@ -208,7 +216,8 @@ class _GlassTextFieldState extends State<GlassTextField> {
       obscureText: _obscure,
       placeholder: widget.placeholder,
       placeholderStyle: LingyunTextStyles.body(color: tertiary),
-      style: LingyunTextStyles.body(color: valueColor),
+      style: LingyunTextStyles.body(color: primary),
+      decoration: clearDecoration,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       clearButtonMode: widget.enabled
           ? widget.clearButtonMode
@@ -267,10 +276,7 @@ class _GlassTextFieldState extends State<GlassTextField> {
         if (widget.label != null) ...[
           Text(
             widget.label!,
-            style: LingyunTextStyles.footnote(
-              emphasized: true,
-              color: widget.enabled ? primary : tertiary,
-            ),
+            style: LingyunTextStyles.footnote(emphasized: true, color: primary),
           ),
           const SizedBox(height: 6),
         ],

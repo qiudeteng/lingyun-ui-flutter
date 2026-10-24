@@ -30,6 +30,13 @@ Widget host(
   );
 }
 
+List<Size> _customPaintSizes(WidgetTester tester) {
+  return tester
+      .widgetList<CustomPaint>(find.byType(CustomPaint))
+      .map((paint) => tester.getSize(find.byWidget(paint)))
+      .toList();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -115,11 +122,40 @@ void main() {
       expect(find.byIcon(CupertinoIcons.wifi), findsOneWidget);
 
       final subtitle = tester.widget<Text>(find.text('Home'));
+      expect(subtitle.style?.inherit, isFalse);
       expect(
-        subtitle.style,
-        LingyunTextStyles.subheadline(
-          color: LingyunColors.light.liquidGlassLabels.tertiary,
+        subtitle.style?.color,
+        LingyunColors.light.liquidGlassLabels.tertiary,
+      );
+      expect(
+        subtitle.style?.fontSize,
+        LingyunTextStyles.subheadline().fontSize,
+      );
+      final trailing = tester.widget<Text>(find.text('On'));
+      expect(trailing.style?.inherit, isFalse);
+      expect(
+        trailing.style?.color,
+        LingyunColors.light.liquidGlassLabels.tertiary,
+      );
+      expect(trailing.style?.fontSize, LingyunTextStyles.body().fontSize);
+      final footerText = tester.widget<Text>(find.text('Known networks'));
+      expect(footerText.maxLines, isNull);
+      expect(footerText.style?.inherit, isFalse);
+      expect(
+        footerText.style?.color,
+        LingyunColors.light.liquidGlassLabels.tertiary,
+      );
+      expect(footerText.style?.fontSize, LingyunTextStyles.footnote().fontSize);
+      final surfaceRect = tester.getRect(find.byType(GlassSurface));
+      final footerRect = tester.getRect(find.text('Known networks'));
+      expect(footerRect.top, greaterThanOrEqualTo(surfaceRect.bottom));
+      expect(footerRect.height, greaterThanOrEqualTo(16));
+      expect(
+        find.descendant(
+          of: find.byType(GlassSurface),
+          matching: find.text('Known networks'),
         ),
+        findsNothing,
       );
       final title = tester.widget<Text>(find.text('Wi-Fi'));
       expect(
@@ -271,7 +307,7 @@ void main() {
       final field = tester.widget<CupertinoTextField>(
         find.byType(CupertinoTextField),
       );
-      expect(field.decoration, isNull);
+      expect(field.decoration?.color, const Color(0x00000000));
       expect(find.text('Name'), findsOneWidget);
       expect(find.text('Shown on your profile'), findsOneWidget);
       final helper = tester.widget<Text>(find.text('Shown on your profile'));
@@ -311,7 +347,7 @@ void main() {
       expect(error.style?.color, LingyunColors.light.system.red);
     });
 
-    testWidgets('disabled field mutes the label and hides clear', (
+    testWidgets('disabled field keeps primary text and hides clear', (
       tester,
     ) async {
       final controller = TextEditingController(text: 'lingyun');
@@ -331,10 +367,9 @@ void main() {
       expect(field.enabled, isFalse);
       expect(field.clearButtonMode, OverlayVisibilityMode.never);
       final label = tester.widget<Text>(find.text('Username'));
-      expect(
-        label.style?.color,
-        LingyunColors.light.liquidGlassLabels.tertiary,
-      );
+      expect(label.style?.color, LingyunColors.light.liquidGlassLabels.primary);
+      expect(field.style?.color, LingyunColors.light.liquidGlassLabels.primary);
+      expect(field.decoration?.color, const Color(0x00000000));
     });
 
     testWidgets('obscure toggle reveals the value', (tester) async {
@@ -396,7 +431,7 @@ void main() {
       expect(bar.color, red);
     });
 
-    testWidgets('circular determinate is a partial activity indicator', (
+    testWidgets('circular determinate is a ring, not activity ticks', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -407,12 +442,38 @@ void main() {
           ),
         ),
       );
-      final spinner = tester.widget<CupertinoActivityIndicator>(
-        find.byType(CupertinoActivityIndicator),
+      expect(find.byType(CupertinoActivityIndicator), findsNothing);
+      expect(find.byType(CupertinoLinearActivityIndicator), findsNothing);
+      final indicator = tester.widget<GlassProgressIndicator>(
+        find.byType(GlassProgressIndicator),
       );
-      expect(spinner.progress, 0.25);
-      expect(spinner.animating, isFalse);
-      expect(spinner.color, LingyunColors.light.system.blue);
+      expect(indicator.value, 0.25);
+      expect(indicator.tint, isNull);
+      expect(_customPaintSizes(tester), contains(const Size(20, 20)));
+    });
+
+    testWidgets('circular tint paints the ring, not a linear bar', (
+      tester,
+    ) async {
+      const red = Color(0xFFFF383C);
+      await tester.pumpWidget(
+        host(
+          const GlassProgressIndicator(
+            kind: GlassProgressKind.circular,
+            value: 0.6,
+            radius: 16,
+            tint: red,
+          ),
+        ),
+      );
+      expect(find.byType(CupertinoLinearActivityIndicator), findsNothing);
+      final indicator = tester.widget<GlassProgressIndicator>(
+        find.byType(GlassProgressIndicator),
+      );
+      expect(indicator.kind, GlassProgressKind.circular);
+      expect(indicator.tint, red);
+      expect(indicator.value, 0.6);
+      expect(_customPaintSizes(tester), contains(const Size(32, 32)));
     });
 
     testWidgets('circular indeterminate spins until reduce motion', (

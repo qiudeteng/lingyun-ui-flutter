@@ -190,7 +190,8 @@ class _GlassListSectionView extends StatelessWidget {
         ? null
         : Text(
             section.footer!,
-            style: LingyunTextStyles.footnote(color: tertiary),
+            softWrap: true,
+            style: _opaque(LingyunTextStyles.footnote(color: tertiary)),
           );
 
     final transparent = CupertinoColors.transparent;
@@ -233,8 +234,13 @@ class _GlassListSectionView extends StatelessWidget {
           child: sectionWidget,
         ),
         if (footer != null)
+          // Outside the platter. GlassSurface clips its own child to the
+          // rounded rect; the footnote is a sibling so that clip (and the
+          // next section) cannot crop it. The top gap clears the drop
+          // shadow, which otherwise sits on the same gray as Tertiary and
+          // hides the line.
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 6, 20, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 8),
             child: footer,
           ),
       ],
@@ -262,7 +268,7 @@ class _GlassListSectionView extends StatelessWidget {
             tile.subtitle!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: LingyunTextStyles.subheadline(color: tertiary),
+            style: _opaque(LingyunTextStyles.subheadline(color: tertiary)),
           );
     final info = tile.trailingText == null
         ? null
@@ -270,7 +276,7 @@ class _GlassListSectionView extends StatelessWidget {
             tile.trailingText!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: LingyunTextStyles.body(color: tertiary),
+            style: _opaque(LingyunTextStyles.body(color: tertiary)),
           );
     final leading = tile.leading == null
         ? null
@@ -302,6 +308,25 @@ class _GlassListSectionView extends StatelessWidget {
       onTap: onTap,
       backgroundColor: CupertinoColors.transparent,
       backgroundColorActivated: primary.withValues(alpha: 0.10),
+    );
+  }
+
+  /// Labels-LG tertiary at the Large role, opaque.
+  ///
+  /// [CupertinoListTile] wraps subtitle / additional info in a
+  /// [DefaultTextStyle] of [CupertinoColors.secondaryLabel] (60% label)
+  /// at 12–14px. `inherit: false` keeps Subheadline 15 / Body 17 and the
+  /// solid tertiary (`#BFBFBF` / `#404040`) from being faded again.
+  static TextStyle _opaque(TextStyle style) {
+    return TextStyle(
+      inherit: false,
+      color: style.color,
+      fontSize: style.fontSize,
+      height: style.height,
+      fontWeight: style.fontWeight,
+      fontStyle: style.fontStyle,
+      letterSpacing: style.letterSpacing,
+      decoration: TextDecoration.none,
     );
   }
 

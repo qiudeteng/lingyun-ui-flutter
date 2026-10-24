@@ -21,8 +21,8 @@ class ProgressPage extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           '默认着色为系统蓝。确定进度的横条使用系统线性指示器，轨道由组件绘制，不是材质填充。'
-          '不确定进度的横条使用三级色轨道。圆形使用系统活动指示器。'
-          '指示器本身不是液态玻璃，也不是厚材质。',
+          '不确定进度的横条使用三级色轨道。确定进度的圆形是圆环，不确定进度使用系统活动指示器。'
+          '着色画在圆环上，不是短线。指示器本身不是液态玻璃，也不是厚材质。',
           style: LingyunTextStyles.body(color: primary),
         ),
         const SizedBox(height: 20),
@@ -82,7 +82,9 @@ class ProgressPage extends StatelessWidget {
               caption: '着色',
               child: GlassProgressIndicator(
                 key: const Key('progress-tint'),
+                kind: GlassProgressKind.circular,
                 value: 0.6,
+                radius: 16,
                 tint: red,
                 semanticLabel: '进度',
                 semanticValue: '60%',
