@@ -19,7 +19,11 @@ import '../tokens/liquid_glass_tokens.dart';
 /// mean a Liquid Glass style (or the reverse).
 ///
 /// Layers (bottom → top):
-/// 1. Soft deep shadow + crisp grey rim + side hairlines (~0.5px)
+/// 1. Soft deep shadow only (translucent). Crisp grey rim and side
+///    hairlines are foreground strokes — a zero-blur opaque [BoxShadow]
+///    is a filled plate, and on Linux / web [BackdropFilter] samples that
+///    plate instead of the backdrop, so every Materials tier looks like
+///    the same milky fill.
 /// 2. [BackdropFilter] blur (`TileMode.clamp`, no `bounds` named param)
 /// 3. Saturation [ColorFilter]
 /// 4. Tint fill
@@ -28,6 +32,7 @@ import '../tokens/liquid_glass_tokens.dart';
 /// 7. Directional inner refraction rim (not a second white border)
 /// 8. Quiet outer hairline
 /// 9. [child]
+/// 10. Foreground crisp rim + side hairlines (~0.5px)
 ///
 /// Accessibility: [LingyunAdaptivity.useOpaqueFallback] — Reduce
 /// Transparency, high contrast ([MediaQuery] or gallery toggle), or
@@ -242,12 +247,25 @@ class _GlassSurfaceState extends State<GlassSurface> {
 
     Widget result = surface;
     if (widget.showShadow && !useOpaque) {
+      final recipe = resolved.copyWith(borderRadius: radius);
+      // Only the blurred drop shadow sits under the filter. Opaque
+      // zero-blur rims are filled plates; BackdropFilter on Linux and
+      // web samples them and the stripes disappear.
       result = DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: resolved.copyWith(borderRadius: radius).shadows,
+          boxShadow: recipe.dropShadows,
         ),
         child: surface,
+      );
+      result = CustomPaint(
+        foregroundPainter: _CrispRimPainter(
+          borderRadius: radius,
+          color: recipe.rimColor,
+          width: math.max(recipe.rimSpread, recipe.borderWidth),
+          sideOffset: recipe.rimSideOffset,
+        ),
+        child: result,
       );
     }
 
@@ -312,6 +330,61 @@ class GlassCard extends StatelessWidget {
       enableHoverHighlight: enableHoverHighlight,
       child: child,
     );
+  }
+}
+
+/// Foreground crisp rim + side hairlines.
+///
+/// Drawn above the glass so the stroke is not part of the backdrop sample.
+class _CrispRimPainter extends CustomPainter {
+  const _CrispRimPainter({
+    required this.borderRadius,
+    required this.color,
+    required this.width,
+    required this.sideOffset,
+  });
+
+  final BorderRadius borderRadius;
+  final Color color;
+  final double width;
+  final double sideOffset;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0 || color.a <= 0 || width <= 0) {
+      return;
+    }
+    final bounds = Offset.zero & size;
+    final rrect = borderRadius.toRRect(bounds).deflate(width * 0.5);
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..color = color,
+    );
+
+    final side = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..color = color;
+    final top = size.height * 0.12;
+    final bottom = size.height * 0.88;
+    final x = sideOffset.clamp(width, size.width * 0.5);
+    canvas.drawLine(Offset(x, top), Offset(x, bottom), side);
+    canvas.drawLine(
+      Offset(size.width - x, top),
+      Offset(size.width - x, bottom),
+      side,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CrispRimPainter oldDelegate) {
+    return oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.color != color ||
+        oldDelegate.width != width ||
+        oldDelegate.sideOffset != sideOffset;
   }
 }
 

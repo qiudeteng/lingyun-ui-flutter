@@ -12,7 +12,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    expect(find.text('Materials'), findsWidgets);
+    expect(find.text('材质'), findsWidgets);
+    expect(find.text('超薄'), findsWidgets);
+    expect(find.text('厚'), findsWidgets);
     expect(find.byKey(const Key('materials-title')), findsOneWidget);
     expect(find.byKey(const Key('material-ultrathin')), findsOneWidget);
     expect(find.byKey(const Key('material-thin')), findsOneWidget);

@@ -1,10 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
-/// **A. Materials** — Ultrathin / Thin / Regular / Thick.
+/// **A. Materials** — 超薄 / 薄 / 常规 / 厚。
 ///
-/// Not Liquid Glass styles. No raw blur / saturation numbers (those are
-/// implementation approximations, not official Design Tokens).
+/// 不是液态玻璃。页面不展示模糊或饱和度数字（那些是实现近似，不是官方设计令牌）。
 class MaterialsPage extends StatelessWidget {
   const MaterialsPage({super.key});
 
@@ -15,19 +14,16 @@ class MaterialsPage extends StatelessWidget {
       padding: LingyunLayout.layoutMarginOf(context),
       children: [
         Text(
-          'Materials',
+          '材质',
           key: const Key('materials-title'),
           style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         Text(
-          'A. Materials = translucent fills: Ultrathin / Thin / Regular / '
-          'Thick × Light / Dark. These are not Liquid Glass styles. '
-          'Thick is Sheet / Sidebar chrome — not the default button, and '
-          'not Tab Bar chrome (that is Liquid Glass Dock). The stripes '
-          'behind each plate are the specimen field from the Figma '
-          'Materials page, not a token. Frost / Depth on that page are '
-          'design tiers, not a blur amount.',
+          '材质是内容层的半透明填充：超薄、薄、常规、厚，各有浅色与深色。'
+          '它们不是液态玻璃。厚只用于表单和侧栏，不是按钮的默认材质，'
+          '也不是标签栏（标签栏是液态玻璃 Dock）。每块板后面的条纹是材质页样张，'
+          '不是设计令牌。霜化与景深是设计档位，不是模糊数值。',
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -37,13 +33,12 @@ class MaterialsPage extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         Text(
-          'Radius scale',
+          '圆角',
           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 6),
         Text(
-          '18 / 26 / 34 are 待核验 (unverified vs Sketch) until measured in '
-          'the official Sketch UI Kit. Independent of Materials tiers.',
+          '18 / 26 / 34 在对照官方 Sketch 套件量完之前标为待核验。与材质档位无关。',
           style: textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -82,7 +77,7 @@ class _MaterialCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          tier.kitName.toUpperCase(),
+          _tierTitle(tier),
           style: text.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: 1.1,
@@ -91,11 +86,11 @@ class _MaterialCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Materials · ${tier.kitName}',
+          '材质 · ${_tierTitle(tier)}',
           style: text.bodySmall?.copyWith(color: label),
         ),
         const SizedBox(height: 6),
-        Text(tier.usage, style: text.bodyMedium?.copyWith(color: label)),
+        Text(_tierUsage(tier), style: text.bodyMedium?.copyWith(color: label)),
       ],
     );
     return LayoutBuilder(
@@ -119,9 +114,22 @@ class _MaterialCard extends StatelessWidget {
   }
 }
 
-/// Vertical gray bands, same job as the Figma Materials stripe field:
-/// a known backdrop so frost level is visible on the flat design canvas.
-/// Not a Design Token.
+String _tierTitle(MaterialTier tier) => switch (tier) {
+  MaterialTier.ultrathin => '超薄',
+  MaterialTier.thin => '薄',
+  MaterialTier.regular => '常规',
+  MaterialTier.thick => '厚',
+};
+
+String _tierUsage(MaterialTier tier) => switch (tier) {
+  MaterialTier.ultrathin => '最轻的内容填充，条纹和壁纸仍能透出。',
+  MaterialTier.thin => '轻霜，用于紧凑内容和行内分组。',
+  MaterialTier.regular => '默认的内容层分隔。',
+  MaterialTier.thick => '只用于表单和侧栏外壳，不是按钮默认。',
+};
+
+/// 竖向灰条，作用与 Figma 材质页的条纹底相同：
+/// 在平的设计画布上能看出霜化厚薄。不是设计令牌。
 class _StripeField extends StatelessWidget {
   const _StripeField({required this.child});
 
@@ -182,13 +190,18 @@ class _RadiusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = LiquidGlassRadii.value(scale);
+    final name = switch (scale) {
+      GlassRadiusScale.small => '小',
+      GlassRadiusScale.medium => '中',
+      GlassRadiusScale.large => '大',
+    };
     return GlassSurface(
       key: Key('radius-${scale.name}'),
       material: MaterialTier.regular,
       radiusScale: scale,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Text(
-        '${scale.name}  ${r.toStringAsFixed(0)}  待核验',
+        '$name  ${r.toStringAsFixed(0)}  待核验',
         style: Theme.of(
           context,
         ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),

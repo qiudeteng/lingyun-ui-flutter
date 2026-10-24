@@ -35,9 +35,17 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   @override
   void initState() {
     super.initState();
-    final page = Uri.base.queryParameters['page'];
-    _bare = Uri.base.queryParameters['chrome'] == '0';
-    _background = GalleryBackground.fromQuery(Uri.base.queryParameters['bg']);
+    final query = Uri.base.queryParameters;
+    const envPage = String.fromEnvironment('GALLERY_PAGE');
+    const envTheme = String.fromEnvironment('GALLERY_THEME');
+    const envChrome = String.fromEnvironment('GALLERY_CHROME');
+    const envBg = String.fromEnvironment('GALLERY_BG');
+    final page = query['page'] ?? (envPage.isEmpty ? null : envPage);
+    final theme = query['theme'] ?? (envTheme.isEmpty ? null : envTheme);
+    final chrome = query['chrome'] ?? (envChrome.isEmpty ? null : envChrome);
+    final bg = query['bg'] ?? (envBg.isEmpty ? null : envBg);
+    _bare = chrome == '0';
+    _background = GalleryBackground.fromQuery(bg);
     _index = switch (page) {
       'glass' => 1,
       'tabs' => 2,
@@ -48,13 +56,13 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'alerts' => 7,
       _ => 0,
     };
-    final panel = page == 'text' ? 'text' : Uri.base.queryParameters['panel'];
+    final panel = page == 'text' ? 'text' : query['panel'];
     _themesPanel = switch (panel) {
       'text' => ThemesPanel.text,
       'samples' => ThemesPanel.samples,
       _ => ThemesPanel.colors,
     };
-    _themeMode = switch (Uri.base.queryParameters['theme']) {
+    _themeMode = switch (theme) {
       'dark' => ThemeMode.dark,
       'system' => ThemeMode.system,
       _ => ThemeMode.light,

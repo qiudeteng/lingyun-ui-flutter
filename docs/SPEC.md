@@ -144,6 +144,8 @@ TextTheme 桥：`headlineLarge` = Large Title，`bodyLarge` = Body，`titleMediu
 
 同一套 API：iPhone / Duo / iPad / macOS / web。`ImageFilter.blur` **不**使用 `bounds` 命名参数（web 不兼容）。
 
+Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零模糊、不透明的 `BoxShadow` 其实是一整块实心圆角矩形。若把它垫在玻璃下面，滤镜采到的是这块底板而不是条纹，四档材质会糊成同一种乳白色。因此垫层只用带模糊的半透明投影；约 0.5px 灰环和侧向发丝改在前景描边，不进入背景采样。
+
 ## C. Tab Bars（Liquid Glass）
 
 权威：Sketch UI Kit 页面「Tab Bars」（iPhone portrait 优先）。条的 chrome 是 **Liquid Glass**，默认 **Dock**（不确定时用 Dock，而不是 Regular Medium/Large）。**不是** Materials Thick，也不混用 Toolbar 材料。边缘是共用的约 **0.5px hairline** + 与 `GlassButton` 相同的多层 specular，不按档位加粗。

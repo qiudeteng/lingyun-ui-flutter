@@ -151,6 +151,31 @@ void main() {
       expect(shadows[1].spreadRadius, LiquidGlassTokens.light.rimSpread);
     });
 
+    test('backdrop underlay drops opaque zero-blur rim fills', () {
+      final recipes = [
+        MaterialCatalog.light.ultrathin,
+        MaterialCatalog.light.thin,
+        MaterialCatalog.light.regular,
+        MaterialCatalog.light.thick,
+        MaterialCatalog.dark.ultrathin,
+        MaterialCatalog.dark.thick,
+        LiquidGlassCatalog.light.regularSmall,
+        LiquidGlassCatalog.light.dock,
+        LiquidGlassCatalog.dark.dock,
+      ];
+      for (final tokens in recipes) {
+        expect(tokens.dropShadows, isNotEmpty);
+        expect(
+          tokens.shadows.where((shadow) => shadow.blurRadius == 0),
+          isNotEmpty,
+        );
+        for (final shadow in tokens.dropShadows) {
+          expect(shadow.blurRadius, greaterThan(0));
+          expect(shadow.color.a, lessThan(1));
+        }
+      }
+    });
+
     test('boundedBlurFilter is distinct from unbounded blur', () {
       final a = LiquidGlassTokens.light.blurFilter;
       final b = LiquidGlassTokens.light.boundedBlurFilter(const Size(100, 80));
@@ -405,6 +430,34 @@ void main() {
       );
       expect(find.text('radius-small'), findsOneWidget);
       expect(find.byType(ClipRRect), findsWidgets);
+    });
+
+    testWidgets('underlay shadow is the drop shadow, not an opaque rim fill', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: const Scaffold(
+            body: GlassSurface(
+              material: MaterialTier.ultrathin,
+              child: Text('ultra'),
+            ),
+          ),
+        ),
+      );
+      final decorated = tester.widgetList<DecoratedBox>(
+        find.byType(DecoratedBox),
+      );
+      final underlay = decorated
+          .map((box) => box.decoration)
+          .whereType<BoxDecoration>()
+          .where((decoration) => decoration.boxShadow != null)
+          .single;
+      for (final shadow in underlay.boxShadow!) {
+        expect(shadow.blurRadius, greaterThan(0));
+        expect(shadow.color.a, lessThan(1));
+      }
     });
 
     testWidgets('material tier is applied', (tester) async {
