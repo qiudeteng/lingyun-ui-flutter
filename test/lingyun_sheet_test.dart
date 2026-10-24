@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -113,12 +115,10 @@ void main() {
   test(
     'sheet sources stay on the independent packages and Materials Thick',
     () {
-      final library = File(
-        'lib/src/widgets/lingyun_sheet.dart',
-      ).readAsStringSync();
-      final gallery = File(
-        'example/lib/pages/sheets_page.dart',
-      ).readAsStringSync();
+      final library = File('lib/src/widgets/lingyun_sheet.dart')
+          .readAsStringSync();
+      final gallery = File('example/lib/pages/sheets_page.dart')
+          .readAsStringSync();
       expect(library.contains('MaterialTier.thick'), isTrue);
       final glassStart = library.indexOf('return GlassSurface(');
       final glassEnd = library.indexOf('child:', glassStart);
@@ -321,6 +321,17 @@ void main() {
       expect(find.text('编辑项目'), findsNothing);
     });
 
+    testWidgets('thick platter keeps black and white backdrop apart', (
+      tester,
+    ) async {
+      final colors = await _samplePlatter(tester);
+      expect(
+        (colors.$1 - colors.$2).abs(),
+        greaterThan(4),
+        reason: 'Thick must sample the backdrop, not a flat fill',
+      );
+    });
+
     testWidgets('dark theme still resolves Materials Thick', (tester) async {
       await _open(
         tester,
@@ -372,15 +383,60 @@ Future<void> _open(
   await tester.pumpAndSettle();
 }
 
+Future<(int, int)> _samplePlatter(WidgetTester tester) async {
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = const Size(320, 240);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: const Key('sheet-blur-probe'),
+      child: _app(
+        home: const Stack(
+          fit: StackFit.expand,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: ColoredBox(color: Color(0xFF101010))),
+                Expanded(child: ColoredBox(color: Color(0xFFF4F4F6))),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: LingyunSheet(
+                showGrabber: false,
+                attachedToBottom: false,
+                child: SizedBox.expand(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(const Key('sheet-blur-probe')),
+  );
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    return data!.buffer.asUint8List();
+  });
+  final width = boundary.size.width.round();
+  int red(int x, int y) => bytes![(y * width + x) * 4];
+  return (red(60, 120), red(250, 120));
+}
+
 Widget _app({required Widget home, Brightness brightness = Brightness.light}) {
   final glass = brightness == Brightness.dark
       ? LiquidGlassTheme.dark
       : LiquidGlassTheme.light;
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    theme: LingyunMaterialTheme.themeData(
-      brightness,
-    ).copyWith(extensions: [glass]),
+    theme: LingyunMaterialTheme.themeData(brightness)
+        .copyWith(extensions: [glass]),
     home: home,
   );
 }

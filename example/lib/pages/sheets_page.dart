@@ -411,63 +411,36 @@ class _Specimen extends StatelessWidget {
   }
 
   Widget _plate(LingyunColors colors) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: DecoratedBox(
-        key: stageKey,
-        decoration: BoxDecoration(
-          color: colors.grays.gray4,
-          border: Border.all(color: colors.separators.nonOpaque),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final metrics = LingyunSheetMetrics(
-              bounds: Size(constraints.maxWidth, constraints.maxHeight),
-              safeArea: safeArea,
-              keyboardInset: 0,
-            );
-            return Stack(
-              children: [
-                _backdrop(colors),
-                Positioned(
-                  left: metrics.left,
-                  width: metrics.width,
-                  bottom: metrics.bottomOffset,
-                  height: metrics.heightFor(detent),
-                  child: LingyunSheet(
-                    attachedToBottom: metrics.attachedToBottom,
-                    grabberLabel: '抓手',
-                    child: _specimenBody(colors),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _backdrop(LingyunColors colors) {
-    return ColoredBox(
-      color: colors.grays.gray4,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final metrics = LingyunSheetMetrics(
+          bounds: Size(constraints.maxWidth, constraints.maxHeight),
+          safeArea: safeArea,
+          keyboardInset: 0,
+        );
+        // Same stacking as the Materials stripe field: backdrop first, then
+        // GlassSurface. An ancestor clip or a flat fill under the platter
+        // makes BackdropFilter sample one color, so the sheet reads as a
+        // solid plate.
+        return Stack(
+          key: stageKey,
+          fit: StackFit.expand,
           children: [
-            Text(
-              '收件箱',
-              style: LingyunTextStyles.headline(color: colors.labels.primary),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '今天 · 已置顶',
-              style: LingyunTextStyles.footnote(color: colors.labels.secondary),
+            const _SheetStripeField(),
+            Positioned(
+              left: metrics.left,
+              width: metrics.width,
+              bottom: metrics.bottomOffset,
+              height: metrics.heightFor(detent),
+              child: LingyunSheet(
+                attachedToBottom: metrics.attachedToBottom,
+                grabberLabel: '抓手',
+                child: _specimenBody(colors),
+              ),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -551,3 +524,44 @@ Widget _sheetBody(BuildContext context, LingyunSheetController controller) {
 }
 
 double mathMin(double a, double b) => a < b ? a : b;
+
+/// Preview bands behind the platter. Same idea as the Materials stripe
+/// field: high-contrast strips so Thick frost stays visible. Not a token.
+class _SheetStripeField extends StatelessWidget {
+  const _SheetStripeField();
+
+  static const _bands = <(Color, Color, String, String)>[
+    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '收件箱', '今天 · 已置顶'),
+    (Color(0xFF5C5C60), Color(0xFFF4F4F6), '周末散步', '滨江公园'),
+    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '项目纪要', '已发送'),
+    (Color(0xFF5C5C60), Color(0xFFF4F4F6), '家庭相册', '12 张照片'),
+    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '采购清单', '明天之前'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final band in _bands)
+          Expanded(
+            child: ColoredBox(
+              color: band.$1,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${band.$3}  ${band.$4}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: LingyunTextStyles.footnote(color: band.$2),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
