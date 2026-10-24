@@ -19,9 +19,18 @@ flutter build linux --debug --dart-define=GALLERY_CHROME=0 --dart-define=GALLERY
 - `tab_bar_dark.png` — same page, dark, design canvas `#000000`
 - `alerts_light.png` — Alerts probe: system `cupertino_ui` dialogs (one button, two buttons with cancel leading, destructive, title + message, message only) on `kCupertinoModalBarrierColor`, design canvas `#D1D1D6`. Demo copy is Simplified Chinese.
 - `alerts_dark.png` — same states, dark, design canvas `#000000`. Demo copy is Simplified Chinese.
-- `lists_light.png` / `lists_dark.png` — 列表：内嵌分组（液态玻璃常规中号托盘）与通栏。浅色画布 `#D1D1D6`，深色画布 `#000000`，1280×900，隐藏导航。页面文案为简体中文。
-- `text_fields_light.png` / `text_fields_dark.png` — 文本框：默认、聚焦、错误、禁用、密码、实时编辑。同上画布与视口。
-- `progress_light.png` / `progress_dark.png` — 进度指示器：线性与圆形，确定与不确定，以及着色。同上画布与视口。
+- [lists_light.png](./lists_light.png) / [lists_dark.png](./lists_dark.png) — 列表：内嵌分组（液态玻璃常规中号托盘）与通栏。浅色画布 `#D1D1D6`，深色画布 `#000000`，1280×900，隐藏导航。页面文案为简体中文。设计已验收。
+- [text_fields_light.png](./text_fields_light.png) / [text_fields_dark.png](./text_fields_dark.png) — 文本框：默认、聚焦、错误、禁用、密码、实时编辑。同上画布与视口。设计已验收。
+- [progress_light.png](./progress_light.png) / [progress_dark.png](./progress_dark.png) — 进度指示器：线性与圆形，确定与不确定，以及着色。同上画布与视口。设计已验收。
+
+这六张是已验收的对照图，链接相对本目录，在 GitHub raw 上可直接打开：
+
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/lists_light.png
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/lists_dark.png
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/text_fields_light.png
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/text_fields_dark.png
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/progress_light.png
+- https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/progress_dark.png
 
 Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. The typeface is Flutter's desktop fallback, not SF Pro on device. Regenerate from `example/`:
 
