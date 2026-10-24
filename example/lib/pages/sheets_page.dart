@@ -307,56 +307,68 @@ class _CompactLauncher extends StatelessWidget {
     final colors = LingyunTheme.colorsOf(context);
     final keyboard = _SimulatedKeyboard.maybeOf(context);
     final showKeyboard = keyboard?.enabled ?? false;
-    return Stack(
-      children: [
-        ColoredBox(
-          color: colors.backgrounds.secondary,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '收件箱',
-                  style: LingyunTextStyles.headline(
-                    color: colors.labels.primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                CupertinoButton(
-                  key: const Key('sheet-open-compact'),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  onPressed: () {
-                    onOpen();
-                  },
-                  child: const Text('在紧凑框弹出'),
-                ),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(
+              painter: _SheetStripePainter(
+                origin: 0,
+                span: constraints.maxWidth,
+              ),
             ),
-          ),
-        ),
-        if (showKeyboard)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: keyboard!.inset,
-              child: ColoredBox(
-                color: colors.grays.gray5,
-                child: Center(
-                  child: Text(
-                    '键盘',
-                    style: LingyunTextStyles.footnote(
-                      color: colors.labels.secondary,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '收件箱',
+                    style:
+                        LingyunTextStyles.headline(color: colors.labels.primary)
+                            .copyWith(
+                              shadows: const [
+                                Shadow(color: Color(0xE6FFFFFF), blurRadius: 8),
+                              ],
+                            ),
+                  ),
+                  const SizedBox(height: 8),
+                  CupertinoButton(
+                    key: const Key('sheet-open-compact'),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    onPressed: () {
+                      onOpen();
+                    },
+                    child: const Text('在紧凑框弹出'),
+                  ),
+                ],
+              ),
+            ),
+            if (showKeyboard)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: keyboard!.inset,
+                  child: ColoredBox(
+                    color: colors.grays.gray5,
+                    child: Center(
+                      child: Text(
+                        '键盘',
+                        style: LingyunTextStyles.footnote(
+                          color: colors.labels.secondary,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
@@ -418,15 +430,44 @@ class _Specimen extends StatelessWidget {
           safeArea: safeArea,
           keyboardInset: 0,
         );
-        // Same stacking as the Materials stripe field: backdrop first, then
-        // GlassSurface. An ancestor clip or a flat fill under the platter
-        // makes BackdropFilter sample one color, so the sheet reads as a
-        // solid plate.
+        // Same tree as the Materials Thick swatch: stripes first, then
+        // GlassSurface. The eight bands are stretched across the platter
+        // so the whole ramp is under the blur. A horizontal strip, or a
+        // ramp that only crosses the stage, gets averaged into one milk
+        // color (#F7 / #343436) and the sharp edge reads as a solid plate.
+        // Nothing clips between the paint and the filter.
+        final gap =
+            constraints.maxHeight -
+            metrics.bottomOffset -
+            metrics.heightFor(detent);
         return Stack(
           key: stageKey,
           fit: StackFit.expand,
           children: [
-            const _SheetStripeField(),
+            CustomPaint(
+              painter: _SheetStripePainter(
+                origin: metrics.left,
+                span: metrics.width,
+              ),
+            ),
+            if (gap > 22)
+              Positioned(
+                top: 4,
+                left: metrics.left + 14,
+                width: mathMax(0, metrics.width - 28),
+                child: Text(
+                  '收件箱  今天 · 已置顶',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      LingyunTextStyles.footnote(color: const Color(0xFF1C1C1E))
+                          .copyWith(
+                            shadows: const [
+                              Shadow(color: Color(0xE6FFFFFF), blurRadius: 8),
+                            ],
+                          ),
+                ),
+              ),
             Positioned(
               left: metrics.left,
               width: metrics.width,
@@ -445,9 +486,8 @@ class _Specimen extends StatelessWidget {
   }
 
   Widget _specimenBody(LingyunColors colors) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(16, 4, 16, safeArea.bottom + 8),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -525,43 +565,51 @@ Widget _sheetBody(BuildContext context, LingyunSheetController controller) {
 
 double mathMin(double a, double b) => a < b ? a : b;
 
-/// Preview bands behind the platter. Same idea as the Materials stripe
-/// field: high-contrast strips so Thick frost stays visible. Not a token.
-class _SheetStripeField extends StatelessWidget {
-  const _SheetStripeField();
+double mathMax(double a, double b) => a > b ? a : b;
 
-  static const _bands = <(Color, Color, String, String)>[
-    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '收件箱', '今天 · 已置顶'),
-    (Color(0xFF5C5C60), Color(0xFFF4F4F6), '周末散步', '滨江公园'),
-    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '项目纪要', '已发送'),
-    (Color(0xFF5C5C60), Color(0xFFF4F4F6), '家庭相册', '12 张照片'),
-    (Color(0xFFF4F4F6), Color(0xFF1A1A1A), '采购清单', '明天之前'),
+/// Vertical specimen bands. Same colors as the Materials page stripe field,
+/// not a token.
+///
+/// [origin] / [span] are the platter's x range. The ramp is stretched across
+/// that range only, so the whole dark-to-light set sits under the blur and
+/// continues through the peek. Filling the side margins, or stretching the
+/// ramp across a stage wider than the platter, leaves Thick over one gray
+/// and reads as a solid plate.
+class _SheetStripePainter extends CustomPainter {
+  const _SheetStripePainter({required this.origin, required this.span});
+
+  final double origin;
+  final double span;
+
+  static const List<Color> bands = [
+    Color(0xFF5C5C60),
+    Color(0xFF7A7A7E),
+    Color(0xFF9A9A9E),
+    Color(0xFFB4B4B8),
+    Color(0xFFC8C8CC),
+    Color(0xFFD8D8DC),
+    Color(0xFFE8E8EC),
+    Color(0xFFF4F4F6),
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final band in _bands)
-          Expanded(
-            child: ColoredBox(
-              color: band.$1,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '${band.$3}  ${band.$4}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: LingyunTextStyles.footnote(color: band.$2),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final span = this.span > 0 ? this.span : size.width;
+    final band = span / bands.length;
+    final paint = Paint();
+    for (var i = 0; i < bands.length; i++) {
+      final left = origin + i * band;
+      if (left >= size.width) break;
+      final width = mathMin(band + 0.5, size.width - left);
+      if (width <= 0) continue;
+      paint.color = bands[i];
+      canvas.drawRect(Rect.fromLTWH(left, 0, width, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SheetStripePainter oldDelegate) {
+    return oldDelegate.origin != origin || oldDelegate.span != span;
   }
 }

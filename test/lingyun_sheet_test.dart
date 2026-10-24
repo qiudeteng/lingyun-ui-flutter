@@ -332,6 +332,28 @@ void main() {
       );
     });
 
+    testWidgets('thick platter keeps the materials ramp apart', (tester) async {
+      final colors = await _sampleRamp(tester);
+      expect(
+        (colors.$1 - colors.$2).abs(),
+        greaterThan(8),
+        reason:
+            'Vertical materials bands must stay apart under Thick. '
+            'A flat #F7 / #343436 means the blur averaged one color.',
+      );
+    });
+
+    testWidgets('presented sheet samples stripes on the page below', (
+      tester,
+    ) async {
+      final colors = await _sampleRoute(tester);
+      expect(
+        (colors.$1 - colors.$2).abs(),
+        greaterThan(4),
+        reason: 'The open sheet must sample the page, not an empty route layer',
+      );
+    });
+
     testWidgets('dark theme still resolves Materials Thick', (tester) async {
       await _open(
         tester,
@@ -427,6 +449,127 @@ Future<(int, int)> _samplePlatter(WidgetTester tester) async {
   final width = boundary.size.width.round();
   int red(int x, int y) => bytes![(y * width + x) * 4];
   return (red(60, 120), red(250, 120));
+}
+
+const List<Color> _materialBands = [
+  Color(0xFF5C5C60),
+  Color(0xFF7A7A7E),
+  Color(0xFF9A9A9E),
+  Color(0xFFB4B4B8),
+  Color(0xFFC8C8CC),
+  Color(0xFFD8D8DC),
+  Color(0xFFE8E8EC),
+  Color(0xFFF4F4F6),
+];
+
+Future<(int, int)> _sampleRamp(WidgetTester tester) async {
+  const size = Size(320, 280);
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: const Key('sheet-ramp-probe'),
+      child: _app(
+        home: const Stack(
+          fit: StackFit.expand,
+          children: [
+            _BandField(),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 180,
+                width: double.infinity,
+                child: LingyunSheet(
+                  showGrabber: false,
+                  attachedToBottom: true,
+                  child: SizedBox.expand(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
+  final bytes = await _rgba(tester, const Key('sheet-ramp-probe'));
+  final width = size.width.round();
+  int red(int x, int y) => bytes[(y * width + x) * 4];
+  // y=200 sits inside the platter. x centers the darkest and lightest bands.
+  return (red(20, 200), red(300, 200));
+}
+
+Future<(int, int)> _sampleRoute(WidgetTester tester) async {
+  const size = Size(320, 280);
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: const Key('sheet-route-probe'),
+      child: _app(
+        home: Builder(
+          builder: (context) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                const _BandField(),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: CupertinoButton(
+                    onPressed: () {
+                      showLingyunSheet<void>(
+                        context,
+                        builder: (context, controller) =>
+                            const SizedBox.shrink(),
+                      );
+                    },
+                    child: const Text('打开'),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('打开'));
+  await tester.pumpAndSettle();
+  final bytes = await _rgba(tester, const Key('sheet-route-probe'));
+  final rect = tester.getRect(find.byKey(const Key('lingyun-sheet-platter')));
+  final width = size.width.round();
+  int red(int x, int y) => bytes[(y * width + x) * 4];
+  final y = (rect.center.dy).round().clamp(0, size.height.round() - 1);
+  return (red(20, y), red(300, y));
+}
+
+Future<List<int>> _rgba(WidgetTester tester, Key key) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    return data!.buffer.asUint8List();
+  });
+  return bytes!;
+}
+
+class _BandField extends StatelessWidget {
+  const _BandField();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final color in _materialBands)
+          Expanded(child: ColoredBox(color: color)),
+      ],
+    );
+  }
 }
 
 Widget _app({required Widget home, Brightness brightness = Brightness.light}) {
