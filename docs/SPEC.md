@@ -262,3 +262,17 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 示例：导航「旋钮」，`?page=knob`（`track` / `controls` 同样打开）。浅色 / 深色可切。文案是简体中文。示意是圆旋钮叠在开关和滑杆轨道上，不是分开的扁条和 64×36 方块。
 
 控件：`LingyunToggle`、`LingyunSlider`、`LingyunStepper`。尺寸在 `ControlMetrics`（旋钮 ⌀24，开关轨 64×28，滑杆轨高 6，步进器 92×32），不是新的颜色或圆角令牌。导航「开关」。`?page=toggles`、`?page=sliders`、`?page=steppers`。不是 Materials，也不是 Liquid Glass。
+
+## G. Sheets（Materials Thick）
+
+权威：Sketch UI Kit 页面「Sheets」。Chrome **只**走 Materials Thick：`GlassSurface(material: MaterialTier.thick)`，不传 `tokens` / `style`。不是按钮，不是 Dock，不是 Tab Bar。本轮**不改** Materials / `GlassSurface` 配方。基线是 `d451503`（[PR #20](https://github.com/qiudeteng/lingyun-ui-flutter/pull/20)，本机条纹场已过）。浅色 / 深色截图用的就是这版 Thick。
+
+| 稿面 | API |
+| --- | --- |
+| 中档 / 高档 | `LingyunSheetDetent.medium` / `large`。比例在 `LingyunSheetLayout`，**待核验** |
+| 抓手 | 默认显示。尺寸取 `cupertino_ui` 工作表注释（36×5，顶 5），**待核验** vs Sketch |
+| 紧凑 | 通栏、底边贴屏幕或键盘，只圆上角 |
+| 常规 / 宽 | 居中浮起，宽度封顶。桶是 `resolveFlutterPageBucket`，不是设备型号 |
+| 键盘 | 底边跟随 `viewInsets.bottom`。不把中档自动升成高档，**待核验** |
+
+圆角用 `LiquidGlassRadii.large`（34，本仓库已标 **待核验**）。遮罩不是 Alert 的 barrier。细节见 [`docs/SHEETS.md`](SHEETS.md)。示例 `?page=sheets`，文案简体中文。装配和材质页 Thick 一样：同一个 `Stack` 里竖向条纹在底，`GlassSurface` 直接盖上，中间没有不透明块，也没有外层 Clip。

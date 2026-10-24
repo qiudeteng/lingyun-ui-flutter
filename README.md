@@ -60,6 +60,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `showLingyunAlert` / `LingyunAlertDialog` | Sketch **Alerts** via `cupertino_ui` (`showCupertinoDialog` + `CupertinoAlertDialog`). One button, two buttons (Cancel leading), destructive system red, title + message, message only. Not Liquid Glass. Gallery copy is Simplified Chinese. See [`docs/ALERTS.md`](docs/ALERTS.md) |
 | `ControlLayerCatalog` / `ControlLayerView` / `ControlKnobStack` | Sketch **Controls** knob and track layer styles. Fills, borders, shadows. Not Materials and not Liquid Glass Clear / Regular / Dock. No backdrop sigma and no corner radius on the style. See [`docs/CONTROLS.md`](docs/CONTROLS.md) |
 | `LingyunToggle` / `LingyunSlider` / `LingyunStepper` | Form controls on those styles. Knob ⌀24 on a 64×28 switch and a 6pt slider bar. Stepper 92×32 reuses the unfilled track and draws no knob. Dark idle knob and filled-disabled tracks stay absent. |
+| `showLingyunSheet` / `LingyunSheet` | Sketch **Sheets**. Chrome is Materials Thick (`material: MaterialTier.thick` only). Medium / large detents, grabber, compact full-bleed vs regular/wide inset, keyboard lift. Not Dock and not a glass button. Gallery copy is Simplified Chinese. See [`docs/SHEETS.md`](docs/SHEETS.md) |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -226,7 +227,7 @@ flutter run -d chrome -t lib/foundation_app.dart
 
 `?page=colors` or `?page=text`, plus `&theme=dark` and `&chrome=0`. Screenshots: `docs/screenshots/colors_*.png`, `docs/screenshots/text_*.png`.
 
-Open a page directly: `?page=tabs` or `?page=alerts` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
+Open a page directly: `?page=tabs`, `?page=alerts`, or `?page=sheets` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Sheets has 浅色 / 深色 on the page. Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 
