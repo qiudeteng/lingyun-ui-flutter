@@ -21,8 +21,24 @@ flutter run -d chrome
 
 Open `http://localhost:<port>/?page=glass&chrome=0` and `?page=glass&theme=dark&chrome=0`, then save the viewport. The Pressed chips are pinned with `forcePressed`. Prominent Disabled is the accent fill at about 50% opacity. Blur strength in the capture is an implementation approximation, not a kit token. Control heights 28 / 34 / 50 are the Figma Text export; they are not blur sigmas.
 
-- `layout_duo_inner.png` — Duo-like regular width with hinge-safe margins
-- `layout_duo_cover.png` — closed Duo wide-short, side-edge chrome
-- `layout_phone.png` — compact iPhone-style column
-- `layout_ipad.png` — iPad-width / expanded
-- `layout_desktop.png` — macOS / large window
+- `page_compact_light.png` / `page_compact_dark.png` — compact portrait stage 390×844, bottom Liquid Glass Dock. Image includes a 24px design-canvas margin (`#D1D1D6` / `#000000`).
+- `page_regular_light.png` / `page_regular_dark.png` — regular landscape stage 1024×768, glass rail + primary. No bottom Dock.
+- `page_wide_light.png` / `page_wide_dark.png` — wide stage 1440×900 (viewport wider than 1200), rail + secondary + primary.
+
+These are skeleton captures, not pixel sign-off against Duo / Pad / PC frames. The capture sets `themeMode` and `themeAnimationDuration: Duration.zero` so a dark shot is the `#000000` canvas, and it fills the stage instead of letterboxing every bucket inside one 1100-wide gallery view.
+
+Regenerate from `example/` (bash, PowerShell, or cmd):
+
+```bash
+PAGE_CAPTURE=1 flutter test test/page_capture_test.dart
+```
+
+```powershell
+$env:PAGE_CAPTURE='1'; flutter test test/page_capture_test.dart
+```
+
+```bat
+set PAGE_CAPTURE=1&& flutter test test/page_capture_test.dart
+```
+
+Older hinge-helper captures (`layout_phone.png`, `layout_duo_cover.png`, `layout_duo_inner.png`, `layout_ipad.png`, `layout_desktop.png`) predate `LingyunPage`.

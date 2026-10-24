@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- iOS `LYPage` host under `ios/` (Flutter plugin). Layout uses horizontal size class and the view's bounds. System `TabView` and `NavigationSplitView` are always compiled. `ArrangementView`, `UIArrangementViewController`, and `reservedRegions` compile only with `-D LY_IOS_27_1_SDK` on the iOS 27.1 SDK.
+- Shared contract: `LingyunPageSpec`, `LingyunPageWidthBucket`, `LingyunNativePage`. No Duo pose enum. Native mapping: [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
+- `LingyunPage` Flutter skeleton for non-iOS and for size-class simulation. It consumes that spec. Compact → tab + stack (bottom Dock). Regular → sidebar + split. Wide sidebar → three columns. Arrangement is a note, not a drawn hinge. [`docs/PAGE.md`](docs/PAGE.md).
+- Layout gallery presets: compact, compact bounds with an explicit size class, regular, regular + division, wide.
+- Example gallery **Native** page (`?page=native`). The UIKit skeleton runs on iOS only.
+
+### Notes
+
+- Wide breakpoint **1200** matches `LingyunBreakpoints.large` and is not a kit token. Flutter rail width **96** is **待核验 vs design**.
+- The Flutter skeleton does not paint iOS 27.1 vertical system chrome, `ArrangementView`, or real reserved regions. Those link in `ios/` when `LY_IOS_27_1_SDK=1`.
+
 ### Changed
 
 - `GlassButton` matches the Figma Liquid Glass button matrix (acceptance brief): control sizes Small / Medium / Large (about 28 / 34 / 50, padding 10×5 / 12×8 / 20×16), default size Small, capsule radius 1000 rather than panel radii 18 / 26 / 34. Regular Small stays the **material**.

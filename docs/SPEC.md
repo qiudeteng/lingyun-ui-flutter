@@ -105,7 +105,7 @@ API：`LiquidGlassLabels.lightPrimary` / `darkPrimary` / `primaryOf(context)`。
 | --- | --- | --- |
 | Standard | `GlassTabBarStyle.standard` | 通栏、贴底；图标 + Caption；内容让出 Home Indicator，玻璃铺到屏幕底边 |
 | Floating pill | `GlassTabBarStyle.floatingPill` | 悬浮胶囊（优先视觉）。402pt 画板上内容组宽：3 → **266**，4 与 5 顶到同一上限 **352**（左右留白 25）。3 → 4/5 变宽；4 与 5 同宽，格子变窄 |
-| Sidebar | `GlassTabBarStyle.sidebar` | **仅 API 预留**。iPad 竖向 / sidebar 下一轮再做；当前只是竖向 Dock 列，不是成品 |
+| Sidebar | `GlassTabBarStyle.sidebar` | Flutter 页壳在 regular / wide 用它做 **玻璃 rail**（仍是 Liquid Glass Dock，不是 Materials Thick）。**不是** iOS 27.1 竖向系统 Toolbar / Tab。竖向系统条、ReservedRegion、Arrangement 在本仓库 `ios/` 原生轨。见 [PAGE.md](PAGE.md) |
 
 - 组件：`GlassTabBar`（别名 `LiquidGlassTabBar`）。参数：`items`、`currentIndex` / `onChanged`、`style`、`glassStyle`、`tint`、`brightness`、`tintedBar`。
 - 未选中：Liquid Glass Primary（Light `#1A1A1A` / Dark `#EDEDED`）略降不透明度，近似 kit 的 LINEAR_BURN / LINEAR_DODGE，字形仍接近 Primary，而不是中灰。这个系数是实现近似，不是选中色，也不是公布的百分比。
@@ -125,8 +125,16 @@ API：`LiquidGlassLabels.lightPrimary` / `darkPrimary` / `primaryOf(context)`。
 | 圆角 18 / 26 / 34 | **待核验**。板材工作档，不是按钮圆角。Figma Button 导出是 stadium `1000`；浮动 Tab 胶囊是 `cornerRadius: 100`。Dock 配方里的 28 只是占位，Tab Bar 会覆盖成胶囊。 |
 | `blurSigma` / saturation | **待核验**。实现近似。Figma Frost=6、Depth=30、Refraction=70、Dispersion=20、Splay=20、Opacity=25 是档位，限流后未再对 `5584:32505` 与 `3:72207` 跑 `get_variable_defs`。 |
 | 未选中字形不透明度 | **实现近似**（LINEAR_BURN / LINEAR_DODGE），不是 kit 百分比。 |
-| iPad sidebar、Search Role、Prominent Tab 旁侧圆钮 | **非本轮**。`GlassTabBarStyle.sidebar` 仍是 API 预留。 |
+| Search Role、Prominent Tab 旁侧圆钮 | **非本轮**。`GlassTabBarStyle.sidebar` 已被 `LingyunPage` 用作玻璃 rail，不是 iOS 27.1 竖向系统条。 |
 | Colors 页语义色（`0:1746`） | **下一批**。本轮没有量到完整色表，不新造 Theme semantic colors。 |
 | Text Styles / Dynamic Type（`0:2194`） | **下一批**。Tab Caption 仍按现规格 10 / Semibold；不在本轮发明字号阶梯。 |
 | `GlassButton` 包装 | **其他工程师**。本轮不改按钮组件。 |
-| `LingyunPage` | **其他代理人**。 |
+| `LingyunPage` wide 断点 1200、rail 宽 96 | **待核验**。见 [PAGE.md](PAGE.md)。 |
+
+## D. Page 壳
+
+Dart 契约是 `LingyunPageSpec` / `LingyunNativePage`（[IOS-LYPAGE.md](IOS-LYPAGE.md)）。Flutter 骨架是 `LingyunPage`（[PAGE.md](PAGE.md)）。规划见 [PAGE-ADAPTIVE-PLAN.md](PAGE-ADAPTIVE-PLAN.md)。
+
+- 桶：`LingyunPageWidthBucket` = `compact` / `regular` / `wide`。wide 与 `LingyunBreakpoints.large`（**1200**）对齐，不是 kit token。没有 Duo 姿态枚举。
+- 非 iOS：Compact 建议 `tab` + 底 Dock。Regular / wide 建议 `sidebar` + `GlassTabBarStyle.sidebar` 玻璃 rail（不是 Materials Thick，也不是 iOS 27.1 竖向系统条）。
+- iOS：同一个 `LingyunPageSpec` 交给 `LingyunNativePage`。竖向系统 chrome、`ArrangementView`、真实 `reservedRegions` 只在 `LY_IOS_27_1_SDK=1` 时链接。

@@ -5,6 +5,7 @@ import 'pages/accessibility_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/materials_page.dart';
+import 'pages/native_page.dart';
 import 'pages/tab_bar_page.dart';
 import 'pages/themes_page.dart';
 import 'wallpaper.dart';
@@ -41,6 +42,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'themes' => 3,
       'layout' => 4,
       'access' => 5,
+      'native' => 6,
       _ => 0,
     };
     _themeMode = switch (Uri.base.queryParameters['theme']) {
@@ -159,6 +161,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.accessibility_new),
       label: 'Access',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.phone_iphone_outlined),
+      selectedIcon: Icon(Icons.phone_iphone),
+      label: 'Native',
+    ),
   ];
 
   @override
@@ -177,6 +184,7 @@ class DemoHome extends StatelessWidget {
         onReduceMotion: onReduceMotion,
         onHighContrast: onHighContrast,
       ),
+      const NativePage(),
     ];
 
     return LingyunLayoutBuilder(

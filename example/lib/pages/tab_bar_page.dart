@@ -111,7 +111,9 @@ class _TabBarPageState extends State<TabBarPage> {
               'Liquid Glass Primary (#1A1A1A / #EDEDED), softened. Selected '
               'icon and caption are System Blue. The floating pill is a '
               'stadium capsule; 18 / 26 / 34 are not its radius. '
-              'iPad vertical / sidebar (GlassTabBarStyle.sidebar) is reserved.',
+              'LingyunPage places GlassTabBarStyle.sidebar as a glass rail on '
+              'regular and wide widths. That rail is not iOS 27.1 vertical '
+              'system chrome.',
               style: text.bodyMedium?.copyWith(color: label),
             ),
             const SizedBox(height: 20),
