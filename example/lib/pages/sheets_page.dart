@@ -35,6 +35,7 @@ class _SheetsPageState extends State<SheetsPage> {
       context,
       grabberLabel: '抓手',
       semanticsLabel: '工作表',
+      backdrop: _sheetBackdrop,
       builder: _sheetBody,
     );
     _setResult(value);
@@ -258,6 +259,7 @@ class _SheetsPageState extends State<SheetsPage> {
                             useRootNavigator: false,
                             grabberLabel: '抓手',
                             semanticsLabel: '工作表',
+                            backdrop: _sheetBackdrop,
                             builder: _sheetBody,
                           );
                           _setResult(value);
@@ -307,68 +309,52 @@ class _CompactLauncher extends StatelessWidget {
     final colors = LingyunTheme.colorsOf(context);
     final keyboard = _SimulatedKeyboard.maybeOf(context);
     final showKeyboard = keyboard?.enabled ?? false;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            CustomPaint(
-              painter: _SheetStripePainter(
-                origin: 0,
-                span: constraints.maxWidth,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '收件箱',
+                style: LingyunTextStyles.headline(color: colors.labels.primary),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '收件箱',
-                    style:
-                        LingyunTextStyles.headline(color: colors.labels.primary)
-                            .copyWith(
-                              shadows: const [
-                                Shadow(color: Color(0xE6FFFFFF), blurRadius: 8),
-                              ],
-                            ),
-                  ),
-                  const SizedBox(height: 8),
-                  CupertinoButton(
-                    key: const Key('sheet-open-compact'),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    onPressed: () {
-                      onOpen();
-                    },
-                    child: const Text('在紧凑框弹出'),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              CupertinoButton(
+                key: const Key('sheet-open-compact'),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                onPressed: () {
+                  onOpen();
+                },
+                child: const Text('在紧凑框弹出'),
               ),
-            ),
-            if (showKeyboard)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SizedBox(
-                  height: keyboard!.inset,
-                  child: ColoredBox(
-                    color: colors.grays.gray5,
-                    child: Center(
-                      child: Text(
-                        '键盘',
-                        style: LingyunTextStyles.footnote(
-                          color: colors.labels.secondary,
-                        ),
-                      ),
+            ],
+          ),
+        ),
+        if (showKeyboard)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              height: keyboard!.inset,
+              child: ColoredBox(
+                color: colors.grays.gray5,
+                child: Center(
+                  child: Text(
+                    '键盘',
+                    style: LingyunTextStyles.footnote(
+                      color: colors.labels.secondary,
                     ),
                   ),
                 ),
               ),
-          ],
-        );
-      },
+            ),
+          ),
+      ],
     );
   }
 }
@@ -430,49 +416,50 @@ class _Specimen extends StatelessWidget {
           safeArea: safeArea,
           keyboardInset: 0,
         );
-        // Same tree as the Materials Thick swatch: stripes first, then
-        // GlassSurface. The eight bands are stretched across the platter
-        // so the whole ramp is under the blur. A horizontal strip, or a
-        // ramp that only crosses the stage, gets averaged into one milk
-        // color (#F7 / #343436) and the sharp edge reads as a solid plate.
-        // Nothing clips between the paint and the filter.
-        final gap =
-            constraints.maxHeight -
-            metrics.bottomOffset -
-            metrics.heightFor(detent);
+        final height = metrics.heightFor(detent);
+        final natural = Rect.fromLTWH(
+          metrics.left,
+          constraints.maxHeight - metrics.bottomOffset - height,
+          metrics.width,
+          height,
+        );
+        // Materials Thick is a short card inset 28×14 inside its stripe
+        // field. A sheet that covers the field edge to edge reads as a
+        // solid plate: the sharp bands stop, and Thick's veil hides the
+        // rest. Pull the specimen in until that same frame fits.
+        final platter = _insetPlatterToFitFrame(
+          natural,
+          Size(constraints.maxWidth, constraints.maxHeight),
+        );
+        final field = _stripeFieldAround(
+          platter,
+          attachedToBottom: metrics.attachedToBottom,
+        );
         return Stack(
           key: stageKey,
           fit: StackFit.expand,
+          clipBehavior: Clip.none,
           children: [
-            CustomPaint(
-              painter: _SheetStripePainter(
-                origin: metrics.left,
-                span: metrics.width,
-              ),
+            Positioned.fromRect(
+              rect: field,
+              child: const CustomPaint(painter: _SheetStripePainter()),
             ),
-            if (gap > 22)
+            if (platter.top > 22)
               Positioned(
                 top: 4,
-                left: metrics.left + 14,
-                width: mathMax(0, metrics.width - 28),
+                left: platter.left,
+                width: platter.width,
                 child: Text(
                   '收件箱  今天 · 已置顶',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style:
-                      LingyunTextStyles.footnote(color: const Color(0xFF1C1C1E))
-                          .copyWith(
-                            shadows: const [
-                              Shadow(color: Color(0xE6FFFFFF), blurRadius: 8),
-                            ],
-                          ),
+                  style: LingyunTextStyles.footnote(
+                    color: colors.labels.secondary,
+                  ),
                 ),
               ),
-            Positioned(
-              left: metrics.left,
-              width: metrics.width,
-              bottom: metrics.bottomOffset,
-              height: metrics.heightFor(detent),
+            Positioned.fromRect(
+              rect: platter,
               child: LingyunSheet(
                 attachedToBottom: metrics.attachedToBottom,
                 grabberLabel: '抓手',
@@ -565,21 +552,69 @@ Widget _sheetBody(BuildContext context, LingyunSheetController controller) {
 
 double mathMin(double a, double b) => a < b ? a : b;
 
-double mathMax(double a, double b) => a > b ? a : b;
+/// Same inset as the Materials page stripe field (`horizontal: 28`,
+/// `vertical: 14`). Not a token.
+const double _stripePadH = 28;
+const double _stripePadV = 14;
 
-/// Vertical specimen bands. Same colors as the Materials page stripe field,
-/// not a token.
+/// Shrink [platter] until a Materials-style stripe frame fits in [stage].
 ///
-/// [origin] / [span] are the platter's x range. The ramp is stretched across
-/// that range only, so the whole dark-to-light set sits under the blur and
-/// continues through the peek. Filling the side margins, or stretching the
-/// ramp across a stage wider than the platter, leaves Thick over one gray
-/// and reads as a solid plate.
-class _SheetStripePainter extends CustomPainter {
-  const _SheetStripePainter({required this.origin, required this.span});
+/// Compact metrics are full-bleed, so the frame would otherwise be clipped
+/// off and the sharp bands would stop on the glass edge.
+Rect _insetPlatterToFitFrame(Rect platter, Size stage) {
+  var left = platter.left;
+  var right = platter.right;
+  var top = platter.top;
+  var bottom = platter.bottom;
+  if (left < _stripePadH) left = _stripePadH;
+  if (right > stage.width - _stripePadH) right = stage.width - _stripePadH;
+  if (top < _stripePadV) top = _stripePadV;
+  final attached = (stage.height - platter.bottom).abs() < 0.5;
+  if (!attached && bottom > stage.height - _stripePadV) {
+    bottom = stage.height - _stripePadV;
+  }
+  if (right < left) right = left;
+  if (bottom < top) bottom = top;
+  return Rect.fromLTRB(left, top, right, bottom);
+}
 
-  final double origin;
-  final double span;
+Rect _stripeFieldAround(Rect platter, {required bool attachedToBottom}) {
+  return Rect.fromLTRB(
+    platter.left - _stripePadH,
+    platter.top - _stripePadV,
+    platter.right + _stripePadH,
+    platter.bottom + (attachedToBottom ? 0 : _stripePadV),
+  );
+}
+
+/// Stripe field drawn in the sheet route, same layer as the platter.
+///
+/// The route does not sample the page under it, so the bands have to be
+/// painted here. They use the platter's own width, with the Materials
+/// frame around it, instead of one ramp stretched across the window.
+Widget _sheetBackdrop(
+  BuildContext context,
+  LingyunSheetMetrics metrics,
+  Rect platter,
+) {
+  final field = _stripeFieldAround(
+    platter,
+    attachedToBottom: metrics.attachedToBottom,
+  );
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      Positioned.fromRect(
+        rect: field,
+        child: const CustomPaint(painter: _SheetStripePainter()),
+      ),
+    ],
+  );
+}
+
+/// Vertical bands. Same colors as the Materials page stripe field, not a token.
+class _SheetStripePainter extends CustomPainter {
+  const _SheetStripePainter();
 
   static const List<Color> bands = [
     Color(0xFF5C5C60),
@@ -595,21 +630,17 @@ class _SheetStripePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
-    final span = this.span > 0 ? this.span : size.width;
-    final band = span / bands.length;
+    final band = size.width / bands.length;
     final paint = Paint();
     for (var i = 0; i < bands.length; i++) {
-      final left = origin + i * band;
-      if (left >= size.width) break;
-      final width = mathMin(band + 0.5, size.width - left);
-      if (width <= 0) continue;
       paint.color = bands[i];
-      canvas.drawRect(Rect.fromLTWH(left, 0, width, size.height), paint);
+      canvas.drawRect(
+        Rect.fromLTWH(i * band, 0, band + 0.5, size.height),
+        paint,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SheetStripePainter oldDelegate) {
-    return oldDelegate.origin != origin || oldDelegate.span != span;
-  }
+  bool shouldRepaint(covariant _SheetStripePainter oldDelegate) => false;
 }

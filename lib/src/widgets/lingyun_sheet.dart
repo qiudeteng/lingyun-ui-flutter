@@ -327,8 +327,23 @@ class _SheetGrabber extends StatelessWidget {
   }
 }
 
-typedef LingyunSheetBuilder =
-    Widget Function(BuildContext context, LingyunSheetController controller);
+typedef LingyunSheetBuilder = Widget Function(
+  BuildContext context,
+  LingyunSheetController controller,
+);
+
+/// Paints something for the sheet's [BackdropFilter] to sample.
+///
+/// [platter] is the glass rect in the route, in logical pixels. A modal
+/// route keeps its own compositing layer, so on Impeller the filter does
+/// not see the page underneath. Paint the preview in this builder and it
+/// sits in that same layer, behind the platter. Null leaves the route
+/// empty and the filter samples whatever else is already there.
+typedef LingyunSheetBackdropBuilder = Widget Function(
+  BuildContext context,
+  LingyunSheetMetrics metrics,
+  Rect platter,
+);
 
 /// Presents a sheet and returns the value passed to [Navigator.pop].
 ///
@@ -350,6 +365,10 @@ typedef LingyunSheetBuilder =
 /// Outside taps dismiss when [barrierDismissible] is true. The dim is
 /// [LingyunSheetLayout.lightBarrier] / [darkBarrier], 待核验, and is not the
 /// alert barrier.
+///
+/// [backdrop] is painted in the sheet route, behind the platter. Use it
+/// when the preview has to be in the same layer as the blur. On Impeller a
+/// modal route does not sample the page underneath.
 Future<T?> showLingyunSheet<T>(
   BuildContext context, {
   required LingyunSheetBuilder builder,
@@ -366,6 +385,7 @@ Future<T?> showLingyunSheet<T>(
   String? barrierLabel,
   String grabberLabel = 'Drag handle',
   String semanticsLabel = 'Sheet',
+  LingyunSheetBackdropBuilder? backdrop,
 }) {
   final ordered = List<LingyunSheetDetent>.of(detents)
     ..sort((a, b) => a.index.compareTo(b.index));
@@ -405,6 +425,7 @@ Future<T?> showLingyunSheet<T>(
       horizontalSizeClass: horizontalSizeClass,
       grabberLabel: grabberLabel,
       semanticsLabel: semanticsLabel,
+      backdrop: backdrop,
     ),
   );
 }
@@ -423,6 +444,7 @@ class _LingyunSheetRoute<T> extends PopupRoute<T> {
     required this.horizontalSizeClass,
     required this.grabberLabel,
     required this.semanticsLabel,
+    required this.backdrop,
   });
 
   final LingyunSheetBuilder builder;
@@ -437,6 +459,7 @@ class _LingyunSheetRoute<T> extends PopupRoute<T> {
   final String? horizontalSizeClass;
   final String grabberLabel;
   final String semanticsLabel;
+  final LingyunSheetBackdropBuilder? backdrop;
 
   @override
   Color get barrierColor => brightness == Brightness.dark
@@ -476,6 +499,7 @@ class _LingyunSheetRoute<T> extends PopupRoute<T> {
         horizontalSizeClass: horizontalSizeClass,
         grabberLabel: grabberLabel,
         semanticsLabel: semanticsLabel,
+        backdrop: backdrop,
       ),
     );
   }
@@ -538,6 +562,7 @@ class _LingyunSheetPanel extends StatefulWidget {
     required this.horizontalSizeClass,
     required this.grabberLabel,
     required this.semanticsLabel,
+    required this.backdrop,
   });
 
   final LingyunSheetBuilder builder;
@@ -549,6 +574,7 @@ class _LingyunSheetPanel extends StatefulWidget {
   final String? horizontalSizeClass;
   final String grabberLabel;
   final String semanticsLabel;
+  final LingyunSheetBackdropBuilder? backdrop;
 
   @override
   State<_LingyunSheetPanel> createState() => _LingyunSheetPanelState();
@@ -817,7 +843,23 @@ class _LingyunSheetPanelState extends State<_LingyunSheetPanel>
                     : media.padding,
               ),
               child: Stack(
+                // Clip.none: a hard-edge clip on this stack would isolate
+                // the platter from the backdrop painted behind it.
+                clipBehavior: Clip.none,
                 children: [
+                  if (widget.backdrop != null)
+                    Positioned.fill(
+                      child: widget.backdrop!(
+                        context,
+                        metrics,
+                        Rect.fromLTWH(
+                          metrics.left,
+                          constraints.maxHeight - metrics.bottomOffset - visual,
+                          metrics.width,
+                          visual,
+                        ),
+                      ),
+                    ),
                   Positioned.fill(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,

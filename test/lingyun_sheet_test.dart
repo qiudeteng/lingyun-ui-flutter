@@ -354,6 +354,19 @@ void main() {
       );
     });
 
+    testWidgets('presented sheet samples the backdrop painted in its route', (
+      tester,
+    ) async {
+      final colors = await _sampleRouteBackdrop(tester);
+      expect(
+        (colors.$1 - colors.$2).abs(),
+        greaterThan(4),
+        reason:
+            'The in-route backdrop must show through Thick. '
+            'A modal route does not sample the page on Impeller.',
+      );
+    });
+
     testWidgets('dark theme still resolves Materials Thick', (tester) async {
       await _open(
         tester,
@@ -545,6 +558,67 @@ Future<(int, int)> _sampleRoute(WidgetTester tester) async {
   int red(int x, int y) => bytes[(y * width + x) * 4];
   final y = (rect.center.dy).round().clamp(0, size.height.round() - 1);
   return (red(20, y), red(300, y));
+}
+
+Future<(int, int)> _sampleRouteBackdrop(WidgetTester tester) async {
+  const size = Size(360, 320);
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: const Key('sheet-route-backdrop'),
+      child: _app(
+        home: Builder(
+          builder: (context) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                const ColoredBox(color: Color(0xFF808080)),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: CupertinoButton(
+                    onPressed: () {
+                      showLingyunSheet<void>(
+                        context,
+                        backdrop: (context, metrics, platter) {
+                          return const Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: ColoredBox(color: Color(0xFF101010)),
+                              ),
+                              Expanded(
+                                child: ColoredBox(color: Color(0xFFF4F4F6)),
+                              ),
+                            ],
+                          );
+                        },
+                        builder: (context, controller) =>
+                            const SizedBox.shrink(),
+                      );
+                    },
+                    child: const Text('打开'),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('打开'));
+  await tester.pumpAndSettle();
+  final bytes = await _rgba(tester, const Key('sheet-route-backdrop'));
+  final rect = tester.getRect(find.byKey(const Key('lingyun-sheet-platter')));
+  final width = size.width.round();
+  int red(int x, int y) => bytes[(y * width + x) * 4];
+  final y = rect.center.dy.round().clamp(8, size.height.round() - 8);
+  final left = (rect.left + 24).round();
+  final right = (rect.right - 24).round();
+  return (red(left, y), red(right, y));
 }
 
 Future<List<int>> _rgba(WidgetTester tester, Key key) async {
