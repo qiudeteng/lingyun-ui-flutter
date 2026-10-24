@@ -42,6 +42,8 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | --- | --- |
 | `MaterialTier` / `MaterialCatalog` | Materials Ultrathin / Thin / Regular / Thick × Light / Dark |
 | `LiquidGlassStyle` / `LiquidGlassCatalog` | Liquid Glass Clear / Regular S·M·L / Dock / Widget Glass |
+| `LingyunColors` / `LingyunTheme` | Sketch iOS 27 system colors, labels, backgrounds, fills, grays, separators. Cupertino theme. Glass labels stay `#1A1A1A` / `#EDEDED` |
+| `LingyunTextStyles` | Large Title…Caption 2 at the Large size, plus loose / tight leading. `LingyunMaterialTheme` maps them onto `TextTheme` |
 | `LiquidGlassLabels` | Labels — Liquid Glass Primary: Light `#1A1A1A`, Dark `#EDEDED` |
 | `GlassButtonRole` / `GlassButtonProminence` | Kit **Destructive** and **Glass Prominent** (tinted / filled System Blue, white label) on `GlassButton` |
 | `GlassButtonPalette` | Light / Dark System Blue, system red, filled label, disabled label. On `LiquidGlassTheme.buttons` |
@@ -209,6 +211,15 @@ flutter run -d ios
 ```
 
 Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (`LingyunPage` compact / compact-bounds / regular / division / wide presets + live window), **Access** (reduce transparency / motion / high contrast), **Native** (`?page=native`, iOS `LYPage` host), **Alerts** (system `cupertino_ui` dialog: one button, two buttons, destructive, title + message, message only; demo copy is Simplified Chinese). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
+
+Colors and text styles are on the main gallery **主题** destination (Simplified Chinese). Open it from the nav, or with `?page=themes` (color swatches), `?page=colors`, or `?page=text` (Large text specimens). Add `&theme=dark` and `&chrome=0`. The same pages also have a Cupertino entry:
+
+```bash
+cd example
+flutter run -d chrome -t lib/foundation_app.dart
+```
+
+`?page=colors` or `?page=text`, plus `&theme=dark` and `&chrome=0`. Screenshots: `docs/screenshots/colors_*.png`, `docs/screenshots/text_*.png`.
 
 Open a page directly: `?page=tabs` or `?page=alerts` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 

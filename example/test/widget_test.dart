@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:example/foundation_app.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
@@ -187,5 +188,68 @@ void main() {
     await tester.tap(find.text('好').last);
     await tester.pumpAndSettle();
     expect(find.text('实时路由 · 上次结果：好'), findsOneWidget);
+  });
+
+  testWidgets('foundation gallery shows colors and text styles', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const FoundationGallery(showChrome: false));
+    expect(find.byKey(const Key('colors-title')), findsOneWidget);
+    expect(find.text('液态玻璃标签'), findsOneWidget);
+    expect(find.text('系统颜色'), findsOneWidget);
+    expect(find.text('System Colors'), findsNothing);
+    expect(find.text('Colors'), findsNothing);
+    expect(find.text('#1A1A1A'), findsWidgets);
+    expect(find.text('#0088FF'), findsWidgets);
+
+    await tester.pumpWidget(
+      const FoundationGallery(
+        initialPage: FoundationPage.text,
+        initialBrightness: Brightness.dark,
+        showChrome: false,
+      ),
+    );
+    expect(find.byKey(const Key('text-styles-title')), findsOneWidget);
+    expect(find.byKey(const Key('text-role-body')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('text-role-caption1')),
+      300,
+    );
+    expect(find.byKey(const Key('text-role-caption1')), findsOneWidget);
+  });
+
+  testWidgets('themes page opens color swatches and text styles', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('主题').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('themes-title')), findsOneWidget);
+    expect(find.byKey(const Key('colors-title')), findsOneWidget);
+    expect(find.text('系统颜色'), findsOneWidget);
+    expect(find.text('液态玻璃标签'), findsOneWidget);
+    expect(find.text('#0088FF'), findsWidgets);
+    expect(find.text('Themes'), findsNothing);
+    expect(find.text('Dark mode'), findsNothing);
+    expect(find.text('Materials Thin'), findsNothing);
+
+    await tester.tap(find.text('深色').last);
+    await tester.pumpAndSettle();
+    expect(find.text('#0091FF'), findsWidgets);
+
+    await tester.tap(find.text('文本').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('text-styles-title')), findsOneWidget);
+    expect(find.text('凌云界面'), findsWidgets);
+    expect(find.textContaining('大标题'), findsWidgets);
   });
 }

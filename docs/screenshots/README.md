@@ -50,3 +50,18 @@ set PAGE_CAPTURE=1&& flutter test test/page_capture_test.dart
 ```
 
 Older hinge-helper captures (`layout_phone.png`, `layout_duo_cover.png`, `layout_duo_inner.png`, `layout_ipad.png`, `layout_desktop.png`) predate `LingyunPage`.
+
+颜色和文本样式在主画廊「主题」里（文案为简体中文，`chrome=0`，没有侧栏）：
+
+- `colors_light.png` — 主题页的颜色色板，浅色，设计画布 `#D1D1D6`，1280×2168。色块上的细边是分隔线的不透明色，用来看清浅色块，不是新的圆角或模糊 token。
+- `colors_dark.png` — 同一色板，深色，设计画布 `#000000`，1280×2168。
+- `text_light.png` — 主题页的文本字阶，浅色，设计画布 `#D1D1D6`，1280×1375。只展示大号内容尺寸。系统字体没有打进安装包。
+- `text_dark.png` — 同一字阶，深色，设计画布 `#000000`，1280×1375。
+
+重新生成（在 `example/` 里，Windows 的 cmd 或 PowerShell 同样可用）：
+
+```bash
+flutter run -d chrome
+```
+
+打开 `http://localhost:<端口>/?page=colors&theme=light&chrome=0`，以及 `theme=dark`。文本页把 `page` 换成 `text`。导航里点「主题」，默认就是颜色色板，再点「文本」。
