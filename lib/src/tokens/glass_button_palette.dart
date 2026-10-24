@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 /// * **Glass Prominent** fill — System Blue, white label
 /// * **Destructive** — system red label, or a system-red fill when combined
 ///   with Glass Prominent
-/// * **Disabled** — Glass uses a tertiary label (light `#BFBFBF`). Glass
-///   Prominent keeps the accent fill; the widget fades it to about 50%.
+/// * **Disabled** — Glass uses a tertiary label (light `#BFBFBF`, dark
+///   `#404040`). Glass Prominent keeps the accent fill; the widget fades
+///   it to about 50%.
 ///
 /// [pressedVeil] is an **implementation approximation — not an official
 /// Design Token**. It only makes the pressed state readable. Do not print
@@ -59,11 +60,10 @@ class GlassButtonPalette {
 
   /// Dark disabled Glass label.
   ///
-  /// The acceptance brief published one tertiary, `#BFBFBF`. The old
-  /// `#59595C` sample came from Dark Glass Prominent Disabled, which is
-  /// the 50% fade of the accent fill, not this label. Dark uses the same
-  /// tertiary until a separate dark value is re-read.
-  static const Color disabledLabelDark = Color(0xFFBFBFBF);
+  /// Labels-LG Dark Tertiary `#404040` (design QA on the button PR).
+  /// Not the light tertiary `#BFBFBF`, and not the old Prominent Disabled
+  /// composite `#59595C`.
+  static const Color disabledLabelDark = Color(0xFF404040);
 
   /// Light palette.
   static const GlassButtonPalette light = GlassButtonPalette(

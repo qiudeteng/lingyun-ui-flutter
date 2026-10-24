@@ -7,10 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `GlassButton` matches the Figma Liquid Glass button matrix (acceptance brief): control sizes Small / Medium / Large (about 28 / 34 / 50, padding 10×5 / 12×8 / 20×16), default size Small, capsule radius 1000 rather than panel radii 18 / 26 / 34. Regular Small stays the **material**.
-- Glass Prominent is White Backing plus an opaque System Blue (`#0088FF` light) or system red, white label, SF Pro Medium weight on the ambient font. Disabled Prominent keeps that fill at 50% opacity. Disabled Glass uses tertiary `#BFBFBF` in light.
+- Glass Prominent is White Backing plus an opaque System Blue (`#0088FF` light) or system red, white label, SF Pro Medium weight on the ambient font. Disabled Prominent keeps that fill at 50% opacity. Disabled Glass uses tertiary `#BFBFBF` in light and Labels-LG Dark Tertiary `#404040` in dark.
 - `GlassButton.icon` is the Symbol variant (circle at the text size's height).
 - Gallery button section shows sizes, states, Clear, Destructive, Prominent, and Symbol. Pressed remains scale 0.97 plus a lighter press veil so the capsule stays readable (approximation, not a kit token; Figma has no Pressed axis).
-- Disabled Glass label is tertiary `#BFBFBF` in light and dark. The previous dark `#59595C` was a Prominent Disabled composite, not the Glass label.
 - Gallery **Tabs** page adds a floating pill with 4 items. It uses the same 352pt cap as the 5-item pill.
 - Example gallery default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`). A control on every page switches canvas, muted wash, nature, abstract color, and a busy UI pattern (`?bg=`).
 

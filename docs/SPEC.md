@@ -64,7 +64,7 @@
 | --- | --- |
 | Default | 玻璃 + 主标签色。Prominent 为不透明强调色，边缘仍是约 0.5px hairline + 多层 specular |
 | Pressed | 缩放到 0.97，加一层 press veil（实现近似，**待核验**，不是 kit token）。稿的按钮轴没有 Pressed。画廊可用 `forcePressed` 钉住 |
-| Disabled | `onPressed: null`。Glass：Tertiary 灰字 `#BFBFBF`（简报只给了这一个；旧的深色 `#59595C` 来自 Prominent Disabled 叠色，不再当标签色）。Glass Prominent：填充保留，整体约 50% 不透明，不退回玻璃 |
+| Disabled | `onPressed: null`。Glass：Tertiary 灰字，Light `#BFBFBF`，Dark `#404040`（Labels-LG Dark Tertiary）。Glass Prominent：填充保留，整体约 50% 不透明，不退回玻璃 |
 
 **禁止**对按钮使用 Materials Thick。Rim 仍是约 0.5px hairline，不按档位加粗。Frost / Depth 不是 blur σ。
 

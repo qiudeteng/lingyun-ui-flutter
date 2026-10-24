@@ -580,7 +580,7 @@ void main() {
       expect(GlassButtonPalette.dark.systemRed, const Color(0xFFFF4245));
       expect(GlassButtonPalette.light.filledLabel, const Color(0xFFFFFFFF));
       expect(GlassButtonPalette.light.disabledLabel, const Color(0xFFBFBFBF));
-      expect(GlassButtonPalette.dark.disabledLabel, const Color(0xFFBFBFBF));
+      expect(GlassButtonPalette.dark.disabledLabel, const Color(0xFF404040));
       expect(GlassButtonPalette.prominentBacking, const Color(0xFFFFFFFF));
     });
 
