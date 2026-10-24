@@ -10,11 +10,16 @@
 /// tier and not a toolbar material.
 ///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
-/// ThemeExtension). They do not depend on device-model or UIKit types.
+/// ThemeExtension). They do not depend on device-model checks.
+///
+/// [LingyunNativePage] is the iOS host for a future `LingyunPage`. It reads
+/// horizontal size class and the view's bounds. It is not that widget.
 library;
 
 export 'src/adaptivity/lingyun_adaptivity.dart';
 export 'src/layout/lingyun_layout.dart';
+export 'src/page/lingyun_native_page.dart';
+export 'src/page/lingyun_page_spec.dart';
 export 'src/theme/liquid_glass_theme.dart';
 export 'src/tokens/glass_button_palette.dart';
 export 'src/tokens/glass_material.dart';

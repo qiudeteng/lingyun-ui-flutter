@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/main.dart';
+import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
 
 void main() {
@@ -76,6 +77,29 @@ void main() {
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);
     expect(find.text('Reduce transparency'), findsOneWidget);
     expect(find.text('Reduce motion'), findsOneWidget);
+  });
+
+  testWidgets('native page lists compact and regular skeletons', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: NativePage())),
+    );
+    expect(find.byKey(const Key('native-page-title')), findsOneWidget);
+    expect(find.byKey(const Key('native-page-compact-note')), findsOneWidget);
+    expect(find.byKey(const Key('native-page-regular-note')), findsOneWidget);
+    expect(find.byKey(const Key('native-page-placeholder')), findsOneWidget);
+    expect(find.byKey(const Key('native-page-host')), findsOneWidget);
+
+    final arrangement = find.byKey(
+      const Key('native-navigation-arrangementSplit'),
+    );
+    await tester.ensureVisible(arrangement);
+    await tester.tap(arrangement);
+    await tester.pump();
+    expect(find.textContaining('ArrangementView'), findsWidgets);
   });
 
   test('unknown bg query falls back to the design canvas', () {

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- iOS `LYPage` host under `ios/` (Flutter plugin). Layout uses horizontal size class and the view's bounds. System `TabView` and `NavigationSplitView` are always compiled. `ArrangementView`, `UIArrangementViewController`, and `reservedRegions` compile only with `-D LY_IOS_27_1_SDK` on the iOS 27.1 SDK.
+- Dart contract `LingyunPageSpec`, `LingyunPageWidthBucket`, and `LingyunNativePage` for the upcoming Flutter `LingyunPage`. No Duo pose enum. Mapping: [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
+- Example gallery **Native** page (`?page=native`) with compact / regular / wide notes. The UIKit skeleton runs on iOS only.
+
 ### Changed
 
 - `GlassButton` matches the Figma Liquid Glass button matrix (acceptance brief): control sizes Small / Medium / Large (about 28 / 34 / 50, padding 10×5 / 12×8 / 20×16), default size Small, capsule radius 1000 rather than panel radii 18 / 26 / 34. Regular Small stays the **material**.

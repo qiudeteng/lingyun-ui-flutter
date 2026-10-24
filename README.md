@@ -10,7 +10,7 @@ Materials + Liquid Glass primitives for Flutter — two **separate** systems, a 
 
 ## Platforms
 
-Phase 0 targets **all** of these surfaces. Tokens, theme, and `GlassSurface` are the same APIs everywhere — there are no iOS-only types in the public API.
+Phase 0 targets **all** of these surfaces. Tokens, theme, and `GlassSurface` are the same APIs everywhere. The iOS page host (`LingyunNativePage` / `LYPage`) is the one platform view; other platforms keep the Flutter layout helpers. See [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
 
 | Surface | Typical width class | Layout notes |
 | --- | --- | --- |
@@ -54,6 +54,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
+| `LingyunNativePage` / `LYPage` | iOS host: horizontal size class + view bounds. System `TabView`, `NavigationSplitView`, and (27.1 SDK flag) `ArrangementView`. Not the cross-platform `LingyunPage` widget |
 
 ### Specular / refraction conventions
 
@@ -150,6 +151,19 @@ LingyunSideChrome(
 ```
 
 Breakpoints (logical px): compact &lt; 600, regular 600–839, expanded 840–1199, large ≥ 1200.
+
+### iOS native page
+
+`LingyunLayout` measures window width because Flutter has no horizontal size class. On iOS, `LYPage` does **not** reuse the 600 pt cut. Compact is a compact horizontal size class (folded Duo outer display included). Regular is a regular horizontal size class (half-open and fully open). Wide is regular and at least `LingyunBreakpoints.large` (1200). That number is the existing Dart breakpoint, not an iOS kit token.
+
+The example **Native** page embeds the platform view on iOS and prints the compact / regular notes on every platform. Build steps and the 27.1 SDK flag: [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
+
+```bash
+cd example
+flutter run -d ios
+```
+
+On Windows, `flutter test` and `flutter analyze` are the same commands. `pod install` and `flutter build ios` need a Mac with Xcode. This tree was not compiled against the iOS 27.1 SDK.
 
 ## Example gallery
 
