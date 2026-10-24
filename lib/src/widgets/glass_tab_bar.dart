@@ -100,9 +100,10 @@ class GlassTabBar extends StatelessWidget {
 
   /// Unselected icon/caption opacity on [LiquidGlassLabels] primary.
   ///
-  /// Approximates the kit LINEAR_BURN / LINEAR_DODGE mix. Not a selected
-  /// color, and not a custom grey used as the selection tint.
-  static const double unselectedOpacity = 0.58;
+  /// Approximates the kit LINEAR_BURN / LINEAR_DODGE mix so unselected
+  /// glyphs stay near Primary (`#1A1A1A` / `#EDEDED`) instead of a mid
+  /// grey. Not a published percentage, not a selected color.
+  static const double unselectedOpacity = 0.92;
 
   /// Unselected icon/caption opacity when [tintedBar] is on.
   static const double tintedUnselectedOpacity = 0.72;
@@ -425,10 +426,10 @@ class _Platter extends StatelessWidget {
 
 LiquidGlassTokens _tintedTokens(LiquidGlassTokens base, Color tint) {
   return base.copyWith(
-    tintColor: tint.withValues(alpha: 0.88),
-    overlayColor: const Color(0x40FFFFFF),
+    tintColor: tint.withValues(alpha: 0.94),
+    overlayColor: const Color(0x1FFFFFFF),
     overlayBlend: BlendMode.softLight,
-    edgeHighlightColor: const Color(0x73FFFFFF),
+    edgeHighlightColor: const Color(0x66FFFFFF),
     opaqueFallbackColor: tint,
   );
 }
@@ -456,9 +457,13 @@ class _ItemRow extends StatelessWidget {
       context,
       LiquidGlassMotion.defaults.quickCurve,
     );
-    const lensInset = 2.0;
-    final lensLeft = layout.itemLeft(bar.currentIndex) + lensInset;
-    final lensWidth = math.max(36.0, layout.itemExtent - lensInset * 2);
+    // Platter padding is already 4. A short vertical inset keeps the
+    // lens a capsule inside the control, close to the Dock edge the way
+    // the Tab Bars comp draws the selected chip.
+    const lensInsetH = 1.0;
+    const lensInsetV = 2.0;
+    final lensLeft = layout.itemLeft(bar.currentIndex) + lensInsetH;
+    final lensWidth = math.max(36.0, layout.itemExtent - lensInsetH * 2);
 
     return SizedBox(
       width: layout.groupWidth,
@@ -471,19 +476,12 @@ class _ItemRow extends StatelessWidget {
             curve: curve,
             left: lensLeft,
             width: lensWidth,
-            top: 4,
-            height: _TabBarMetrics.controlHeight - 8,
+            top: lensInsetV,
+            height: _TabBarMetrics.controlHeight - lensInsetV * 2,
             child: IgnorePointer(
-              child: DecoratedBox(
-                key: const Key('glass-tab-selection-lens'),
-                decoration: BoxDecoration(
-                  color: _lensColor(
-                    brightness: brightness,
-                    tintedBar: bar.tintedBar,
-                  ),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: const SizedBox.expand(),
+              child: _SelectionLens(
+                brightness: brightness,
+                tintedBar: bar.tintedBar,
               ),
             ),
           ),
@@ -513,10 +511,49 @@ class _ItemRow extends StatelessWidget {
   }
 }
 
-Color _lensColor({required Brightness brightness, required bool tintedBar}) {
-  if (tintedBar) return const Color(0x40FFFFFF);
-  if (brightness == Brightness.dark) return const Color(0x33FFFFFF);
-  return const Color(0x99FFFFFF);
+/// Selected-tab capsule. A lighter fill plus the shared 0.5px hairline,
+/// not a Material indicator bar and not a second blur.
+class _SelectionLens extends StatelessWidget {
+  const _SelectionLens({required this.brightness, required this.tintedBar});
+
+  final Brightness brightness;
+  final bool tintedBar;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color top;
+    final Color bottom;
+    final Color hairline;
+    if (tintedBar) {
+      top = const Color(0x73FFFFFF);
+      bottom = const Color(0x3DFFFFFF);
+      hairline = const Color(0x66FFFFFF);
+    } else if (brightness == Brightness.dark) {
+      top = const Color(0x70FFFFFF);
+      bottom = const Color(0x3AFFFFFF);
+      hairline = const Color(0x59FFFFFF);
+    } else {
+      top = const Color(0xFCFFFFFF);
+      bottom = const Color(0xF2F4F4F6);
+      hairline = const Color(0x24000000);
+    }
+    return DecoratedBox(
+      key: const Key('glass-tab-selection-lens'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [top, bottom],
+        ),
+        border: Border.all(
+          color: hairline,
+          width: LiquidGlassTokens.hairlineWidth,
+        ),
+      ),
+      child: const SizedBox.expand(),
+    );
+  }
 }
 
 class _TabItem extends StatelessWidget {

@@ -154,9 +154,9 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens light = LiquidGlassTokens(
     blurSigma: 20,
     saturation: 1.16,
-    tintColor: Color(0x7AF8F3EF),
-    overlayColor: Color(0x14BFBFBF),
-    overlayBlend: BlendMode.luminosity,
+    tintColor: Color(0xB8F7F7F9),
+    overlayColor: Color(0x14FFFFFF),
+    overlayBlend: BlendMode.srcOver,
     edgeHighlightColor: Color(0x59FFFFFF),
     refractionColor: Color(0x73FFFFFF),
     refractionWidth: hairlineWidth,
@@ -176,8 +176,8 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens dark = LiquidGlassTokens(
     blurSigma: 22,
     saturation: 1.10,
-    tintColor: Color(0x731A1A1A),
-    overlayColor: Color(0x991A1A1A),
+    tintColor: Color(0xEA101012),
+    overlayColor: Color(0x33101012),
     overlayBlend: BlendMode.lighten,
     edgeHighlightColor: Color(0x40FFFFFF),
     refractionColor: Color(0x4DFFFFFF),
@@ -190,7 +190,7 @@ class LiquidGlassTokens {
     shadowBlurRadius: 48,
     shadowOffset: Offset(0, 8),
     shadowSpread: -4,
-    rimColor: Color(0xFFA6A6A6),
+    rimColor: Color(0x66D0D0D4),
     innerShadowColor: Color(0x331A1A1A),
   );
 
@@ -300,13 +300,15 @@ class LiquidGlassTokens {
 
   /// Liquid Glass **Regular Medium** (light).
   ///
-  /// Radius 26 is **待核验 (unverified vs Sketch)**.
+  /// Radius 26 is **待核验 (unverified vs Sketch / Figma)**.
+  /// Tint is a cool milky white so the plate matches the Materials-page
+  /// Regular Medium comp; [blurSigma] is still an approximation.
   static const LiquidGlassTokens lightRegularMedium = LiquidGlassTokens(
     blurSigma: 18,
     saturation: 1.14,
-    tintColor: Color(0x70F8F3EF),
-    overlayColor: Color(0x14BFBFBF),
-    overlayBlend: BlendMode.luminosity,
+    tintColor: Color(0xA6F6F6F8),
+    overlayColor: Color(0x12FFFFFF),
+    overlayBlend: BlendMode.srcOver,
     edgeHighlightColor: Color(0x59FFFFFF),
     refractionColor: Color(0x73FFFFFF),
     refractionWidth: hairlineWidth,
@@ -327,8 +329,8 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens darkRegularMedium = LiquidGlassTokens(
     blurSigma: 20,
     saturation: 1.10,
-    tintColor: Color(0x6B1A1A1A),
-    overlayColor: Color(0x8C1A1A1A),
+    tintColor: Color(0xE0101012),
+    overlayColor: Color(0x22101012),
     overlayBlend: BlendMode.lighten,
     edgeHighlightColor: Color(0x40FFFFFF),
     refractionColor: Color(0x4DFFFFFF),
@@ -341,19 +343,23 @@ class LiquidGlassTokens {
     shadowBlurRadius: 36,
     shadowOffset: Offset(0, 8),
     shadowSpread: -3,
-    rimColor: Color(0xFFA6A6A6),
+    rimColor: Color(0x66D0D0D4),
     innerShadowColor: Color(0x331A1A1A),
     innerShadowExtent: 24,
   );
 
-  /// Liquid Glass **Dock** (light).
+  /// Liquid Glass **Dock** (light). Tab Bar chrome.
+  ///
+  /// Cool milky fill (not the warm Regular beige, and not Materials Thick).
+  /// Corner 28 is an implementation stand-in — **not** a measured token.
+  /// [GlassTabBar] floating pills override it with stadium `100`.
   static const LiquidGlassTokens lightDock = LiquidGlassTokens(
     blurSigma: 18,
     saturation: 1.14,
-    tintColor: Color(0x66F8F3EF),
-    overlayColor: Color(0x1ABFBFBF),
-    overlayBlend: BlendMode.luminosity,
-    edgeHighlightColor: Color(0x66FFFFFF),
+    tintColor: Color(0xB8F5F5F7),
+    overlayColor: Color(0x12FFFFFF),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x73FFFFFF),
     refractionColor: Color(0x80FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x2EFFFFFF),
@@ -364,20 +370,23 @@ class LiquidGlassTokens {
     shadowBlurRadius: 28,
     shadowOffset: Offset(0, 10),
     shadowSpread: -2,
-    rimColor: Color(0xFFDBDBDB),
-    innerShadowColor: Color(0x2E282828),
-    innerShadowExtent: 20,
+    rimColor: Color(0xFFE4E4E8),
+    innerShadowColor: Color(0x14282828),
+    innerShadowExtent: 10,
   );
 
-  /// Liquid Glass **Dock** (dark).
+  /// Liquid Glass **Dock** (dark). Tab Bar chrome.
+  ///
+  /// Charcoal body so the platter reads on the `#000000` gallery canvas.
+  /// Corner 28 is an implementation stand-in, not a measured token.
   static const LiquidGlassTokens darkDock = LiquidGlassTokens(
     blurSigma: 20,
     saturation: 1.10,
-    tintColor: Color(0x661A1A1A),
-    overlayColor: Color(0x8C1A1A1A),
-    overlayBlend: BlendMode.lighten,
-    edgeHighlightColor: Color(0x4DFFFFFF),
-    refractionColor: Color(0x59FFFFFF),
+    tintColor: Color(0xE61E1E22),
+    overlayColor: Color(0x141E1E22),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x38FFFFFF),
+    refractionColor: Color(0x40FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x1AFFFFFF),
     borderWidth: hairlineWidth,
@@ -387,9 +396,9 @@ class LiquidGlassTokens {
     shadowBlurRadius: 28,
     shadowOffset: Offset(0, 10),
     shadowSpread: -2,
-    rimColor: Color(0xFFA6A6A6),
-    innerShadowColor: Color(0x331A1A1A),
-    innerShadowExtent: 20,
+    rimColor: Color(0x59FFFFFF),
+    innerShadowColor: Color(0x40101010),
+    innerShadowExtent: 10,
   );
 
   /// Liquid Glass **Widget Glass** (light).
@@ -443,13 +452,18 @@ class LiquidGlassTokens {
   // ---------------------------------------------------------------------------
 
   /// Materials **Ultrathin** (light). Translucent fill, not a glass style.
+  ///
+  /// Tint alphas step Ultrathin → Thick so the four fills separate on the
+  /// flat gallery canvas. [blurSigma] is an implementation approximation.
+  /// Figma Frost / Depth / Refraction are design tiers, not these sigmas
+  /// (see `docs/FIGMA-IOS27-ACCEPTANCE.md`).
   static const LiquidGlassTokens lightUltrathin = LiquidGlassTokens(
     blurSigma: 8,
     saturation: 1.04,
-    tintColor: Color(0x12FFFFFF),
-    overlayColor: Color(0x08FFFFFF),
-    overlayBlend: BlendMode.luminosity,
-    edgeHighlightColor: Color(0x33FFFFFF),
+    tintColor: Color(0x24FFFFFF),
+    overlayColor: Color(0x0AFFFFFF),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x2EFFFFFF),
     refractionColor: Color(0x40FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x14FFFFFF),
@@ -460,9 +474,9 @@ class LiquidGlassTokens {
     shadowBlurRadius: 12,
     shadowOffset: Offset(0, 4),
     shadowSpread: -1,
-    rimColor: Color(0xFFEBEBEB),
-    innerShadowColor: Color(0x14282828),
-    innerShadowExtent: 16,
+    rimColor: Color(0xFFE4E4E8),
+    innerShadowColor: Color(0x10282828),
+    innerShadowExtent: 12,
   );
 
   /// Materials **Thin** (light).
@@ -471,10 +485,10 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens lightThin = LiquidGlassTokens(
     blurSigma: 12,
     saturation: 1.08,
-    tintColor: Color(0x66FFFFFF),
-    overlayColor: Color(0x0DFFFFFF),
-    overlayBlend: BlendMode.luminosity,
-    edgeHighlightColor: Color(0x40FFFFFF),
+    tintColor: Color(0x5AFFFFFF),
+    overlayColor: Color(0x0CFFFFFF),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x33FFFFFF),
     refractionColor: Color(0x59FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x1AFFFFFF),
@@ -485,19 +499,19 @@ class LiquidGlassTokens {
     shadowBlurRadius: 16,
     shadowOffset: Offset(0, 6),
     shadowSpread: -2,
-    rimColor: Color(0xFFEBEBEB),
-    innerShadowColor: Color(0x1A282828),
-    innerShadowExtent: 20,
+    rimColor: Color(0xFFE4E4E8),
+    innerShadowColor: Color(0x12282828),
+    innerShadowExtent: 12,
   );
 
   /// Materials **Regular** (light). Content-layer fill — not Regular Large glass.
   static const LiquidGlassTokens materialLightRegular = LiquidGlassTokens(
     blurSigma: 18,
     saturation: 1.12,
-    tintColor: Color(0x99FFFFFF),
-    overlayColor: Color(0x40FFFFFF),
-    overlayBlend: BlendMode.luminosity,
-    edgeHighlightColor: Color(0x40FFFFFF),
+    tintColor: Color(0xA0FFFFFF),
+    overlayColor: Color(0x10FFFFFF),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x38FFFFFF),
     refractionColor: Color(0x59FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x1AFFFFFF),
@@ -508,9 +522,9 @@ class LiquidGlassTokens {
     shadowBlurRadius: 24,
     shadowOffset: Offset(0, 8),
     shadowSpread: -2,
-    rimColor: Color(0xFFDBDBDB),
-    innerShadowColor: Color(0x1F282828),
-    innerShadowExtent: 22,
+    rimColor: Color(0xFFE4E4E8),
+    innerShadowColor: Color(0x14282828),
+    innerShadowExtent: 12,
   );
 
   /// Materials **Thick** (light). Sheet / Sidebar chrome — not a button.
@@ -519,30 +533,33 @@ class LiquidGlassTokens {
   static const LiquidGlassTokens lightThick = LiquidGlassTokens(
     blurSigma: 26,
     saturation: 1.16,
-    tintColor: Color(0xD6FFFFFF),
-    overlayColor: Color(0x57FFFFFF),
-    overlayBlend: BlendMode.luminosity,
-    edgeHighlightColor: Color(0x40FFFFFF),
+    tintColor: Color(0xE8FFFFFF),
+    overlayColor: Color(0x10FFFFFF),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x2EFFFFFF),
     refractionColor: Color(0x59FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x1AFFFFFF),
     borderWidth: hairlineWidth,
     borderRadius: BorderRadius.all(Radius.circular(LiquidGlassRadii.large)),
     opaqueFallbackColor: Color(0xFFF2F2F7),
-    shadowColor: Color(0x33000000),
+    shadowColor: Color(0x28000000),
     shadowBlurRadius: 32,
     shadowOffset: Offset(0, 10),
     shadowSpread: -3,
-    rimColor: Color(0xFFD0D0D0),
-    innerShadowColor: Color(0x26282828),
-    innerShadowExtent: 24,
+    rimColor: Color(0xFFE4E4E8),
+    innerShadowColor: Color(0x12282828),
+    innerShadowExtent: 12,
   );
 
   /// Materials **Ultrathin** (dark).
+  ///
+  /// Dark fills are lifted charcoals. A pure-black veil disappears on the
+  /// `#000000` gallery canvas. Still a translucent fill, not Liquid Glass.
   static const LiquidGlassTokens darkUltrathin = LiquidGlassTokens(
     blurSigma: 9,
     saturation: 1.03,
-    tintColor: Color(0x2E000000),
+    tintColor: Color(0x593A3A3C),
     overlayColor: Color(0x14000000),
     overlayBlend: BlendMode.srcOver,
     edgeHighlightColor: Color(0x26FFFFFF),
@@ -556,19 +573,19 @@ class LiquidGlassTokens {
     shadowBlurRadius: 12,
     shadowOffset: Offset(0, 4),
     shadowSpread: -1,
-    rimColor: Color(0xFFE6E6E6),
+    rimColor: Color(0x40FFFFFF),
     innerShadowColor: Color(0x141A1A1A),
-    innerShadowExtent: 16,
+    innerShadowExtent: 12,
   );
 
   /// Materials **Thin** (dark).
   static const LiquidGlassTokens darkThin = LiquidGlassTokens(
     blurSigma: 14,
     saturation: 1.06,
-    tintColor: Color(0x42000000),
+    tintColor: Color(0x8C404044),
     overlayColor: Color(0x14000000),
     overlayBlend: BlendMode.srcOver,
-    edgeHighlightColor: Color(0x33FFFFFF),
+    edgeHighlightColor: Color(0x2EFFFFFF),
     refractionColor: Color(0x33FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x14FFFFFF),
@@ -579,19 +596,19 @@ class LiquidGlassTokens {
     shadowBlurRadius: 18,
     shadowOffset: Offset(0, 6),
     shadowSpread: -2,
-    rimColor: Color(0xFFE6E6E6),
+    rimColor: Color(0x40FFFFFF),
     innerShadowColor: Color(0x261A1A1A),
-    innerShadowExtent: 20,
+    innerShadowExtent: 12,
   );
 
   /// Materials **Regular** (dark).
   static const LiquidGlassTokens materialDarkRegular = LiquidGlassTokens(
     blurSigma: 20,
     saturation: 1.08,
-    tintColor: Color(0x69000000),
-    overlayColor: Color(0x29000000),
-    overlayBlend: BlendMode.lighten,
-    edgeHighlightColor: Color(0x33FFFFFF),
+    tintColor: Color(0xC73A3A3E),
+    overlayColor: Color(0x18222226),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x2EFFFFFF),
     refractionColor: Color(0x40FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x14FFFFFF),
@@ -602,19 +619,19 @@ class LiquidGlassTokens {
     shadowBlurRadius: 24,
     shadowOffset: Offset(0, 8),
     shadowSpread: -2,
-    rimColor: Color(0xFFA6A6A6),
+    rimColor: Color(0x40FFFFFF),
     innerShadowColor: Color(0x291A1A1A),
-    innerShadowExtent: 22,
+    innerShadowExtent: 12,
   );
 
   /// Materials **Thick** (dark). Sheet / Sidebar chrome — not a button.
   static const LiquidGlassTokens darkThick = LiquidGlassTokens(
     blurSigma: 28,
     saturation: 1.10,
-    tintColor: Color(0x99000000),
-    overlayColor: Color(0x3D000000),
-    overlayBlend: BlendMode.lighten,
-    edgeHighlightColor: Color(0x33FFFFFF),
+    tintColor: Color(0xF038383C),
+    overlayColor: Color(0x22222226),
+    overlayBlend: BlendMode.srcOver,
+    edgeHighlightColor: Color(0x26FFFFFF),
     refractionColor: Color(0x40FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x14FFFFFF),
@@ -625,9 +642,9 @@ class LiquidGlassTokens {
     shadowBlurRadius: 32,
     shadowOffset: Offset(0, 10),
     shadowSpread: -3,
-    rimColor: Color(0xFFA6A6A6),
+    rimColor: Color(0x40FFFFFF),
     innerShadowColor: Color(0x331A1A1A),
-    innerShadowExtent: 24,
+    innerShadowExtent: 12,
   );
 
   /// Map a **Materials** tier onto the light or dark family.
