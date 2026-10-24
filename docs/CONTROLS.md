@@ -54,7 +54,7 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 | 按下两层谁在上 | **待核验**。`ControlKnobStack` 先画阴影，再画发光。 |
 | 深色静止旋钮 | **稿面没有** `Controls/Dark/Knobs - Toggle/01 - Idle`。`knob(idle)` 在深色返回 null。开关画板上的旋钮看起来是白的，不升成令牌。 |
 | 着色轨道的禁用 | **稿面没有**。`track(filled, disabled)` 返回 null。 |
-| 步进器 | **没有独立层样式**。42 个层样式里没有 Stepper。步进器以后如果复用轨道，由那个控件自己决定。 |
+| 步进器 | **没有独立层样式**。42 个层样式里没有 Stepper。`LingyunStepper` 自己决定复用未着色轨道，不画旋钮，不新造颜色。 | |
 | 符号外框 | **不是圆角，也不是旋钮的实心尺寸**。开关画板 64×28，滑杆画板 402×52，滑杆轨道符号 370×22（里面的轨道条约高 6，其余是刻度留白），滑杆旋钮符号静止 37×24，开关旋钮符号 59×37（含按下光晕，静止填充大约高 24）。步进器画板 92×32。外框不等于圆角。画廊不把 59×37 或 64×36 涂成一块。 |
 | Figma Controls 层样式 | **未复读**。见上。 |
 
@@ -64,7 +64,17 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 - `track(ControlTrackFill, ControlTrackState)` → `ControlLayerStyle?`
 - `knob(ControlKnobLayer)` → `ControlLayerStyle?`
 - `ControlLayerView` 画一层。`ControlKnobStack` 按上面的顺序叠旋钮。
+- `ControlMetrics`：画板尺寸，不是层样式。旋钮直径 24，开关轨道 64×28（内缩 2），滑杆轨道高 6，步进器 92×32。胶囊圆角由调用方传入。
+- `LingyunToggle` / `LingyunSlider` / `LingyunStepper`：完整控件。色值只问 `ControlLayerCatalog`。
+
+开关：关用未着色轨道，开用着色轨道。按下用对应的按下轨道，旋钮叠按下阴影和发光。禁用（`onChanged == null`）整条用未着色禁用，因为着色禁用是 null。旋钮仍停在数值那一侧。深色静止不画旋钮。
+
+滑杆：着色段到旋钮中心，其余未着色。按下同理。禁用时不画着色段。轨道高 6，旋钮直径 24。
+
+步进器：没有旋钮。板面是未着色轨道；按住的一侧换成未着色按下；整件禁用时用未着色禁用。分隔线是系统 Separators / Non-Opaque。加减号用 Labels Primary，停用的一侧用 Tertiary。
 
 画廊：主 example 导航「旋钮」，或 `?page=knob`。`page=track` 和 `page=controls` 打开同一页。浅色 / 深色用页上的切换。示意是开关（关 / 开，静止 / 按下）和滑杆（中部，静止 / 按下）：胶囊轨道上叠直径 24 的圆旋钮。四周留空，让模糊 36 的阴影落在画布上。不再用灰色衬底，那块灰会把 5% 黑阴影吃掉。深色静止旋钮仍然不画。
+
+控件：导航「开关」。`?page=toggles`（`toggle`）、`?page=sliders`（`slider`）、`?page=steppers`（`stepper`）打开同一页的对应分段。页上可切浅色 / 深色，也可以点按实时开关、拖动滑杆、点步进器。文案是简体中文。
 
 截图：[`screenshots/controls_knob_track_light.png`](screenshots/controls_knob_track_light.png)、[`screenshots/controls_knob_track_dark.png`](screenshots/controls_knob_track_dark.png)。
