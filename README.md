@@ -50,11 +50,12 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LiquidGlassTheme` | `ThemeExtension` with both catalogs and `buttons`; `materialOf` / `styleOf` / `buttonPaletteOf` |
 | `GlassSurface` / `GlassCard` | `material:` **or** `style:` + hover specular on pointer devices |
 | `GlassButton` | Liquid Glass Button — Style Glass (material Regular Small, control size Small) / Clear / Destructive / Glass Prominent / Symbol. Sizes Small 28, Medium 34, Large 50, capsule |
-| `GlassTabBar` | iOS 27 tab bar. Liquid Glass **Dock** (not Materials Thick): standard full-width bar, floating capsule, tinted whole bar. `GlassTabBarStyle.sidebar` is reserved |
+| `GlassTabBar` | iOS 27 tab bar. Liquid Glass **Dock** (not Materials Thick): standard full-width bar, floating capsule, tinted whole bar. `GlassTabBarStyle.sidebar` is the Flutter glass rail on `LingyunPage`, not iOS 27.1 vertical system chrome |
+| `LingyunPage` | Flutter page shell on `LingyunPageSpec`. Compact → bottom Dock tab. Regular / wide → glass sidebar rail. On iOS, the same spec goes to `LingyunNativePage` |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
-| `LingyunNativePage` / `LYPage` | iOS host: horizontal size class + view bounds. System `TabView`, `NavigationSplitView`, and (27.1 SDK flag) `ArrangementView`. Not the cross-platform `LingyunPage` widget |
+| `LingyunNativePage` / `LYPage` | iOS host for `LingyunPage`: horizontal size class + view bounds. System `TabView`, `NavigationSplitView`, and (`LY_IOS_27_1_SDK=1`) `ArrangementView` |
 
 ### Specular / refraction conventions
 
@@ -150,7 +151,35 @@ LingyunSideChrome(
 );
 ```
 
+`LingyunLayout.avoidHinge` is the older geometry helper (any non-compact width, or a wide-short size). `LingyunPage` does not apply that band on its own. Pass an active `LingyunPageRegion` (`kind: 'division'`) when a Flutter simulation should keep a seam between content columns. The iOS host reports real regions on `LingyunPageSnapshot`.
+
 Breakpoints (logical px): compact &lt; 600, regular 600–839, expanded 840–1199, large ≥ 1200.
+
+## LingyunPage
+
+`LingyunPage` takes a `LingyunPageSpec` (the same object as `LingyunNativePage`). On iOS the native host is what you see. Off iOS, and in the gallery, the Flutter skeleton follows `resolveLingyunPageContainer`.
+
+| Bucket | Recommended spec | Flutter skeleton |
+| --- | --- | --- |
+| `compact` | `tab` + `stack` | One column, bottom Dock `GlassTabBar` |
+| `regular` | `sidebar` + `split` | Glass rail + primary. Compact width collapses the rail |
+| `wide` | `sidebar` + `split`, width ≥ 1200 | Rail + secondary + primary |
+
+`lingyunPageSpecForBucket` builds that spec. A caller can pass any chrome instead. There is no Duo pose enum.
+
+With no size class, the skeleton uses the width proxy (`< 600` compact). Pass `horizontalSizeClass: 'compact'` to simulate a compact class wider than 600. `unspecified` matches iOS and is not compact. iOS itself does not use the 600 cut; see [`docs/IOS-LYPAGE.md`](docs/IOS-LYPAGE.md).
+
+Vertical system chrome, `ArrangementView`, and reserved regions are native, and they link only when `LY_IOS_27_1_SDK=1`. The Flutter arrangement role is a note, not a hinge. The 96px rail is **待核验 vs design**.
+
+```dart
+LingyunPage(
+  spec: lingyunPageSpecForBucket(LingyunPageWidthBucket.regular),
+  primary: const DetailPane(),
+  secondary: const ListPane(),
+)
+```
+
+Details: [`docs/PAGE.md`](docs/PAGE.md) and [`docs/PAGE-ADAPTIVE-PLAN.md`](docs/PAGE-ADAPTIVE-PLAN.md).
 
 ### iOS native page
 
@@ -174,9 +203,9 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (`LingyunPage` compact / compact-bounds / regular / division / wide presets + live window), **Access** (reduce transparency / motion / high contrast), **Native** (`?page=native`, iOS `LYPage` host). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
 
-Open a page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
+Open a page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 

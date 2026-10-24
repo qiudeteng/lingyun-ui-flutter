@@ -1,8 +1,8 @@
 # iOS LYPage 宿主 / native page host
 
-Dart 侧跨端 `LingyunPage` 由 FlutterUI 实现。本文件只描述 **iOS 原生宿主** 如何对上同一套角色，不另造 Duo 姿态枚举。
+Dart 侧 `LingyunPage` 已经接上同一套 `LingyunPageSpec`。非 iOS 和画廊模拟画 Flutter 骨架；iOS 上 `LingyunPage` 把该 spec 交给 `LingyunNativePage`。竖向系统条、`ArrangementView`、`reservedRegions` 只在原生侧，并且只在 `LY_IOS_27_1_SDK=1` 时链接。骨架说明见 [PAGE.md](PAGE.md)。
 
-The cross-platform `LingyunPage` widget belongs to FlutterUI. This note is the iOS host that implements the same roles.
+`LingyunPage` now consumes this spec. Off iOS it paints the Flutter skeleton. On iOS it embeds `LingyunNativePage`. Vertical system chrome, `ArrangementView`, and `reservedRegions` stay native and link only when `LY_IOS_27_1_SDK=1`. See [PAGE.md](PAGE.md).
 
 ## 契约 / Contract
 

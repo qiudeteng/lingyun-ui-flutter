@@ -5,10 +5,11 @@ Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
 Small / Medium / Large, states Default / Pressed / Disabled, variants
 Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs**
 (`GlassTabBar` standard + floating pill + tinted bar), Themes,
-Layout (phone / Duo / iPad / macOS presets), Accessibility,
+Layout (`LingyunPage` compact / regular / wide bounds), Accessibility,
 **Native** (iOS `LYPage` host: compact / regular / wide notes;
 `?page=native`). The UIKit skeleton is iOS-only. See
-[`docs/IOS-LYPAGE.md`](../docs/IOS-LYPAGE.md).
+[`docs/IOS-LYPAGE.md`](../docs/IOS-LYPAGE.md) and
+[`docs/PAGE.md`](../docs/PAGE.md).
 
 Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
 The **Canvas** chip on every page also selects muted wash, nature,

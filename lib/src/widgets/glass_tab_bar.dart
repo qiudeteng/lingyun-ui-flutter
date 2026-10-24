@@ -12,8 +12,9 @@ import 'glass_surface.dart';
 /// How [GlassTabBar] is arranged.
 ///
 /// Sketch UI Kit page 「Tab Bars」 (iPhone) is a floating capsule. [standard]
-/// is the full-width, edge-to-bottom bar. [sidebar] is reserved for a later
-/// iPad vertical pass — the widget only lays items out so the API exists.
+/// is the full-width, edge-to-bottom bar. [sidebar] is a vertical Dock rail
+/// the Flutter page shell can place on regular / wide widths. It is not
+/// iOS 27.1 vertical system chrome.
 enum GlassTabBarStyle {
   /// Full-width bar, flush to the bottom edge. Icon + caption sit above the
   /// Home Indicator inset.
@@ -23,7 +24,10 @@ enum GlassTabBarStyle {
   /// (3 → 266, 4 and 5 share the 352 cap on a 402pt board).
   floatingPill,
 
-  /// Reserved. iPad vertical / sidebar tab — not a finished UI.
+  /// Vertical Liquid Glass Dock rail (icon + caption column).
+  ///
+  /// The Flutter page shell uses this on regular and wide widths. It does
+  /// not replicate the iOS 27.1 vertical system Toolbar / Tab Bar.
   sidebar,
 }
 
@@ -78,7 +82,8 @@ class GlassTabBarItem {
 /// `blurSigma` / `saturation` stay implementation approximations inside the
 /// Dock tokens.
 ///
-/// [GlassTabBarStyle.sidebar] is an API stub for a later iPad pass.
+/// [GlassTabBarStyle.sidebar] is the Flutter glass rail. iOS 27.1 vertical
+/// system chrome stays on the native track.
 class GlassTabBar extends StatelessWidget {
   const GlassTabBar({
     super.key,
@@ -116,7 +121,7 @@ class GlassTabBar extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   /// [GlassTabBarStyle.standard], [GlassTabBarStyle.floatingPill], or the
-  /// reserved [GlassTabBarStyle.sidebar].
+  /// vertical Dock rail [GlassTabBarStyle.sidebar].
   final GlassTabBarStyle style;
 
   /// Liquid Glass recipe for the platter. Default is Dock.
@@ -707,9 +712,10 @@ class _TabBadge extends StatelessWidget {
   }
 }
 
-/// Vertical Dock column so [GlassTabBarStyle.sidebar] is callable.
+/// Vertical Dock column for [GlassTabBarStyle.sidebar].
 ///
-/// Not the finished iPad sidebar. A later pass replaces this layout.
+/// A Flutter glass rail (Liquid Glass Dock), not the iOS 27.1 vertical
+/// system Toolbar / Tab Bar and not a Materials Thick sidebar.
 class _SidebarStub extends StatelessWidget {
   const _SidebarStub({
     required this.bar,

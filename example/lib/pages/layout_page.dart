@@ -1,38 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
-/// Viewport presets that simulate the four target surfaces without hardware.
+/// Bounds used to simulate page buckets. Not device-model detection.
+///
+/// [horizontalSizeClass] is set only when the width proxy would disagree
+/// with the size class being shown.
 enum LayoutPreset {
-  live('Live window', null, null),
-  phone('iPhone compact', Size(390, 844), 'Classic phone portrait'),
-  duoCover(
-    'Duo cover',
-    Size(780, 360),
-    'Closed / wide-short, side-edge chrome',
+  live('Live window', null, 'This window’s bounds. No device check.'),
+  compact(
+    'Compact',
+    Size(390, 844),
+    'Width under 600. Spec is tab + stack. Bottom Dock.',
   ),
-  duoInner('Duo inner', Size(820, 640), 'Regular width + hinge band'),
-  ipad('iPad', Size(1024, 768), 'Expanded / Split View capable'),
-  desktop('macOS', Size(1440, 900), 'Large window, pointer hover');
+  compactBounds(
+    'Compact bounds',
+    Size(678, 466),
+    'Explicit compact size class. The width proxy would call 678 regular.',
+    horizontalSizeClass: 'compact',
+  ),
+  regular(
+    'Regular',
+    Size(834, 1112),
+    'Spec is sidebar + split. Glass rail, one content column.',
+  ),
+  division(
+    'Regular + division',
+    Size(951, 669),
+    'none + split, plus an active division region. Not a pose.',
+    splitOnly: true,
+  ),
+  wide(
+    'Wide',
+    Size(1440, 900),
+    'Sidebar + split at ≥ 1200. Three columns. 待核验 vs design.',
+  );
 
-  const LayoutPreset(this.label, this.size, this.caption);
+  const LayoutPreset(
+    this.label,
+    this.size,
+    this.caption, {
+    this.horizontalSizeClass,
+    this.splitOnly = false,
+  });
+
   final String label;
   final Size? size;
-  final String? caption;
+  final String caption;
+
+  /// `compact`, `regular`, `unspecified`, or null (width proxy).
+  final String? horizontalSizeClass;
+
+  /// Use `none` + `split` so the seam sits between two content columns.
+  final bool splitOnly;
 }
 
 class LayoutPage extends StatefulWidget {
-  const LayoutPage({super.key});
+  const LayoutPage({super.key, this.initialPreset});
+
+  /// Used by tests and screenshot captures. A `?preset=` query wins.
+  final LayoutPreset? initialPreset;
 
   @override
   State<LayoutPage> createState() => _LayoutPageState();
 }
 
 class _LayoutPageState extends State<LayoutPage> {
-  LayoutPreset _preset = LayoutPreset.duoInner;
+  late LayoutPreset _preset;
+  int _index = 0;
+
+  static const _destinations = [
+    GlassTabBarItem(
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+      label: 'Home',
+    ),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Browse'),
+    GlassTabBarItem(icon: Icons.person_outline, label: 'Profile'),
+  ];
 
   @override
   void initState() {
     super.initState();
+    _preset = widget.initialPreset ?? LayoutPreset.regular;
     final name = Uri.base.queryParameters['preset'];
     if (name != null) {
       for (final preset in LayoutPreset.values) {
@@ -64,9 +113,17 @@ class _LayoutPageState extends State<LayoutPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Responsive breakpoints only — no device APIs. Pick a preset '
-                'or use the live window (resize on macOS / web).',
+                'LingyunPage sends LingyunPageSpec to the iOS host and, off '
+                'iOS, paints the same container map. Compact is tab + stack. '
+                'Regular and wide are sidebar + split. ArrangementView stays '
+                'on the native track (LY_IOS_27_1_SDK=1).',
                 style: textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _preset.caption,
+                key: const Key('layout-preset-caption'),
+                style: textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -89,28 +146,13 @@ class _LayoutPageState extends State<LayoutPage> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: _preset.size == null
-                ? const _LayoutStage()
+                ? _frame(context, null)
                 : Center(
                     child: FittedBox(
                       child: SizedBox(
                         width: _preset.size!.width,
                         height: _preset.size!.height,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white54),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: MediaQuery(
-                              data: MediaQuery.of(context).copyWith(
-                                size: _preset.size,
-                                padding: _paddingFor(_preset),
-                              ),
-                              child: const _LayoutStage(),
-                            ),
-                          ),
-                        ),
+                        child: _frame(context, _preset.size),
                       ),
                     ),
                   ),
@@ -120,178 +162,141 @@ class _LayoutPageState extends State<LayoutPage> {
     );
   }
 
+  Widget _frame(BuildContext context, Size? simulated) {
+    final page = _DemoPage(
+      preset: _preset,
+      simulated: simulated,
+      index: _index,
+      destinations: _destinations,
+      onIndex: (index) => setState(() => _index = index),
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white54),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: simulated == null
+            ? page
+            : MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(size: simulated, padding: _paddingFor(_preset)),
+                child: page,
+              ),
+      ),
+    );
+  }
+
   static EdgeInsets _paddingFor(LayoutPreset preset) {
     return switch (preset) {
-      LayoutPreset.phone => const EdgeInsets.fromLTRB(0, 47, 0, 34),
-      LayoutPreset.duoCover => const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      LayoutPreset.duoInner => const EdgeInsets.fromLTRB(8, 20, 8, 20),
-      LayoutPreset.ipad => const EdgeInsets.fromLTRB(20, 20, 20, 20),
-      LayoutPreset.desktop => EdgeInsets.zero,
+      LayoutPreset.compact => const EdgeInsets.fromLTRB(0, 47, 0, 34),
+      LayoutPreset.compactBounds => const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      LayoutPreset.regular => const EdgeInsets.fromLTRB(0, 24, 0, 20),
+      LayoutPreset.division => const EdgeInsets.fromLTRB(8, 20, 8, 20),
+      LayoutPreset.wide => EdgeInsets.zero,
       LayoutPreset.live => EdgeInsets.zero,
     };
   }
 }
 
-class _LayoutStage extends StatelessWidget {
-  const _LayoutStage();
+class _DemoPage extends StatelessWidget {
+  const _DemoPage({
+    required this.preset,
+    required this.simulated,
+    required this.index,
+    required this.destinations,
+    required this.onIndex,
+  });
+
+  final LayoutPreset preset;
+  final Size? simulated;
+  final int index;
+  final List<GlassTabBarItem> destinations;
+  final ValueChanged<int> onIndex;
 
   @override
   Widget build(BuildContext context) {
-    return LingyunLayoutBuilder(
-      builder: (context, data) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            const ColoredBox(color: Color(0x22000000)),
-            if (data.avoidHinge) _HingeOverlay(band: data.hingeBand),
-            Padding(
-              padding: data.layoutMargin,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GlassSurface(
-                    material: MaterialTier.thin,
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      '${data.widthClass.name} · '
-                      '${data.size.width.toStringAsFixed(0)}×'
-                      '${data.size.height.toStringAsFixed(0)}'
-                      '${data.isWideShort ? ' · wide-short' : ''}'
-                      '${data.avoidHinge ? ' · hinge-safe' : ''}',
-                      key: const Key('layout-class-label'),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: LingyunSplitBody(
-                      leading: GlassCard(
-                        material: MaterialTier.regular,
-                        child: _PaneCopy(
-                          title: data.isCompact && !data.isWideShort
-                              ? 'Single column'
-                              : 'Leading pane',
-                          body: _caption(data),
-                        ),
-                      ),
-                      trailing: GlassCard(
-                        material: MaterialTier.regular,
-                        child: const _PaneCopy(
-                          title: 'Trailing pane',
-                          body:
-                              'Split View / Duo inner / desktop two-pane. '
-                              'The center gutter is not interactive.',
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            LingyunSideChrome(
-              leading: _EdgeButton(
-                key: const Key('edge-leading'),
-                icon: Icons.chevron_left_rounded,
-                label: 'Back',
-              ),
-              trailing: _EdgeButton(
-                key: const Key('edge-trailing'),
-                icon: Icons.more_horiz_rounded,
-                label: 'More',
-              ),
-            ),
-          ],
-        );
-      },
+    final width = simulated?.width ?? MediaQuery.sizeOf(context).width;
+    final bucket = resolveFlutterPageBucket(
+      width: width,
+      horizontalSizeClass: preset.horizontalSizeClass,
     );
-  }
-
-  static String _caption(LingyunLayoutData data) {
-    if (data.isWideShort) {
-      return 'Closed-cover heuristic: place controls on the side edges, '
-          'not across the short vertical center.';
-    }
-    return switch (data.widthClass) {
-      LingyunWidthClass.compact =>
-        'iPhone-style compact column. No hinge band.',
-      LingyunWidthClass.regular =>
-        'Duo inner / iPad Split View. Keep chrome off the center division.',
-      LingyunWidthClass.expanded =>
-        'iPad-width. Sidebar or split patterns; still hinge-safe.',
-      LingyunWidthClass.large =>
-        'Desktop-width. Resize the window; hover glass for specular lift.',
-    };
+    final spec = preset.splitOnly
+        ? const LingyunPageSpec(
+            chrome: LingyunPageChrome.none,
+            navigation: LingyunPageNavigation.split,
+            primaryLabel: 'Primary',
+            secondaryLabel: 'Secondary',
+          )
+        : lingyunPageSpecForBucket(
+            bucket,
+            primaryLabel: 'Home',
+            secondaryLabel: 'Browse',
+          );
+    final regions = preset.splitOnly && simulated != null
+        ? [lingyunPageDivisionStub(simulated!)]
+        : const <LingyunPageRegion>[];
+    return LingyunPage(
+      spec: spec,
+      horizontalSizeClass: preset.horizontalSizeClass,
+      regions: regions,
+      destinations: destinations,
+      currentIndex: index,
+      onDestinationSelected: onIndex,
+      secondary: const _Pane(
+        title: 'Secondary',
+        body: 'Content column when the container has two content panes.',
+      ),
+      primary: const _PrimaryPane(),
+    );
   }
 }
 
-class _PaneCopy extends StatelessWidget {
-  const _PaneCopy({required this.title, required this.body});
+class _PrimaryPane extends StatelessWidget {
+  const _PrimaryPane();
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = LingyunPageScope.of(context);
+    final size = MediaQuery.sizeOf(context);
+    return _Pane(
+      title: 'Primary',
+      body:
+          '${scope.bucket.name} · ${scope.spec.chrome.name} · '
+          '${scope.container.root}\n'
+          '${size.width.toStringAsFixed(0)}×${size.height.toStringAsFixed(0)}',
+      labelKey: const Key('layout-class-label'),
+    );
+  }
+}
+
+class _Pane extends StatelessWidget {
+  const _Pane({required this.title, required this.body, this.labelKey});
 
   final String title;
   final String body;
+  final Key? labelKey;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+    final text = Theme.of(context).textTheme;
+    return SizedBox.expand(
+      child: GlassCard(
+        material: MaterialTier.regular,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(body, key: labelKey, style: text.bodySmall),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(body, style: Theme.of(context).textTheme.bodySmall),
-      ],
+      ),
     );
   }
-}
-
-class _EdgeButton extends StatelessWidget {
-  const _EdgeButton({super.key, required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassButton.label(label: label, icon: icon, onPressed: () {});
-  }
-}
-
-class _HingeOverlay extends StatelessWidget {
-  const _HingeOverlay({required this.band});
-
-  final Rect band;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _HingePainter(band),
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-class _HingePainter extends CustomPainter {
-  _HingePainter(this.band);
-  final Rect band;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final fill = Paint()..color = const Color(0x33FFEB3B);
-    canvas.drawRect(band, fill);
-    final stroke = Paint()
-      ..color = const Color(0xCCFFEB3B)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawRect(band, stroke);
-  }
-
-  @override
-  bool shouldRepaint(covariant _HingePainter oldDelegate) =>
-      oldDelegate.band != band;
 }

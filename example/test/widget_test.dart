@@ -6,8 +6,10 @@ import 'package:example/wallpaper.dart';
 
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
     expect(find.text('Materials'), findsWidgets);
     expect(find.byKey(const Key('materials-title')), findsOneWidget);
@@ -24,8 +26,10 @@ void main() {
   testWidgets('gallery can open Glass, Layout and Accessibility', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
     await tester.tap(find.text('Glass').last);
     await tester.pumpAndSettle();
@@ -56,7 +60,17 @@ void main() {
     await tester.tap(find.text('Layout').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('layout-title')), findsOneWidget);
-    expect(find.byKey(const Key('preset-duoInner')), findsOneWidget);
+    expect(find.byKey(const Key('preset-regular')), findsOneWidget);
+    expect(find.byKey(const Key('layout-class-label')), findsOneWidget);
+    expect(find.textContaining('regular · sidebar'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('preset-compact')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('compact · tab'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('preset-wide')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('wide · sidebar'), findsOneWidget);
 
     await tester.tap(find.text('Tabs').last);
     await tester.pumpAndSettle();
@@ -111,8 +125,10 @@ void main() {
   });
 
   testWidgets('background control stays across tabs', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
 
     expect(find.byKey(const Key('gallery-bg-control')), findsOneWidget);

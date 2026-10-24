@@ -155,13 +155,18 @@ class LingyunLayout {
     return layoutMarginFor(size, MediaQuery.paddingOf(context));
   }
 
-  static EdgeInsets layoutMarginFor(Size size, EdgeInsets safeArea) {
-    final gutter = switch (widthClassForWidth(size.width)) {
+  /// Recommended content gutter for [widthClass], before safe-area insets.
+  static double gutterFor(LingyunWidthClass widthClass) {
+    return switch (widthClass) {
       LingyunWidthClass.compact => 16.0,
       LingyunWidthClass.regular => 20.0,
       LingyunWidthClass.expanded => 24.0,
       LingyunWidthClass.large => 32.0,
     };
+  }
+
+  static EdgeInsets layoutMarginFor(Size size, EdgeInsets safeArea) {
+    final gutter = gutterFor(widthClassForWidth(size.width));
     return EdgeInsets.fromLTRB(
       safeArea.left + gutter,
       safeArea.top + 12,

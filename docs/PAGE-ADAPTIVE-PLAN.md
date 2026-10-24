@@ -5,6 +5,8 @@
 **基准**：Sketch SoT + Figma Apple iOS/iPadOS 27（`X2nwP1156zkZAscUSZGv9S`）+ Apple iOS 27.1 Duo HIG / Prepare。  
 **日期**：2026-10-24（Asia/Shanghai）
 
+**Flutter 骨架**：见 [PAGE.md](PAGE.md)（`LingyunPage` 契约、宽度桶、与本仓库 `ios/` 原生轨的分界）。本文件仍是设计规划。
+
 ---
 
 ## 0. 总原则
