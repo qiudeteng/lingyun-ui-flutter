@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file.
 - Layout gallery presets: compact, compact bounds with an explicit size class, regular, regular + division, wide.
 - Example gallery **Native** page (`?page=native`). The UIKit skeleton runs on iOS only.
 - Wave 2 Alerts probe. `showLingyunAlert` / `LingyunAlertDialog` present the iOS system alert through `package:cupertino_ui` (`showCupertinoDialog` + `CupertinoAlertDialog`). Sketch states: one button, two buttons (Cancel leading), destructive (system red), title + message, message only. Not Liquid Glass, not a glass button, not Materials Thick. No `CupertinoUiCompatibilityBridge`. Gallery demo copy is Simplified Chinese. See `docs/ALERTS.md`.
+- `LingyunColors` — Sketch iOS 27 color variables (system colors, labels, liquid-glass labels, backgrounds, fills, grays, separators) for light and dark. Wired through `LingyunTheme` (`cupertino_ui`) and `LingyunMaterialTheme` (`ColorScheme` / `TextTheme` on `material_ui` only).
+- `LingyunTextStyles` — Sketch text styles at the Large content size, plus loose / tight leading. SF Pro is not bundled. Dynamic Type ramps other than Large stay unverified.
+- Example foundation gallery (`flutter run -t lib/foundation_app.dart`). The page copy is Simplified Chinese.
 
 ### Notes
 

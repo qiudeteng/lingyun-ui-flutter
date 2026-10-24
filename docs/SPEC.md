@@ -79,6 +79,53 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 
 API：`LiquidGlassLabels.lightPrimary` / `darkPrimary` / `primaryOf(context)`。
 
+完整四级（Primary / Secondary / Tertiary / Quaternary）在 `LingyunColors.liquidGlassLabels`。系统 Labels（黑 / 白 Primary）是另一组，不能拿来替代玻璃标签。
+
+## D. Colors（系统色变量）
+
+权威：Sketch UI Kit 色变量（公开分享 `04c24d8b-38fb-4afb-8836-36617e022f02`）。Figma Colors `0:1746` 本批 MCP 限流，没有复读。两边冲突时 Sketch 赢。
+
+API：`LingyunColors.light` / `.dark`，`LingyunTheme`（Cupertino），`LingyunMaterialTheme.colorScheme`（仅 ColorScheme 桥）。
+
+| 组 | 说明 |
+| --- | --- |
+| System Colors | Red…Brown × Light / Dark。Blue `#0088FF` / `#0091FF`，Red `#FF383C` / `#FF4245` |
+| Labels | Primary 到 Quinary。浅色 Primary 是 `#000000`，不是玻璃上的 `#1A1A1A` |
+| Labels - Vibrant | 到 Quaternary。浅色 Primary `#000000`，Tertiary `#BFBFBF` |
+| Labels - Liquid Glass | 浅 `#1A1A1A` / 深 `#EDEDED`；Tertiary `#BFBFBF` / `#404040` |
+| Backgrounds / Grouped | 各有 Primary / Secondary / Tertiary。只有深色有 Elevated |
+| Fills | Primary 到 Quinary。浅色 Primary 是 `#787878` α `0x33` |
+| Grays | Gray…Gray 6 |
+| Separators | Opaque / Non-Opaque / Vibrant。深色 Non-Opaque 是 `#FFFFFF` α `0x1F` |
+
+`x. Kit` 不进 API。不编造 blur / 圆角。
+
+## E. Text Styles（Large）
+
+权威：同一 Sketch 文档的文本样式。Figma Text `0:2194` 未复读。
+
+API：`LingyunTextStyles`（角色名 Large Title…Caption 2），`LingyunLeading`（standard / loose / tight），`LingyunMaterialTheme.textTheme`。
+
+| 角色 | 字号 / 行高 | 默认字重 | 强调字重 |
+| --- | --- | --- | --- |
+| Large Title | 34 / 41 | 400 | 700 |
+| Title 1 | 28 / 34 | 400 | 700 |
+| Title 2 | 22 / 28 | 400 | 700 |
+| Title 3 | 20 / 25 | 400 | 600 |
+| Headline | 17 / 22 | 600 | 600 |
+| Body | 17 / 22 | 400 | 600 |
+| Callout | 16 / 21 | 400 | 600 |
+| Subheadline | 15 / 20 | 400 | 600 |
+| Footnote | 13 / 18 | 400 | 600 |
+| Caption 1 | 12 / 16 | 400 | 500 |
+| Caption 2 | 11 / 13 | 400 | 600 |
+
+不捆绑 SF Pro。字距导出为 0，Figma 字距 **待核验**。Dynamic Type 其它档 **待核验**。Cupertino 的 nav large title 用 Large Title 强调（700）；tab label / picker 没有对应样式，保持 Cupertino 默认。
+
+TextTheme 桥：`headlineLarge` = Large Title，`bodyLarge` = Body，`titleMedium` = Headline，`labelMedium` = Caption 1，`labelSmall` = Caption 2。`display*` 没有 iOS 样式，不填。
+
+画廊：`example/lib/foundation_app.dart`（`cupertino_ui`，不进旧 Material shell）。`?page=colors|text&theme=dark&chrome=0`。
+
 ## 实现备注（不是官方 Design Tokens）
 
 以下数字是 **implementation approximation / not official Design Tokens**，不要当作 kit 值展示在 UI 上：
@@ -118,7 +165,7 @@ API：`LiquidGlassLabels.lightPrimary` / `darkPrimary` / `primaryOf(context)`。
 
 ## 待核验（给设计 QA）
 
-对照 [`FIGMA-IOS27-ACCEPTANCE.md`](./FIGMA-IOS27-ACCEPTANCE.md) §6。本轮没有把下列各项升成官方 token：
+对照 [`FIGMA-IOS27-ACCEPTANCE.md`](./FIGMA-IOS27-ACCEPTANCE.md) §6。下面这些仍然不是官方 token，或还没对着当前 Figma 文件复读：
 
 | 项 | 状态 |
 | --- | --- |
@@ -126,10 +173,16 @@ API：`LiquidGlassLabels.lightPrimary` / `darkPrimary` / `primaryOf(context)`。
 | `blurSigma` / saturation | **待核验**。实现近似。Figma Frost=6、Depth=30、Refraction=70、Dispersion=20、Splay=20、Opacity=25 是档位，限流后未再对 `5584:32505` 与 `3:72207` 跑 `get_variable_defs`。 |
 | 未选中字形不透明度 | **实现近似**（LINEAR_BURN / LINEAR_DODGE），不是 kit 百分比。 |
 | Search Role、Prominent Tab 旁侧圆钮 | **非本轮**。`GlassTabBarStyle.sidebar` 已被 `LingyunPage` 用作玻璃 rail，不是 iOS 27.1 竖向系统条。 |
-| Colors 页语义色（`0:1746`） | **下一批**。本轮没有量到完整色表，不新造 Theme semantic colors。 |
-| Text Styles / Dynamic Type（`0:2194`） | **下一批**。Tab Caption 仍按现规格 10 / Semibold；不在本轮发明字号阶梯。 |
+| Colors 页语义色（`0:1746`） | **本批已入 Sketch 变量**。Figma 页 MCP 限流，未复读。以 Sketch 色变量为准。 |
+| Text Styles / Dynamic Type（`0:2194`） | **Large 字号已入 Sketch 文本样式**。Dynamic Type 其它档、Figma 字距未复读，**待核验**。Tab Caption 仍是 10 / Semibold，不在文本样式导出里。 |
 | `GlassButton` 包装 | **其他工程师**。本轮不改按钮组件。 |
 | `LingyunPage` wide 断点 1200、rail 宽 96 | **待核验**。见 [PAGE.md](PAGE.md)。 |
+| Dynamic Type xSmall…AX5 | **待核验**。Sketch 文本样式导出只有 Large，另有 Loose / Tight leading。 |
+| 字距（Figma tracking） | **待核验**。Sketch 导出为 0。不把旧稿 0.40 / −0.43 写进 token。 |
+| Increased Contrast 色 | **待核验**。这次 Sketch 色变量导出没有 IC 模式。 |
+| `x. Kit`（Canvas / Symbol BG） | **不进 Theme**。稿面辅助色，不是系统色。 |
+| Material `secondary` / `tertiary` | **桥接，待核验**。没有单独的 Sketch 强调色，ColorScheme 里暂时重复 System Blue，避免把 Material 默认紫当成系统色。 |
+| Tab Caption 10 / Semibold | **不在本批**。文本样式里没有 10pt。`GlassTabBar` 不改。 |
 
 ## D. Page 壳
 
