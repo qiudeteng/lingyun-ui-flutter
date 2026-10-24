@@ -324,9 +324,12 @@ class DemoHome extends StatelessWidget {
               children: [
                 if (useRail)
                   NavigationRail(
+                    key: const Key('gallery-rail'),
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
+                    // Fourteen labeled destinations do not fit a short window.
+                    scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [
                       for (final d in _destinations)
@@ -337,7 +340,12 @@ class DemoHome extends StatelessWidget {
                         ),
                     ],
                   ),
-                Expanded(child: body),
+                Expanded(
+                  child: KeyedSubtree(
+                    key: const Key('gallery-body'),
+                    child: body,
+                  ),
+                ),
               ],
             ),
             bottomNavigationBar: useRail

@@ -7,6 +7,16 @@ import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
+/// Page scroller inside the gallery body. The rail is also scrollable.
+Finder galleryContentScrollable() {
+  return find
+      .descendant(
+        of: find.byKey(const Key('gallery-body')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+}
+
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -22,7 +32,11 @@ void main() {
     expect(find.byKey(const Key('material-thin')), findsOneWidget);
     expect(find.byKey(const Key('material-regular')), findsOneWidget);
     expect(find.byKey(const Key('material-thick')), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const Key('radius-large')), 200);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('radius-large')),
+      200,
+      scrollable: galleryContentScrollable(),
+    );
     expect(find.byKey(const Key('radius-small')), findsOneWidget);
     expect(find.byKey(const Key('radius-medium')), findsOneWidget);
     expect(find.byKey(const Key('radius-large')), findsOneWidget);
@@ -57,6 +71,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('glass-button-live')),
       200,
+      scrollable: galleryContentScrollable(),
     );
     await tester.tap(find.byKey(const Key('glass-button-live')));
     await tester.pumpAndSettle();
@@ -83,6 +98,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('tab-stage-tinted')),
       300,
+      scrollable: galleryContentScrollable(),
     );
     expect(find.byKey(const Key('tab-stage-standard')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-floating-3')), findsOneWidget);

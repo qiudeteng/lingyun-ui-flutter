@@ -59,9 +59,8 @@ Future<void> _capture(
         color: canvas,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: LingyunMaterialTheme.themeData(
-            brightness,
-          ).copyWith(extensions: [glass]),
+          theme: LingyunMaterialTheme.themeData(brightness)
+              .copyWith(extensions: [glass]),
           home: SheetsPage(brightness: brightness),
         ),
       ),
