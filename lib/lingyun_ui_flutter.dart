@@ -26,6 +26,9 @@
 /// Labels and the Large text scale come from [LingyunTheme] /
 /// [LingyunTextStyles].
 ///
+/// Sheets ([showLingyunSheet] / [LingyunSheet]) use Materials Thick via
+/// [GlassSurface]. They are not a liquid-glass control and not a dock.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -61,6 +64,7 @@ export 'src/widgets/glass_surface.dart';
 export 'src/widgets/glass_tab_bar.dart';
 export 'src/widgets/glass_text_field.dart';
 export 'src/widgets/lingyun_alert.dart';
+export 'src/widgets/lingyun_sheet.dart';
 export 'src/widgets/lingyun_slider.dart';
 export 'src/widgets/lingyun_stepper.dart';
 export 'src/widgets/lingyun_toggle.dart';

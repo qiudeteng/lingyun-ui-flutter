@@ -12,6 +12,9 @@ Layout (`LingyunPage` compact / regular / wide bounds), Accessibility,
 [`docs/PAGE.md`](../docs/PAGE.md).
 **Alerts** (`?page=alerts`): system `cupertino_ui` dialog, not Liquid Glass.
 Demo titles, buttons, and messages on that page are Simplified Chinese.
+**Sheets** (`?page=sheets`): Materials Thick platter, grabber, medium / large
+detents. 浅色 / 深色 is on the page. Demo copy is Simplified Chinese.
+Run `flutter run` from this directory, then open that query (or the 工作表 rail).
 **主题** (`?page=themes` or the nav item): color swatches by default, Large
 text specimens with `?page=text` or the 文本 segment. Light / dark is
 浅色 / 深色. Titles, buttons, group names, and samples are Simplified Chinese.

@@ -7,6 +7,16 @@ import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
+/// Page scroller inside the gallery body. The rail is also scrollable.
+Finder galleryContentScrollable() {
+  return find
+      .descendant(
+        of: find.byKey(const Key('gallery-body')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+}
+
 void main() {
   testWidgets('gallery boots on Materials', (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -22,7 +32,11 @@ void main() {
     expect(find.byKey(const Key('material-thin')), findsOneWidget);
     expect(find.byKey(const Key('material-regular')), findsOneWidget);
     expect(find.byKey(const Key('material-thick')), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const Key('radius-large')), 200);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('radius-large')),
+      200,
+      scrollable: galleryContentScrollable(),
+    );
     expect(find.byKey(const Key('radius-small')), findsOneWidget);
     expect(find.byKey(const Key('radius-medium')), findsOneWidget);
     expect(find.byKey(const Key('radius-large')), findsOneWidget);
@@ -57,6 +71,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('glass-button-live')),
       200,
+      scrollable: galleryContentScrollable(),
     );
     await tester.tap(find.byKey(const Key('glass-button-live')));
     await tester.pumpAndSettle();
@@ -83,6 +98,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('tab-stage-tinted')),
       300,
+      scrollable: galleryContentScrollable(),
     );
     expect(find.byKey(const Key('tab-stage-standard')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-floating-3')), findsOneWidget);
@@ -192,6 +208,63 @@ void main() {
     await tester.tap(find.text('好').last);
     await tester.pumpAndSettle();
     expect(find.text('实时路由 · 上次结果：好'), findsOneWidget);
+  });
+
+  testWidgets('sheets page is Chinese and can open a thick sheet', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('工作表').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('sheet-title')), findsOneWidget);
+    expect(find.byKey(const Key('sheet-thick-note')), findsOneWidget);
+    expect(find.textContaining('Materials Thick'), findsOneWidget);
+    expect(find.byKey(const Key('sheet-stage-compact-medium')), findsOneWidget);
+    expect(find.byKey(const Key('sheet-stage-compact-large')), findsOneWidget);
+    expect(find.byKey(const Key('sheet-stage-wide')), findsOneWidget);
+    expect(find.text('浅色'), findsWidgets);
+    expect(find.text('深色'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('sheet-theme-dark')));
+    await tester.pumpAndSettle();
+    final title = tester.element(find.byKey(const Key('sheet-title')));
+    expect(Theme.of(title).brightness, Brightness.dark);
+
+    await tester.tap(find.byKey(const Key('sheet-theme-light')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('尚未弹出'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('sheet-open-window')),
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('sheet-gallery-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(find.byKey(const Key('sheet-open-window')));
+    await tester.pumpAndSettle();
+    expect(find.text('编辑项目'), findsWidgets);
+    await tester.tap(find.text('完成').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('sheet-result')),
+      -400,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('sheet-gallery-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.textContaining('上次结果：完成'), findsOneWidget);
   });
 
   testWidgets('foundation gallery shows colors and text styles', (

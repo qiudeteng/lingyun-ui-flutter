@@ -11,6 +11,7 @@ import 'pages/lists_page.dart';
 import 'pages/materials_page.dart';
 import 'pages/native_page.dart';
 import 'pages/progress_page.dart';
+import 'pages/sheets_page.dart';
 import 'pages/tab_bar_page.dart';
 import 'pages/text_fields_page.dart';
 import 'pages/themes_page.dart';
@@ -71,6 +72,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'slider' ||
       'steppers' ||
       'stepper' => 12,
+      'sheets' => 13,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -236,6 +238,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.toggle_on),
       label: '开关',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.horizontal_split),
+      selectedIcon: Icon(Icons.horizontal_split),
+      label: '工作表',
+    ),
   ];
 
   @override
@@ -271,6 +278,12 @@ class DemoHome extends StatelessWidget {
         themeMode: themeMode,
         onThemeModeChanged: onThemeModeChanged,
         initialPanel: formPanel,
+      ),
+      SheetsPage(
+        brightness: Theme.of(context).brightness,
+        onBrightnessChanged: (brightness) => onThemeModeChanged(
+          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        ),
       ),
     ];
 
@@ -311,9 +324,12 @@ class DemoHome extends StatelessWidget {
               children: [
                 if (useRail)
                   NavigationRail(
+                    key: const Key('gallery-rail'),
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
+                    // Fourteen labeled destinations do not fit a short window.
+                    scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [
                       for (final d in _destinations)
@@ -324,7 +340,12 @@ class DemoHome extends StatelessWidget {
                         ),
                     ],
                   ),
-                Expanded(child: body),
+                Expanded(
+                  child: KeyedSubtree(
+                    key: const Key('gallery-body'),
+                    child: body,
+                  ),
+                ),
               ],
             ),
             bottomNavigationBar: useRail

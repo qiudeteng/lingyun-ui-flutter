@@ -32,6 +32,23 @@ flutter build linux --debug --dart-define=GALLERY_CHROME=0 --dart-define=GALLERY
 - https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/progress_light.png
 - https://github.com/qiudeteng/lingyun-ui-flutter/raw/cursor/wave-1a-form-controls-633f/docs/screenshots/progress_dark.png
 
+- `sheets_light.png` — 工作表：紧凑中档、紧凑高档、宽屏浮起卡片。Chrome 是 **Materials Thick**（`d451503` 配方，未改）。文案简体中文。设计画布 `#D1D1D6`，1440×1520。
+- `sheets_dark.png` — 同一版面，深色，设计画布 `#000000`，1440×1520。
+
+在 `example/` 重拍（bash、PowerShell、cmd 相同）：
+
+```bash
+flutter test tool/capture_sheet_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_sheet_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_sheet_screenshots.dart
+```
+
 Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. The typeface is Flutter's desktop fallback, not SF Pro on device. Regenerate from `example/`:
 
 ```bash

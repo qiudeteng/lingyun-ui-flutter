@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - `LingyunTextStyles` — Sketch text styles at the Large content size, plus loose / tight leading. SF Pro is not bundled. Dynamic Type ramps other than Large stay unverified.
 - Example foundation gallery (`flutter run -t lib/foundation_app.dart`). The page copy is Simplified Chinese.
 - Main example **主题** page (nav label, not `Themes`) shows the same color swatches and Large text specimens, with 浅色 / 深色. `?page=themes`, `?page=colors`, or `?page=text`.
+- Wave 2 Sheets. `showLingyunSheet` / `LingyunSheet` paint **Materials Thick** (`GlassSurface(material: MaterialTier.thick)`, no style override). Detents, grabber, size-class inset, safe area, and keyboard lift. Not a glass button and not Dock. Gallery copy is Simplified Chinese (`?page=sheets`, 浅色 / 深色 on the page). The Materials tier recipe is unchanged; shots are the Thick from `d451503`. See `docs/SHEETS.md`.
 
 ### Notes
 
