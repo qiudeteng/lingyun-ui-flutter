@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/liquid_glass_theme.dart';
 import '../tokens/liquid_glass_labels.dart';

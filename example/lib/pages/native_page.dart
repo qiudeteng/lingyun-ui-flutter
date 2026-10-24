@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 /// Shows the iOS LYPage host, plus compact / regular notes when the host

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 /// Gallery / app overrides for accessibility that Flutter does not expose
 /// as first-class [MediaQuery] flags on every platform.

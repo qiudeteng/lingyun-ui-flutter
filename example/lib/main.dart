@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import 'pages/accessibility_page.dart';

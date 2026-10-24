@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Gallery backdrops for comparing Materials / Liquid Glass with the Sketch
 /// UI Kit, and for stressing refraction on richer scenes.

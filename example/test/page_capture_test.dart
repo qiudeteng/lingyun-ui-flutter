@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:example/pages/layout_page.dart';
 import 'package:example/wallpaper.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
