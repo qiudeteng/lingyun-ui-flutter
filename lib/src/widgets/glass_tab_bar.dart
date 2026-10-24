@@ -587,9 +587,8 @@ class _TabItem extends StatelessWidget {
           : Colors.white.withValues(alpha: GlassTabBar.tintedUnselectedOpacity);
     }
     if (selected) return tint;
-    return LiquidGlassLabels.primaryFor(
-      brightness,
-    ).withValues(alpha: GlassTabBar.unselectedOpacity);
+    return LiquidGlassLabels.primaryFor(brightness)
+        .withValues(alpha: GlassTabBar.unselectedOpacity);
   }
 
   String get _semanticsLabel {

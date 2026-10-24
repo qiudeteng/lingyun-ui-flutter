@@ -144,9 +144,9 @@ void main() {
       expect(find.byKey(const Key('lingyun-page-tab-bar')), findsNothing);
       expect(find.text('secondary-body'), findsNothing);
       expect(
-        LingyunPageScope.of(
-          tester.element(find.text('primary-body')),
-        ).container.columns,
+        LingyunPageScope.of(tester.element(find.text('primary-body')))
+            .container
+            .columns,
         1,
       );
     });
@@ -200,9 +200,9 @@ void main() {
       expect(find.text('secondary-body'), findsOneWidget);
       expect(find.text('primary-body'), findsOneWidget);
       expect(
-        LingyunPageScope.of(
-          tester.element(find.text('primary-body')),
-        ).container.columns,
+        LingyunPageScope.of(tester.element(find.text('primary-body')))
+            .container
+            .columns,
         3,
       );
     });
@@ -314,9 +314,9 @@ void main() {
       expect(find.byType(GlassTabBar), findsNothing);
       expect(find.byKey(const Key('lingyun-page-division')), findsNothing);
       expect(
-        LingyunPageScope.of(
-          tester.element(find.text('primary-body')),
-        ).container.root,
+        LingyunPageScope.of(tester.element(find.text('primary-body')))
+            .container
+            .root,
         'ArrangementView',
       );
     });

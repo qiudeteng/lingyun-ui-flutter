@@ -602,9 +602,9 @@ void main() {
       );
 
       Color labelOf(String text) {
-        return DefaultTextStyle.of(
-          tester.element(find.text(text)),
-        ).style.color!;
+        return DefaultTextStyle.of(tester.element(find.text(text)))
+            .style
+            .color!;
       }
 
       expect(labelOf('Delete'), GlassButtonPalette.light.systemRed);
