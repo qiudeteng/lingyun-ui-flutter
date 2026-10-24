@@ -38,12 +38,25 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 
 只有这一个按钮组件，不要另起 `LiquidGlassButton` / `ProminentButton`。
 
+对照：`docs/FIGMA-IOS27-ACCEPTANCE.md`（PR #9，Buttons 页 `507:24673`，组件 **Button - Liquid Glass - Text / Symbol**）。Figma 未复读的数字不要升成 token。
+
 | 官方名 | API | 用法 |
 | --- | --- | --- |
-| Glass | 默认 `style: LiquidGlassStyle.regularSmall` | 按钮默认，胶囊 |
-| Clear | `style: LiquidGlassStyle.clear` | 丰富媒体上的备选 |
-| Destructive | `role: GlassButtonRole.destructive` | 红色标签；与 Glass Prominent 叠加时为红色填充 + 白字 |
-| Glass Prominent | `prominence: GlassButtonProminence.prominent` | 填充 System Blue（tinted / filled），白字 |
+| Glass | 默认 `style: LiquidGlassStyle.regularSmall`，`size: GlassButtonSize.small` | 材质是 Regular Small。控件默认 **Small**。胶囊，不是 18/26/34 |
+| Clear | `style: LiquidGlassStyle.clear` | 丰富媒体上的备选。外形仍是胶囊 |
+| Destructive | `role: GlassButtonRole.destructive` | 红色标签（Light `#FF383C`）；与 Glass Prominent 叠加时为红色填充 + 白字 |
+| Glass Prominent | `prominence: GlassButtonProminence.prominent` | White Backing + System Blue（Light `#0088FF`）+ 白字 |
+| Symbol | `GlassButton.icon` | 同 Style / Destructive / Enabled。圆的直径等于该档文字按钮高度 |
+
+尺寸（Figma Text 导出。padding 写成水平 × 垂直，因为 5×2+18=28、8×2+18=34、16×2+18=50）：
+
+| Size | API | 高度（约） | padding |
+| --- | --- | --- | --- |
+| Small | `GlassButtonSize.small`（默认） | 28 | 10 × 5 |
+| Medium | `GlassButtonSize.medium` | 34 | 12 × 8 |
+| Large | `GlassButtonSize.large` | 50 | 20 × 16 |
+
+「Regular Small」是**材质名**，默认控件尺寸是 Small，不是 48pt 高。字重对齐 SF Pro Medium（`FontWeight.w500`）；仓库不捆绑 SF Pro。字号 17 / 图标 18 是为了塞进上述 18pt 内容槽，Text Styles 页未复读，**不是** kit token。
 
 颜色在 `GlassButtonPalette` / `LiquidGlassTheme.buttons`（Light / Dark），不要在示例里写死。
 
@@ -51,11 +64,11 @@ Figma 变量 Frost / Depth / Refraction / Dispersion / Splay / Opacity 是**设�
 
 | 状态 | 行为 |
 | --- | --- |
-| Default | 玻璃 + 主标签色 |
-| Pressed | 缩放到 0.97，加一层 press veil（实现近似，不是 kit token）。画廊可用 `forcePressed` 钉住 |
-| Disabled | `onPressed: null`。灰色标签。Glass Prominent 的彩色填充退回玻璃 |
+| Default | 玻璃 + 主标签色。Prominent 为不透明强调色，边缘仍是约 0.5px hairline + 多层 specular |
+| Pressed | 缩放到 0.97，加一层 press veil（实现近似，**待核验**，不是 kit token）。稿的按钮轴没有 Pressed。画廊可用 `forcePressed` 钉住 |
+| Disabled | `onPressed: null`。Glass：Tertiary 灰字，Light `#BFBFBF`，Dark `#404040`（Labels-LG Dark Tertiary）。Glass Prominent：填充保留，整体约 50% 不透明，不退回玻璃 |
 
-**禁止**对按钮使用 Materials Thick。Rim 仍是约 0.5px hairline，不按档位加粗。
+**禁止**对按钮使用 Materials Thick。Rim 仍是约 0.5px hairline，不按档位加粗。Frost / Depth 不是 blur σ。
 
 ## Labels — Liquid Glass
 

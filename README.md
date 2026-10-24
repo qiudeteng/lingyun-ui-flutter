@@ -49,7 +49,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LiquidGlassTokens` | Shared visual recipe (blur/sat = implementation approximation) |
 | `LiquidGlassTheme` | `ThemeExtension` with both catalogs and `buttons`; `materialOf` / `styleOf` / `buttonPaletteOf` |
 | `GlassSurface` / `GlassCard` | `material:` **or** `style:` + hover specular on pointer devices |
-| `GlassButton` | Liquid Glass Button — Glass (Regular Small) / Clear / Destructive / Glass Prominent |
+| `GlassButton` | Liquid Glass Button — Style Glass (material Regular Small, control size Small) / Clear / Destructive / Glass Prominent / Symbol. Sizes Small 28, Medium 34, Large 50, capsule |
 | `GlassTabBar` | iOS 27 tab bar. Liquid Glass **Dock** (not Materials Thick): standard full-width bar, floating capsule, tinted whole bar. `GlassTabBarStyle.sidebar` is reserved |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
@@ -63,7 +63,7 @@ Documented on `LiquidGlassTokens` and painted by `GlassSurface`:
 - **Refraction** — directional **inner rim** (bright top-leading → quiet bottom-trailing). Distinct from the outer **grey ring** (`rimColor`, zero-blur +0.5 spread) and side hairlines (Sketch "Plus Darker", ~1.25 / −0.75).
 - **Shadows** — soft deep drop (`shadowColor`, large blur, modest Y, negative spread) stacked with the crisp rim.
 - **Rim** — ~0.5px hairline + multi-layer specular like Clear. **Not** linearly thickened by Materials tier (no 0.55→0.85).
-- **Radius** — `GlassRadiusScale` 18 / 26 / 34 is **待核验 (unverified vs Sketch)** until measured in the kit. Override with `GlassSurface.radiusScale` or `borderRadius`. Regular Small buttons use a 48pt capsule, not 18.
+- **Radius** — `GlassRadiusScale` 18 / 26 / 34 is **待核验 (unverified vs Sketch)** and applies to panels, not buttons. `GlassButton` is a capsule (`BorderRadius.circular(1000)`). Control sizes are Small / Medium / Large (about 28 / 34 / 50). Regular Small is the button **material**, not a 48pt height.
 - **Hover** (macOS / desktop web) may boost specular opacity. Touch devices never enter `MouseRegion`.
 
 Official kit names are first-class enums. This package does not claim Apple's API.
@@ -160,7 +160,7 @@ flutter run -d macos
 flutter run -d ios
 ```
 
-Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` states Default / Pressed / Disabled and variants Regular Small, Clear, Destructive, Glass Prominent), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
+Pages: **Materials** (Ultrathin / Thin / Regular / Thick + 待核验 radii), **Glass** (Clear / Regular S·M·L / Dock / Widget Glass + `GlassButton` sizes Small / Medium / Large, states Default / Pressed / Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol), **Tabs** (`GlassTabBar`: standard edge-to-bottom, floating pill at 3, 4, and 5 items, System Blue selection, tinted whole bar; light/dark wallpaper), **Themes** (light / dark), **Layout** (phone / Duo cover / Duo inner / iPad / macOS presets + live window), **Access** (reduce transparency / motion / high contrast). The default backdrop is a flat design canvas (light `#D1D1D6`, dark `#000000`) so glass can sit next to the Sketch kit. A **Canvas** chip on every page switches that canvas, the previous muted wash, a nature scene, abstract color, and a busy UI pattern.
 
 Open a page directly: `?page=tabs` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 

@@ -35,6 +35,13 @@ void main() {
     expect(find.byKey(const Key('glass-button-clear')), findsOneWidget);
     expect(find.byKey(const Key('glass-button-destructive')), findsOneWidget);
     expect(find.byKey(const Key('glass-button-prominent')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-medium')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-large')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-symbol')), findsOneWidget);
+    expect(
+      find.byKey(const Key('glass-button-prominent-disabled')),
+      findsOneWidget,
+    );
     expect(find.text('Regular Small'), findsWidgets);
 
     await tester.scrollUntilVisible(

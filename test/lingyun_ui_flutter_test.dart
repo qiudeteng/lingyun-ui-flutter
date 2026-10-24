@@ -557,8 +557,23 @@ void main() {
       expect(labelOf('Delete'), GlassButtonPalette.light.systemRed);
       expect(labelOf('Continue'), GlassButtonPalette.light.filledLabel);
       expect(labelOf('Remove'), GlassButtonPalette.light.filledLabel);
-      expect(labelOf('Off'), GlassButtonPalette.light.disabledLabel);
+      expect(labelOf('Off'), GlassButtonPalette.light.filledLabel);
       expect(labelOf('Held'), LiquidGlassLabels.lightPrimary);
+      expect(
+        tester
+            .widget<Opacity>(
+              find.descendant(
+                of: find.byKey(const Key('off')),
+                matching: find.byType(Opacity),
+              ),
+            )
+            .opacity,
+        GlassButton.prominentDisabledOpacity,
+      );
+      expect(
+        DefaultTextStyle.of(tester.element(find.text('Off'))).style.fontWeight,
+        GlassButton.labelWeight,
+      );
 
       final held = tester.widget<AnimatedScale>(
         find.descendant(
@@ -602,8 +617,9 @@ void main() {
       expect(GlassButtonPalette.light.systemRed, const Color(0xFFFF383C));
       expect(GlassButtonPalette.dark.systemRed, const Color(0xFFFF4245));
       expect(GlassButtonPalette.light.filledLabel, const Color(0xFFFFFFFF));
-      expect(GlassButtonPalette.light.disabledLabel, const Color(0xFF6D6D6F));
-      expect(GlassButtonPalette.dark.disabledLabel, const Color(0xFF59595C));
+      expect(GlassButtonPalette.light.disabledLabel, const Color(0xFFBFBFBF));
+      expect(GlassButtonPalette.dark.disabledLabel, const Color(0xFF404040));
+      expect(GlassButtonPalette.prominentBacking, const Color(0xFFFFFFFF));
     });
 
     test('Prominent tints Regular Small and never uses Materials Thick', () {
@@ -628,6 +644,8 @@ void main() {
         isNot(LiquidGlassTokens.lightThick.tintColor),
       );
       expect(prominent.blurSigma, base.blurSigma);
+      expect(prominent.tintColor, GlassButtonPalette.light.systemBlue);
+      expect(prominent.tintColor.a, 1);
 
       final destructive = GlassButton.resolveTokens(
         base: base,
@@ -648,7 +666,12 @@ void main() {
         role: GlassButtonRole.normal,
         enabled: false,
       );
-      expect(disabledProminent, base);
+      expect(disabledProminent.tintColor, GlassButtonPalette.light.systemBlue);
+      expect(disabledProminent, isNot(base));
+      expect(
+        disabledProminent.opaqueFallbackColor,
+        GlassButtonPalette.light.systemBlue,
+      );
 
       final glassDestructive = GlassButton.resolveTokens(
         base: base,
@@ -697,6 +720,118 @@ void main() {
         ),
       );
       expect(palette, GlassButtonPalette.dark);
+    });
+
+    test('control sizes match the Figma Text export', () {
+      expect(GlassButtonMetrics.small.height, 28);
+      expect(
+        GlassButtonMetrics.small.padding,
+        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      );
+      expect(GlassButtonMetrics.medium.height, 34);
+      expect(
+        GlassButtonMetrics.medium.padding,
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      );
+      expect(GlassButtonMetrics.large.height, 50);
+      expect(
+        GlassButtonMetrics.large.padding,
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      );
+      expect(GlassButtonMetrics.small.contentExtent, 18);
+      expect(GlassButtonMetrics.medium.contentExtent, 18);
+      expect(GlassButtonMetrics.large.contentExtent, 18);
+      expect(
+        GlassButtonMetrics.forSize(GlassButtonSize.large),
+        GlassButtonMetrics.large,
+      );
+      expect(
+        GlassButton.capsuleRadius,
+        const BorderRadius.all(Radius.circular(1000)),
+      );
+      expect(GlassButton.prominentDisabledOpacity, 0.5);
+      expect(GlassButton.labelWeight, FontWeight.w500);
+    });
+
+    testWidgets('default size is Small and Clear stays a capsule', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: Scaffold(
+            body: Column(
+              children: [
+                GlassButton.label(
+                  key: const Key('small'),
+                  label: 'Small',
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('medium'),
+                  label: 'Medium',
+                  size: GlassButtonSize.medium,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('large'),
+                  label: 'Large',
+                  size: GlassButtonSize.large,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('clear'),
+                  label: 'Clear',
+                  style: LiquidGlassStyle.clear,
+                  onPressed: () {},
+                ),
+                GlassButton.icon(
+                  key: const Key('symbol'),
+                  icon: Icons.add,
+                  semanticLabel: 'Add',
+                  size: GlassButtonSize.large,
+                  onPressed: () {},
+                ),
+                GlassButton.label(
+                  key: const Key('glass-off'),
+                  label: 'Muted',
+                  role: GlassButtonRole.destructive,
+                  onPressed: null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      Size sizeOf(Key key) => tester.getSize(find.byKey(key));
+
+      expect(
+        tester.widget<GlassButton>(find.byKey(const Key('small'))).size,
+        GlassButtonSize.small,
+      );
+      expect(sizeOf(const Key('small')).height, 28);
+      expect(sizeOf(const Key('medium')).height, 34);
+      expect(sizeOf(const Key('large')).height, 50);
+      expect(sizeOf(const Key('symbol')), const Size(50, 50));
+
+      final clear = tester.widget<GlassSurface>(
+        find.descendant(
+          of: find.byKey(const Key('clear')),
+          matching: find.byType(GlassSurface),
+        ),
+      );
+      expect(clear.borderRadius, GlassButton.capsuleRadius);
+      expect(
+        clear.borderRadius,
+        isNot(LiquidGlassTokens.lightClear.borderRadius),
+      );
+
+      expect(
+        DefaultTextStyle.of(tester.element(find.text('Muted'))).style.color,
+        GlassButtonPalette.light.disabledLabel,
+      );
+      expect(find.byIcon(Icons.add), findsOneWidget);
     });
   });
 }
