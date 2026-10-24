@@ -55,10 +55,17 @@ enum LayoutPreset {
 }
 
 class LayoutPage extends StatefulWidget {
-  const LayoutPage({super.key, this.initialPreset});
+  const LayoutPage({super.key, this.initialPreset, this.stageOnly = false});
 
   /// Used by tests and screenshot captures. A `?preset=` query wins.
   final LayoutPreset? initialPreset;
+
+  /// Paint only the page stage, filling the parent.
+  ///
+  /// Screenshot captures set the view to the bucket size and turn this on.
+  /// The gallery header plus [FittedBox] would otherwise scale every preset
+  /// into the leftover window, so a wide stage no longer reads as wide.
+  final bool stageOnly;
 
   @override
   State<LayoutPage> createState() => _LayoutPageState();
@@ -95,6 +102,17 @@ class _LayoutPageState extends State<LayoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.stageOnly) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final simulated =
+              constraints.hasBoundedWidth && constraints.hasBoundedHeight
+              ? Size(constraints.maxWidth, constraints.maxHeight)
+              : _preset.size;
+          return _frame(context, simulated);
+        },
+      );
+    }
     final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
