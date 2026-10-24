@@ -26,15 +26,15 @@ class AccessibilityPage extends StatelessWidget {
       padding: LingyunLayout.layoutMarginOf(context),
       children: [
         Text(
-          'Accessibility',
+          '辅助功能',
           key: const Key('a11y-title'),
           style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         Text(
-          'Reduce Transparency and high contrast switch glass to an opaque '
-          'fallback. Reduce Motion zeroes LiquidGlassMotion durations '
-          '(also honors MediaQuery.disableAnimations).',
+          '降低透明度或打开高对比时，玻璃改为不透明兜底。'
+          '减弱动态会把 LiquidGlassMotion 的时长收成零'
+          '（也会跟随 MediaQuery.disableAnimations）。',
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -43,22 +43,22 @@ class AccessibilityPage extends StatelessWidget {
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Reduce transparency'),
-                subtitle: const Text('Opaque glass fallback'),
+                title: const Text('降低透明度'),
+                subtitle: const Text('玻璃改为不透明兜底'),
                 value: reduceTransparency,
                 onChanged: onReduceTransparency,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Reduce motion'),
-                subtitle: const Text('Duration.zero + linear curves'),
+                title: const Text('减弱动态'),
+                subtitle: const Text('时长为零，曲线改为线性'),
                 value: reduceMotion,
                 onChanged: onReduceMotion,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('High contrast'),
-                subtitle: const Text('Same opaque fallback as MediaQuery'),
+                title: const Text('高对比'),
+                subtitle: const Text('与媒体查询相同的不透明兜底'),
                 value: highContrast,
                 onChanged: onHighContrast,
               ),
@@ -71,8 +71,8 @@ class AccessibilityPage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Text(
             reduceTransparency || highContrast
-                ? 'Opaque fallback is active.'
-                : 'Frosted glass is active. Hover on desktop to lift specular.',
+                ? '不透明兜底已生效。'
+                : '正在使用磨砂玻璃。在桌面上悬停可加强高光。',
             style: textTheme.titleMedium,
           ),
         ),

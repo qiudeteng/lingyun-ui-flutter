@@ -1,8 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
-/// Shows the iOS LYPage host, plus compact / regular notes when the host
-/// is not in this process.
+/// iOS `LYPage` 宿主。当前进程没有 UIKit 时，只展示紧凑 / 常规说明。
 class NativePage extends StatefulWidget {
   const NativePage({super.key});
 
@@ -18,8 +17,8 @@ class _NativePageState extends State<NativePage> {
   LingyunPageSpec get _spec => LingyunPageSpec(
     chrome: _chrome,
     navigation: _navigation,
-    primaryLabel: 'Primary',
-    secondaryLabel: 'Secondary',
+    primaryLabel: '主栏',
+    secondaryLabel: '次栏',
   );
 
   @override
@@ -37,7 +36,7 @@ class _NativePageState extends State<NativePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Native Page',
+                  '原生页',
                   key: const Key('native-page-title'),
                   style: textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
@@ -45,60 +44,61 @@ class _NativePageState extends State<NativePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'iOS host uses horizontal size class and this view\'s '
-                  'bounds. Folded outer is Compact. Half-open and fully '
-                  'open are Regular. The hinge is a reserved region.',
+                  'iOS 宿主只看水平尺寸类别和这块视图的可用范围。'
+                  '外屏折叠是紧凑，半开和全开都是常规。铰链是系统预留区域。',
                   style: textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
                 _ChoiceRow<LingyunPageChrome>(
-                  label: 'Chrome',
+                  label: '饰条',
+                  keyPrefix: 'chrome',
                   values: LingyunPageChrome.values,
                   selected: _chrome,
+                  display: _chromeLabel,
                   onChanged: (value) => setState(() => _chrome = value),
                 ),
                 const SizedBox(height: 8),
                 _ChoiceRow<LingyunPageNavigation>(
-                  label: 'Navigation',
+                  label: '导航',
+                  keyPrefix: 'navigation',
                   values: LingyunPageNavigation.values,
                   selected: _navigation,
+                  display: _navigationLabel,
                   onChanged: (value) => setState(() => _navigation = value),
                 ),
                 const SizedBox(height: 12),
                 _BucketNote(
                   noteKey: const Key('native-page-compact-note'),
-                  title: 'Compact',
+                  title: '紧凑',
                   body:
-                      'Horizontal size class Compact, including a folded '
-                      'outer display. ${_line(spec, LingyunPageWidthBucket.compact)} '
-                      'System tab chrome may sit on the side. Content uses '
-                      'each safe-area edge.',
+                      '水平尺寸类别为紧凑，包括折叠后的外屏。'
+                      '${_line(spec, LingyunPageWidthBucket.compact)} '
+                      '系统标签栏可能贴在侧面。内容按每一边的安全区留白。',
                 ),
                 _BucketNote(
                   noteKey: const Key('native-page-regular-note'),
-                  title: 'Regular',
+                  title: '常规',
                   body:
-                      'Horizontal size class Regular. Half-open and fully '
-                      'open share it. ${_line(spec, LingyunPageWidthBucket.regular)} '
-                      'An active division region is the hinge. Keep controls '
-                      'out of that frame.',
+                      '水平尺寸类别为常规。半开和全开相同。'
+                      '${_line(spec, LingyunPageWidthBucket.regular)} '
+                      '处于激活状态的分割区域就是铰链。控件不要压在那块区域上。',
                 ),
                 _BucketNote(
                   noteKey: const Key('native-page-wide-note'),
-                  title: 'Wide',
+                  title: '宽屏',
                   body:
-                      'Regular, and available width at least '
-                      '${LingyunBreakpoints.large.toStringAsFixed(0)} pt '
-                      '(LingyunBreakpoints.large, not a kit token). '
+                      '已经是常规，并且可用宽度至少 '
+                      '${LingyunBreakpoints.large.toStringAsFixed(0)} pt'
+                      '（LingyunBreakpoints.large，不是套件色值）。'
                       '${_line(spec, LingyunPageWidthBucket.wide)}',
                 ),
                 if (_snapshot != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'Live ${_snapshot!.widthBucket} '
-                    'H ${_snapshot!.horizontalSizeClass} '
-                    'mounted ${_snapshot!.mountedRoot} '
-                    'columns ${_snapshot!.columns}',
+                    '实时 ${_bucketWire(_snapshot!.widthBucket)}，'
+                    '水平 ${_sizeClass(_snapshot!.horizontalSizeClass)}，'
+                    '已挂载 ${_snapshot!.mountedRoot}，'
+                    '${_snapshot!.columns} 列',
                     key: const Key('native-page-live'),
                     style: textTheme.bodySmall,
                   ),
@@ -137,11 +137,8 @@ class _NativePageState extends State<NativePage> {
 
   static String _line(LingyunPageSpec spec, LingyunPageWidthBucket bucket) {
     final container = resolveLingyunPageContainer(spec, bucket: bucket);
-    final columns = container.columns == 0
-        ? 'system arrangement'
-        : '${container.columns} column'
-              '${container.columns == 1 ? '' : 's'}';
-    return '${container.root}, $columns.';
+    final columns = container.columns == 0 ? '系统排列' : '${container.columns} 列';
+    return '${container.root}，$columns。';
   }
 }
 
@@ -157,11 +154,10 @@ class _HostPlaceholder extends StatelessWidget {
         child: Align(
           alignment: Alignment.topLeft,
           child: Text(
-            'LYPage is an iOS platform view. This process has no UIKit '
-            'host, so the skeleton is not simulated with a fixed resolution. '
-            'Run the example on an iOS 27.1 SDK to see TabView, '
-            'NavigationSplitView, and, when LY_IOS_27_1_SDK is set, '
-            'ArrangementView.',
+            'LYPage 是 iOS 平台视图。当前进程没有 UIKit 宿主，'
+            '所以不用固定分辨率去模拟骨架。请在 iOS 27.1 SDK 上运行示例，'
+            '才能看到 TabView、NavigationSplitView，以及设置 '
+            'LY_IOS_27_1_SDK 之后的 ArrangementView。',
             key: Key('native-page-placeholder'),
           ),
         ),
@@ -189,7 +185,7 @@ class _BucketNote extends StatelessWidget {
         TextSpan(
           children: [
             TextSpan(
-              text: '$title. ',
+              text: '$title。',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             TextSpan(text: body),
@@ -204,14 +200,18 @@ class _BucketNote extends StatelessWidget {
 class _ChoiceRow<T extends Enum> extends StatelessWidget {
   const _ChoiceRow({
     required this.label,
+    required this.keyPrefix,
     required this.values,
     required this.selected,
+    required this.display,
     required this.onChanged,
   });
 
   final String label;
+  final String keyPrefix;
   final List<T> values;
   final T selected;
+  final String Function(T value) display;
   final ValueChanged<T> onChanged;
 
   @override
@@ -224,12 +224,47 @@ class _ChoiceRow<T extends Enum> extends StatelessWidget {
         Text(label),
         for (final value in values)
           ChoiceChip(
-            key: Key('native-${label.toLowerCase()}-${value.name}'),
-            label: Text(value.name),
+            key: Key('native-$keyPrefix-${value.name}'),
+            label: Text(display(value)),
             selected: value == selected,
             onSelected: (_) => onChanged(value),
           ),
       ],
     );
   }
+}
+
+String _chromeLabel(LingyunPageChrome value) {
+  return switch (value) {
+    LingyunPageChrome.tab => '标签',
+    LingyunPageChrome.sidebar => '侧栏',
+    LingyunPageChrome.none => '无',
+  };
+}
+
+String _navigationLabel(LingyunPageNavigation value) {
+  return switch (value) {
+    LingyunPageNavigation.stack => '栈',
+    LingyunPageNavigation.split => '分栏',
+    LingyunPageNavigation.arrangementSplit => '排列分栏',
+    LingyunPageNavigation.arrangementOverlay => '排列叠加',
+  };
+}
+
+String _bucketWire(String raw) {
+  return switch (raw) {
+    'compact' => '紧凑',
+    'regular' => '常规',
+    'wide' => '宽屏',
+    _ => raw,
+  };
+}
+
+String _sizeClass(String raw) {
+  return switch (raw) {
+    'compact' => '紧凑',
+    'regular' => '常规',
+    'unspecified' => '未指定',
+    _ => raw,
+  };
 }

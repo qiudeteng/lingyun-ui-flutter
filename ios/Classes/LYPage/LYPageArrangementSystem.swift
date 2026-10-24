@@ -34,12 +34,12 @@ struct LYPageArrangementUnavailable: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 12) {
-        Text("ArrangementView is not linked")
+        Text("尚未链接 ArrangementView")
           .font(.title3)
         Text(LYPageContainer.arrangementNote)
           .font(.footnote)
-        Text("Primary: \(session.spec.primaryLabel)")
-        Text("Secondary: \(session.spec.secondaryLabel)")
+        Text("主栏：\(session.spec.primaryLabel)")
+        Text("次栏：\(session.spec.secondaryLabel)")
         Text(LYPagePaneCopy.safeArea)
           .font(.footnote)
         Text(LYPagePaneCopy.regionsUnavailable)

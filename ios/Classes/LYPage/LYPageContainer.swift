@@ -13,23 +13,22 @@ struct LYPageContainer: Equatable {
   var note: String
 
   static let arrangementNote =
-    "ArrangementView stays outside TabView and NavigationSplitView. "
-    + "A NavigationStack may wrap the arrangement. "
-    + "The iOS 27.1 compile flag LY_IOS_27_1_SDK links the system type. "
-    + "Without it this host does not invent a hinge layout."
+    "ArrangementView 放在 TabView 和 NavigationSplitView 外面。"
+    + "NavigationStack 可以包住排列。"
+    + "iOS 27.1 的编译标记 LY_IOS_27_1_SDK 才会链接系统类型。"
+    + "没有这个标记时，宿主不会自己编一套铰链布局。"
 
   static let splitNote =
-    "NavigationSplitView collapses to one column when the horizontal size "
-    + "class is compact. Wide (regular, and available width >= "
-    + "LingyunBreakpoints.large) adds a third column only when chrome is "
-    + "sidebar. Tab chrome keeps two columns so the tab bar is not also a sidebar."
+    "水平尺寸类别为紧凑时，NavigationSplitView 收成一列。"
+    + "宽屏（已经是常规，且可用宽度至少 LingyunBreakpoints.large）"
+    + "只有饰条是侧栏时才加第三列。标签饰条保持两列，避免标签栏再变成一条侧栏。"
 
   static let tabNote =
-    "TabView is the system tab bar. On an iOS 27.1 build it may sit on the "
-    + "side. Content uses each safe-area edge and does not assume a bottom dock."
+    "TabView 是系统标签栏。在 iOS 27.1 上它可能贴在侧面。"
+    + "内容按每一边的安全区留白，不假设底栏程序坞。"
 
   static let stackNote =
-    "NavigationStack fills the available bounds. Safe area is per edge."
+    "NavigationStack 铺满可用范围。安全区按每一边计算。"
 
   static func resolve(spec: LYPageSpec, bucket: LYPageWidthBucket) -> LYPageContainer {
     if spec.navigation.isArrangement {
