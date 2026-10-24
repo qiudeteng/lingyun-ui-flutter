@@ -409,6 +409,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('slider-mid-idle')), findsOneWidget);
     expect(find.byKey(const Key('slider-mid-pressed')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('slider-mid-idle')),
+        matching: find.byType(ControlKnobStack),
+      ),
+      findsNothing,
+    );
+    final pressedSlider = find.descendant(
+      of: find.byKey(const Key('slider-mid-pressed')),
+      matching: find.byType(ControlKnobStack),
+    );
+    expect(pressedSlider, findsOneWidget);
+    expect(tester.widget<ControlKnobStack>(pressedSlider).clicked, isTrue);
+    expect(tester.getSize(pressedSlider), const Size(24, 24));
     expect(find.byKey(const Key('slider-disabled')), findsOneWidget);
     expect(find.byKey(const Key('toggle-off-idle')), findsNothing);
     expect(find.text('实时：50%'), findsOneWidget);

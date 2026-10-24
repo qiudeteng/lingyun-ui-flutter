@@ -12,9 +12,12 @@ import 'control_layer_view.dart';
 /// to the knob center. The rest is the unfilled track.
 ///
 /// Pressed (drag, or [forcePressed]) uses the clicked track styles and
-/// the clicked knob stack. Disabled is `onChanged == null`. The kit has
-/// no filled-disabled track, so the bar is entirely unfilled-disabled and
-/// the blue portion is omitted. Dark idle draws no knob.
+/// the clicked knob stack: shadow under, glow on top, even when the dark
+/// idle knob is null. Those borders are black, so on a black canvas the
+/// same alpha is shown in white and the disk stays empty. Disabled is
+/// `onChanged == null`. The kit has no filled-disabled track, so the bar
+/// is entirely unfilled-disabled and the blue portion is omitted. Dark
+/// idle draws no knob.
 ///
 /// The stack does not clip. Leave room for the blur-36 shadow.
 class LingyunSlider extends StatefulWidget {
@@ -191,6 +194,7 @@ class _LingyunSliderState extends State<LingyunSlider> {
                         width: ControlMetrics.knobDiameter,
                         height: ControlMetrics.knobDiameter,
                         clicked: _clicked,
+                        showRingOnBlack: true,
                         borderRadius: ControlMetrics.stadium(
                           ControlMetrics.knobDiameter,
                         ),

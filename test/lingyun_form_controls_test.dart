@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -205,7 +207,79 @@ void main() {
         same(ControlLayerCatalog.light.trackFilledClicked),
       );
       expect(_onlyKnob(tester).clicked, isTrue);
+      expect(
+        find.descendant(
+          of: find.byType(LingyunSlider),
+          matching: find.byType(ColorFiltered),
+        ),
+        findsNothing,
+      );
     });
+
+    testWidgets(
+      'dark pressed stacks a visible clicked ring and idle does not',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(280, 80));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          const Directionality(
+            textDirection: TextDirection.ltr,
+            child: RepaintBoundary(
+              key: Key('dark-slider-shot'),
+              child: ColoredBox(
+                color: Color(0xFF000000),
+                child: Center(
+                  child: SizedBox(
+                    width: 200,
+                    child: LingyunSlider(
+                      value: 0.5,
+                      onChanged: _keepDouble,
+                      forcePressed: true,
+                      brightness: Brightness.dark,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final knob = _onlyKnob(tester);
+        expect(knob.clicked, isTrue);
+        expect(knob.brightness, Brightness.dark);
+        expect(knob.showRingOnBlack, isTrue);
+        expect(
+          tester.getSize(find.byType(ControlKnobStack)),
+          const Size(24, 24),
+        );
+        expect(
+          find.descendant(
+            of: find.byType(ControlKnobStack),
+            matching: find.byType(ColorFiltered),
+          ),
+          findsOneWidget,
+        );
+        final ringSpan = await _nonBlackSpan(
+          tester,
+          find.byKey(const Key('dark-slider-shot')),
+        );
+        expect(ringSpan, greaterThanOrEqualTo(20));
+
+        await tester.pumpWidget(
+          _host(
+            const SizedBox(
+              width: 200,
+              child: LingyunSlider(
+                value: 0.5,
+                onChanged: _keepDouble,
+                brightness: Brightness.dark,
+              ),
+            ),
+          ),
+        );
+        expect(find.byType(ControlKnobStack), findsNothing);
+      },
+    );
 
     testWidgets('disabled drops the filled portion', (tester) async {
       await tester.pumpWidget(
@@ -450,6 +524,39 @@ double _knobLeft(WidgetTester tester, Type host) {
     ),
   );
   return knob.dx - root.dx;
+}
+
+/// Tallest column of pixels that are not the black canvas.
+///
+/// The dark pressed ring is hollow, so the center column is only the
+/// 6pt track. The circumference has to clear about 24pt.
+Future<int> _nonBlackSpan(WidgetTester tester, Finder shot) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(shot);
+  final bytes = await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    return (image.width, image.height, data!.buffer.asUint8List());
+  });
+  final width = bytes!.$1;
+  final height = bytes.$2;
+  final pixels = bytes.$3;
+  var best = 0;
+  for (var x = 0; x < width; x++) {
+    var first = -1;
+    var last = -1;
+    for (var y = 0; y < height; y++) {
+      final i = (y * width + x) * 4;
+      final sum = pixels[i] + pixels[i + 1] + pixels[i + 2];
+      if (sum <= 18 * 3) continue;
+      first = first < 0 ? y : first;
+      last = y;
+    }
+    if (first >= 0) {
+      final span = last - first + 1;
+      if (span > best) best = span;
+    }
+  }
+  return best;
 }
 
 Clip _stackClip(WidgetTester tester, Type host) {
