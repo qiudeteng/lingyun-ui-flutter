@@ -416,54 +416,46 @@ class _Specimen extends StatelessWidget {
           safeArea: safeArea,
           keyboardInset: 0,
         );
-        final height = metrics.heightFor(detent);
-        final natural = Rect.fromLTWH(
-          metrics.left,
-          constraints.maxHeight - metrics.bottomOffset - height,
+        final sheetW = mathMin(
           metrics.width,
-          height,
+          mathMax(0, constraints.maxWidth - _stripePadH * 2),
         );
-        // Materials Thick is a short card inset 28×14 inside its stripe
-        // field. A sheet that covers the field edge to edge reads as a
-        // solid plate: the sharp bands stop, and Thick's veil hides the
-        // rest. Pull the specimen in until that same frame fits.
-        final platter = _insetPlatterToFitFrame(
-          natural,
-          Size(constraints.maxWidth, constraints.maxHeight),
+        final sheetH = mathMin(
+          metrics.heightFor(detent),
+          mathMax(0, constraints.maxHeight - _stripePadV * 2),
         );
-        final field = _stripeFieldAround(
-          platter,
-          attachedToBottom: metrics.attachedToBottom,
-        );
+        final side = (constraints.maxWidth - sheetW) / 2;
+        // Materials Thick swatch: stripes are the stack's bottom child,
+        // GlassSurface sits in the padding directly above them. No opaque
+        // box and no clip between the two.
         return Stack(
           key: stageKey,
           fit: StackFit.expand,
-          clipBehavior: Clip.none,
           children: [
-            Positioned.fromRect(
-              rect: field,
-              child: const CustomPaint(painter: _SheetStripePainter()),
+            CustomPaint(
+              painter: _SheetStripePainter(
+                left: side - _stripePadH,
+                width: sheetW + _stripePadH * 2,
+              ),
             ),
-            if (platter.top > 22)
-              Positioned(
-                top: 4,
-                left: platter.left,
-                width: platter.width,
-                child: Text(
-                  '收件箱  今天 · 已置顶',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: LingyunTextStyles.footnote(
-                    color: colors.labels.secondary,
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                side,
+                _stripePadV,
+                side,
+                _stripePadV,
+              ),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: sheetW,
+                  height: sheetH,
+                  child: LingyunSheet(
+                    attachedToBottom: metrics.attachedToBottom,
+                    grabberLabel: '抓手',
+                    child: _specimenBody(colors),
                   ),
                 ),
-              ),
-            Positioned.fromRect(
-              rect: platter,
-              child: LingyunSheet(
-                attachedToBottom: metrics.attachedToBottom,
-                grabberLabel: '抓手',
-                child: _specimenBody(colors),
               ),
             ),
           ],
@@ -557,64 +549,32 @@ double mathMin(double a, double b) => a < b ? a : b;
 const double _stripePadH = 28;
 const double _stripePadV = 14;
 
-/// Shrink [platter] until a Materials-style stripe frame fits in [stage].
-///
-/// Compact metrics are full-bleed, so the frame would otherwise be clipped
-/// off and the sharp bands would stop on the glass edge.
-Rect _insetPlatterToFitFrame(Rect platter, Size stage) {
-  var left = platter.left;
-  var right = platter.right;
-  var top = platter.top;
-  var bottom = platter.bottom;
-  if (left < _stripePadH) left = _stripePadH;
-  if (right > stage.width - _stripePadH) right = stage.width - _stripePadH;
-  if (top < _stripePadV) top = _stripePadV;
-  final attached = (stage.height - platter.bottom).abs() < 0.5;
-  if (!attached && bottom > stage.height - _stripePadV) {
-    bottom = stage.height - _stripePadV;
-  }
-  if (right < left) right = left;
-  if (bottom < top) bottom = top;
-  return Rect.fromLTRB(left, top, right, bottom);
-}
+double mathMax(double a, double b) => a > b ? a : b;
 
-Rect _stripeFieldAround(Rect platter, {required bool attachedToBottom}) {
-  return Rect.fromLTRB(
-    platter.left - _stripePadH,
-    platter.top - _stripePadV,
-    platter.right + _stripePadH,
-    platter.bottom + (attachedToBottom ? 0 : _stripePadV),
-  );
-}
-
-/// Stripe field drawn in the sheet route, same layer as the platter.
+/// Bands painted in the sheet route, as the stack child under the platter.
 ///
-/// The route does not sample the page under it, so the bands have to be
-/// painted here. They use the platter's own width, with the Materials
-/// frame around it, instead of one ramp stretched across the window.
+/// The route does not sample the page under it. [left] / [width] are the
+/// stripe field: the platter plus the Materials padding, not the window.
 Widget _sheetBackdrop(
   BuildContext context,
   LingyunSheetMetrics metrics,
   Rect platter,
 ) {
-  final field = _stripeFieldAround(
-    platter,
-    attachedToBottom: metrics.attachedToBottom,
-  );
-  return Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Positioned.fromRect(
-        rect: field,
-        child: const CustomPaint(painter: _SheetStripePainter()),
-      ),
-    ],
+  return CustomPaint(
+    painter: _SheetStripePainter(
+      left: platter.left - _stripePadH,
+      width: platter.width + _stripePadH * 2,
+    ),
+    child: const SizedBox.expand(),
   );
 }
 
 /// Vertical bands. Same colors as the Materials page stripe field, not a token.
 class _SheetStripePainter extends CustomPainter {
-  const _SheetStripePainter();
+  const _SheetStripePainter({required this.left, required this.width});
+
+  final double left;
+  final double width;
 
   static const List<Color> bands = [
     Color(0xFF5C5C60),
@@ -629,18 +589,20 @@ class _SheetStripePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (size.width <= 0 || size.height <= 0) return;
-    final band = size.width / bands.length;
+    if (size.width <= 0 || size.height <= 0 || width <= 0) return;
+    final band = width / bands.length;
     final paint = Paint();
     for (var i = 0; i < bands.length; i++) {
       paint.color = bands[i];
       canvas.drawRect(
-        Rect.fromLTWH(i * band, 0, band + 0.5, size.height),
+        Rect.fromLTWH(left + i * band, 0, band + 0.5, size.height),
         paint,
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SheetStripePainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SheetStripePainter oldDelegate) {
+    return oldDelegate.left != left || oldDelegate.width != width;
+  }
 }

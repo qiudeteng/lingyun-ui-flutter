@@ -843,29 +843,29 @@ class _LingyunSheetPanelState extends State<_LingyunSheetPanel>
                     : media.padding,
               ),
               child: Stack(
-                // Clip.none: a hard-edge clip on this stack would isolate
-                // the platter from the backdrop painted behind it.
-                clipBehavior: Clip.none,
+                // Same order as the Materials Thick swatch: the backdrop is
+                // the bottom of this stack, and the platter is the next
+                // child. Nothing opaque, and no extra clip, sits between
+                // them. A modal route cannot sample the page underneath.
+                fit: StackFit.expand,
                 children: [
-                  if (widget.backdrop != null)
-                    Positioned.fill(
-                      child: widget.backdrop!(
-                        context,
-                        metrics,
-                        Rect.fromLTWH(
-                          metrics.left,
-                          constraints.maxHeight - metrics.bottomOffset - visual,
-                          metrics.width,
-                          visual,
-                        ),
-                      ),
-                    ),
                   Positioned.fill(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: widget.dismissible ? _dismiss : null,
                     ),
                   ),
+                  if (widget.backdrop != null)
+                    widget.backdrop!(
+                      context,
+                      metrics,
+                      Rect.fromLTWH(
+                        metrics.left,
+                        constraints.maxHeight - metrics.bottomOffset - visual,
+                        metrics.width,
+                        visual,
+                      ),
+                    ),
                   Positioned(
                     left: metrics.left,
                     width: metrics.width,
