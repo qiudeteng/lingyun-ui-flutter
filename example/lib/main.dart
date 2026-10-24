@@ -6,9 +6,12 @@ import 'pages/alerts_page.dart';
 import 'pages/controls_page.dart';
 import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
+import 'pages/lists_page.dart';
 import 'pages/materials_page.dart';
 import 'pages/native_page.dart';
+import 'pages/progress_page.dart';
 import 'pages/tab_bar_page.dart';
+import 'pages/text_fields_page.dart';
 import 'pages/themes_page.dart';
 import 'wallpaper.dart';
 
@@ -56,6 +59,9 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'native' => 6,
       'alerts' => 7,
       'knob' || 'track' || 'controls' => 8,
+      'lists' => 9,
+      'fields' => 10,
+      'progress' => 11,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -198,6 +204,21 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.tune),
       label: '旋钮',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.list_alt_outlined),
+      selectedIcon: Icon(Icons.list_alt),
+      label: '列表',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.short_text_outlined),
+      selectedIcon: Icon(Icons.short_text),
+      label: '文本框',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.timelapse_outlined),
+      selectedIcon: Icon(Icons.timelapse),
+      label: '进度',
+    ),
   ];
 
   @override
@@ -226,68 +247,74 @@ class DemoHome extends StatelessWidget {
         themeMode: themeMode,
         onThemeModeChanged: onThemeModeChanged,
       ),
+      const ListsPage(),
+      const TextFieldsPage(),
+      const ProgressPage(),
     ];
 
-    return LingyunLayoutBuilder(
-      builder: (context, data) {
-        final useRail = !data.isCompact || data.isWideShort;
-        final body = Stack(
-          fit: StackFit.expand,
-          children: [
-            const SystemWallpaper(),
-            pages[index],
-            if (!bare)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8, right: 8),
-                    child: GalleryBackgroundButton(
-                      mode: background,
-                      onChanged: onBackgroundChanged,
+    return LingyunTheme(
+      brightness: Theme.of(context).brightness,
+      child: LingyunLayoutBuilder(
+        builder: (context, data) {
+          final useRail = !data.isCompact || data.isWideShort;
+          final body = Stack(
+            fit: StackFit.expand,
+            children: [
+              const SystemWallpaper(),
+              pages[index],
+              if (!bare)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, right: 8),
+                      child: GalleryBackgroundButton(
+                        mode: background,
+                        onChanged: onBackgroundChanged,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        );
-
-        if (bare) {
-          return Scaffold(backgroundColor: Colors.transparent, body: body);
-        }
-
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Row(
-            children: [
-              if (useRail)
-                NavigationRail(
-                  selectedIndex: index,
-                  onDestinationSelected: onIndexChanged,
-                  labelType: NavigationRailLabelType.all,
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  destinations: [
-                    for (final d in _destinations)
-                      NavigationRailDestination(
-                        icon: d.icon,
-                        selectedIcon: d.selectedIcon,
-                        label: Text(d.label),
-                      ),
-                  ],
-                ),
-              Expanded(child: body),
             ],
-          ),
-          bottomNavigationBar: useRail
-              ? null
-              : NavigationBar(
-                  selectedIndex: index,
-                  onDestinationSelected: onIndexChanged,
-                  destinations: _destinations,
-                ),
-        );
-      },
+          );
+
+          if (bare) {
+            return Scaffold(backgroundColor: Colors.transparent, body: body);
+          }
+
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Row(
+              children: [
+                if (useRail)
+                  NavigationRail(
+                    selectedIndex: index,
+                    onDestinationSelected: onIndexChanged,
+                    labelType: NavigationRailLabelType.all,
+                    backgroundColor: Colors.white.withValues(alpha: 0.18),
+                    destinations: [
+                      for (final d in _destinations)
+                        NavigationRailDestination(
+                          icon: d.icon,
+                          selectedIcon: d.selectedIcon,
+                          label: Text(d.label),
+                        ),
+                    ],
+                  ),
+                Expanded(child: body),
+              ],
+            ),
+            bottomNavigationBar: useRail
+                ? null
+                : NavigationBar(
+                    selectedIndex: index,
+                    onDestinationSelected: onIndexChanged,
+                    destinations: _destinations,
+                  ),
+          );
+        },
+      ),
     );
   }
 }

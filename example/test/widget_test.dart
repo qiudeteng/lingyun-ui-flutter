@@ -297,4 +297,37 @@ void main() {
     expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
     expect(find.textContaining('#0091FF'), findsWidgets);
   });
+
+  testWidgets('form gallery pages use Simplified Chinese copy', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+
+    await tester.tap(find.text('列表').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('lists-title')), findsOneWidget);
+    expect(find.text('无线局域网'), findsOneWidget);
+    expect(find.text('设计评审'), findsOneWidget);
+    expect(find.text('Lists'), findsNothing);
+
+    await tester.tap(find.text('文本框').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('fields-title')), findsOneWidget);
+    expect(find.text('显示名称'), findsOneWidget);
+    expect(find.text('请输入有效的电子邮件'), findsOneWidget);
+    expect(find.text('Text Fields'), findsNothing);
+
+    await tester.tap(find.text('进度').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('progress-title')), findsOneWidget);
+    expect(find.text('不确定'), findsWidgets);
+    expect(find.text('圆形着色'), findsOneWidget);
+    expect(find.text('Progress Indicators'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
 }

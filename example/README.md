@@ -19,6 +19,8 @@ text specimens with `?page=text` or the 文本 segment. Light / dark is
 layer styles, composed as a circular knob on a toggle or slider track.
 浅色 / 深色. Titles and notes are Simplified Chinese.
 
+**列表** / **文本框** / **进度**（`?page=lists|fields|progress`）的标题、按钮、标签、占位符和辅助说明是简体中文。代码标识保持英文。
+
 Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
 The **Canvas** chip on every page also selects muted wash, nature,
 abstract color, and a busy UI pattern. Query: `?bg=canvas|wash|meadow|abstract|busy`
