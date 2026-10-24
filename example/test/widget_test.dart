@@ -221,4 +221,35 @@ void main() {
     );
     expect(find.byKey(const Key('text-role-caption1')), findsOneWidget);
   });
+
+  testWidgets('themes page opens color swatches and text styles', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('主题').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('themes-title')), findsOneWidget);
+    expect(find.byKey(const Key('colors-title')), findsOneWidget);
+    expect(find.text('系统颜色'), findsOneWidget);
+    expect(find.text('液态玻璃标签'), findsOneWidget);
+    expect(find.text('#0088FF'), findsWidgets);
+    expect(find.text('Themes'), findsNothing);
+    expect(find.text('Dark mode'), findsNothing);
+    expect(find.text('Materials Thin'), findsNothing);
+
+    await tester.tap(find.text('深色').last);
+    await tester.pumpAndSettle();
+    expect(find.text('#0091FF'), findsWidgets);
+
+    await tester.tap(find.text('文本').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('text-styles-title')), findsOneWidget);
+    expect(find.text('凌云界面'), findsWidgets);
+    expect(find.textContaining('大标题'), findsWidgets);
+  });
 }

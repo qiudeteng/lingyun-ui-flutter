@@ -28,6 +28,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _reduceMotion = false;
   bool _highContrast = false;
   int _index = 0;
+  ThemesPanel _themesPanel = ThemesPanel.colors;
   bool _bare = false;
   GalleryBackground _background = GalleryBackground.canvas;
 
@@ -40,12 +41,18 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     _index = switch (page) {
       'glass' => 1,
       'tabs' => 2,
-      'themes' => 3,
+      'themes' || 'colors' || 'text' => 3,
       'layout' => 4,
       'access' => 5,
       'native' => 6,
       'alerts' => 7,
       _ => 0,
+    };
+    final panel = page == 'text' ? 'text' : Uri.base.queryParameters['panel'];
+    _themesPanel = switch (panel) {
+      'text' => ThemesPanel.text,
+      'samples' => ThemesPanel.samples,
+      _ => ThemesPanel.colors,
     };
     _themeMode = switch (Uri.base.queryParameters['theme']) {
       'dark' => ThemeMode.dark,
@@ -80,6 +87,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
           highContrast: _highContrast,
           child: DemoHome(
             index: _index,
+            themesPanel: _themesPanel,
             bare: _bare,
             background: _background,
             themeMode: _themeMode,
@@ -104,6 +112,7 @@ class DemoHome extends StatelessWidget {
   const DemoHome({
     super.key,
     required this.index,
+    required this.themesPanel,
     required this.bare,
     required this.background,
     required this.themeMode,
@@ -119,6 +128,7 @@ class DemoHome extends StatelessWidget {
   });
 
   final int index;
+  final ThemesPanel themesPanel;
   final bool bare;
   final GalleryBackground background;
   final ThemeMode themeMode;
@@ -151,7 +161,7 @@ class DemoHome extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.brightness_6_outlined),
       selectedIcon: Icon(Icons.brightness_6),
-      label: 'Themes',
+      label: '主题',
     ),
     NavigationDestination(
       icon: Icon(Icons.devices_outlined),
@@ -181,7 +191,11 @@ class DemoHome extends StatelessWidget {
       const MaterialsPage(),
       const GlassPage(),
       const TabBarPage(),
-      ThemesPage(themeMode: themeMode, onThemeModeChanged: onThemeModeChanged),
+      ThemesPage(
+        themeMode: themeMode,
+        onThemeModeChanged: onThemeModeChanged,
+        initialPanel: themesPanel,
+      ),
       const LayoutPage(),
       AccessibilityPage(
         reduceTransparency: reduceTransparency,

@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - `LingyunColors` — Sketch iOS 27 color variables (system colors, labels, liquid-glass labels, backgrounds, fills, grays, separators) for light and dark. Wired through `LingyunTheme` (`cupertino_ui`) and `LingyunMaterialTheme` (`ColorScheme` / `TextTheme` on `material_ui` only).
 - `LingyunTextStyles` — Sketch text styles at the Large content size, plus loose / tight leading. SF Pro is not bundled. Dynamic Type ramps other than Large stay unverified.
 - Example foundation gallery (`flutter run -t lib/foundation_app.dart`). The page copy is Simplified Chinese.
+- Main example **主题** page (nav label, not `Themes`) shows the same color swatches and Large text specimens, with 浅色 / 深色. `?page=themes`, `?page=colors`, or `?page=text`.
 
 ### Notes
 
