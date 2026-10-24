@@ -32,7 +32,7 @@ Future<void> _capture(
   required Brightness brightness,
   required String path,
 }) async {
-  await tester.binding.setSurfaceSize(const Size(1280, 960));
+  await tester.binding.setSurfaceSize(const Size(1280, 1160));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final canvas = brightness == Brightness.dark
       ? const Color(0xFF000000)
@@ -47,14 +47,8 @@ Future<void> _capture(
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           themeMode: mode,
-          theme: ThemeData(
-            brightness: Brightness.light,
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            useMaterial3: true,
-          ),
+          theme: ThemeData(brightness: Brightness.light, useMaterial3: true),
+          darkTheme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
           home: ControlsPage(themeMode: mode, onThemeModeChanged: (_) {}),
         ),
       ),

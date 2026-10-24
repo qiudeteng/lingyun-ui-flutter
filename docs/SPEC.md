@@ -185,7 +185,7 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 | `x. Kit`（Canvas / Symbol BG） | **不进 Theme**。稿面辅助色，不是系统色。 |
 | Material `secondary` / `tertiary` | **桥接，待核验**。没有单独的 Sketch 强调色，ColorScheme 里暂时重复 System Blue，避免把 Material 默认紫当成系统色。 |
 | Tab Caption 10 / Semibold | **不在本批**。文本样式里没有 10pt。`GlassTabBar` 不改。 |
-| Controls 旋钮 / 轨道圆角 | **未收录**。Sketch 层样式没有圆角字段。画廊高度和宽度是示意。 |
+| Controls 旋钮 / 轨道圆角 | **未收录**。Sketch 层样式没有圆角字段。画廊示意是圆旋钮叠在轨道上（直径 24，开关轨道 64×28，滑杆轨道高 6），不是令牌。 |
 | Controls 高斯半径 3 的 σ | **待核验**。检查器给的是 gaussian radius，不是 backdrop σ。渲染用了 Flutter 阴影的半径换算。 |
 | Controls Plus Darker | **待核验**。令牌记下了混合模式。描边先按颜色画。 |
 | Controls 按下层叠加顺序 | **待核验**。阴影在下、发光在上。 |
@@ -232,6 +232,6 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 | 深色旋钮静止 | 返回 null。稿没有 `Controls/Dark/Knobs - Toggle/01 - Idle` |
 | 按下发光 / 按下阴影 | `clickedGlow` / `clickedShadow` |
 
-渲染：`ControlLayerView`、`ControlKnobStack`。圆角由调用方传入；层样式里没有圆角，默认直角。按下阴影的高斯半径 3 用 Flutter 阴影的 radius→sigma 换算，标为待核验，不是 backdrop σ。Plus Darker 记在令牌上，描边先按颜色本身画。细节与 8-bit 透明度见 [`docs/CONTROLS.md`](CONTROLS.md)。
+渲染：`ControlLayerView`、`ControlKnobStack`。圆角由调用方传入；层样式里没有圆角，默认直角。叠层不裁剪，模糊 36 的阴影和外侧发光可以画出外形。按下阴影的高斯半径 3 用 Flutter 阴影的 radius→sigma 换算，标为待核验，不是 backdrop σ。Plus Darker 记在令牌上，描边先按颜色本身画。细节与 8-bit 透明度见 [`docs/CONTROLS.md`](CONTROLS.md)。
 
-示例：导航「旋钮」，`?page=knob`（`track` / `controls` 同样打开）。浅色 / 深色可切。文案是简体中文。
+示例：导航「旋钮」，`?page=knob`（`track` / `controls` 同样打开）。浅色 / 深色可切。文案是简体中文。示意是圆旋钮叠在开关和滑杆轨道上，不是分开的扁条和 64×36 方块。

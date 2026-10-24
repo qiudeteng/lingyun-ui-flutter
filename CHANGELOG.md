@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Example **旋钮** page composes a circular knob on the track (toggle 64×28, slider bar 6pt tall, knob diameter 24). Idle and pressed shadows are no longer clipped to the knob bounds, and the gray specimen plate that hid the 5% shadow is gone. Tokens are unchanged: dark idle knob and filled-disabled tracks stay null. Gallery copy stays Simplified Chinese.
 - Minimum SDK floor is Dart `^3.13.7` and Flutter `>=3.47.8` (stable 2026-10-23).
 - Materials Ultrathin → Thick stay visually apart on the stripe specimen. The backdrop underlay is only the blurred drop shadow. Opaque zero-blur rim fills were sampling as a solid plate on Linux and web, so every tier looked like the same milk. The ~0.5px grey ring and side hairlines are foreground strokes. Liquid Glass paths (GlassButton Regular Small, GlassTabBar Dock) are unchanged. Materials page copy in the example is Simplified Chinese.
 - Design libraries moved off the Flutter SDK. `lib/` and `example/` no longer import `package:flutter/material.dart` or `package:flutter/cupertino.dart`. Files that do not need a Material API import `package:cupertino_ui/cupertino_ui.dart`. Material APIs (`Theme` / `ThemeExtension`, `Icons`, `Colors`, `Material`, gallery `Scaffold` / `NavigationBar`) stay on `package:material_ui/material_ui.dart`. The example depends on `cupertino_icons` so the few Cupertino glyphs Material still draws have a font. No `CompatibilityBridge`. Materials and Liquid Glass names are unchanged.

@@ -59,9 +59,7 @@ void main() {
         [const Color(0x1AFFFFFF)],
       );
       expect(
-        dark
-            .track(ControlTrackFill.unfilled, ControlTrackState.clicked)!
-            .fills,
+        dark.track(ControlTrackFill.unfilled, ControlTrackState.clicked)!.fills,
         [const Color(0x30FFFFFF)],
       );
       expect(

@@ -74,8 +74,8 @@ flutter run -d chrome
 
 打开 `http://localhost:<端口>/?page=colors&theme=light&chrome=0`，以及 `theme=dark`。文本页把 `page` 换成 `text`。导航里点「主题」，默认就是颜色色板，再点「文本」。
 
-- `controls_knob_track_light.png` — 旋钮与轨道，浅色，设计画布 `#D1D1D6`，1280×960。灰色衬底是对照底，不是层样式，也不是圆角令牌。轨道高度 28、旋钮 64×36 是示意尺寸。
-- `controls_knob_track_dark.png` — 同一页，深色，设计画布 `#000000`，1280×960。深色没有静止旋钮层样式，页上写明了。
+- `controls_knob_track_light.png` — 旋钮与轨道，浅色，设计画布 `#D1D1D6`，1280×1160。圆旋钮叠在开关和滑杆轨道上。直径 24、开关轨道 64×28、滑杆轨道高 6 是示意外形，不是圆角令牌。四周留空，让静止阴影露出来。
+- `controls_knob_track_dark.png` — 同一页，深色，设计画布 `#000000`，1280×1160。深色没有静止旋钮层样式，页上写明了。按下仍是圆旋钮叠在轨道上。
 
 重新生成（在 `example/` 里）：
 
