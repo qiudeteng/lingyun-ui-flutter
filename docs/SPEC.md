@@ -279,3 +279,21 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 | 键盘 | 底边跟随 `viewInsets.bottom`。不把中档自动升成高档，**待核验** |
 
 圆角用 `LiquidGlassRadii.large`（34，本仓库已标 **待核验**）。遮罩不是 Alert 的 barrier。细节见 [`docs/SHEETS.md`](SHEETS.md)。示例 `?page=sheets`，文案简体中文。装配和材质页 Thick 一样：同一个 `Stack` 里竖向条纹在底，`GlassSurface` 直接盖上，中间没有不透明块，也没有外层 Clip。
+
+## H. Action Sheets（系统操作表，cupertino_ui）
+
+权威顺序：WWDC25 [Meet Liquid Glass](https://developer.apple.com/videos/play/wwdc2025/219/)（219）的透镜 / flex / morph / Reduce Motion → [Adopting Liquid Glass](https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass) 与 WWDC25 [Build a UIKit app](https://developer.apple.com/videos/play/wwdc2025/284/)（284）→ [HIG Action Sheets](https://developer.apple.com/design/human-interface-guidelines/action-sheets) → Sketch 页「Action Sheets」**只对静态**。Figma 本轮未复读操作表页。
+
+实现是 **包系统**：`showLingyunActionSheet` → `CupertinoModalPopupRoute`（`showCupertinoModalPopup` 的那条路由）+ `CupertinoActionSheet`。不自绘 flex、liquid lens、morph，不把包内弹簧抄成 token。不是 `LingyunSheet`（Materials Thick），不是玻璃按钮。
+
+| 稿面 / 行为 | API |
+| --- | --- |
+| 普通操作 | `LingyunActionSheetAction.regular`。常规字重，标签色，上组 |
+| 首选 | `.confirm`。加粗，仍是标签色 |
+| 破坏性 | `.destructive`。`systemRed`，不加粗 |
+| 取消 | `.cancel`。第一个取消进底部独立槽。`arrange` |
+| 弹出 / 收起 | 包的 `CupertinoModalPopupRoute` 弹簧，从底部滑入 / 滑出 |
+| 按压 | 包内立即换底色。没有时长 |
+| Reduce Motion | 不跑弹簧。`LiquidGlassMotion.durationOf` → `Duration.zero` |
+
+284 与 Adopting Liquid Glass 写的是操作表从触发控件长出、锚定后可以不画取消。`cupertino_ui` 1.1.4 没有这条转场，**待核验**，不自绘。细节见 [`docs/ACTION-SHEETS.md`](ACTION-SHEETS.md)。示例 `?page=actions`，文案简体中文。

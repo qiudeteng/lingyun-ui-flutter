@@ -267,6 +267,67 @@ void main() {
     expect(find.textContaining('上次结果：完成'), findsOneWidget);
   });
 
+  testWidgets('action sheets page is Chinese and can open a system sheet', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    final railScroll = find.descendant(
+      of: find.byKey(const Key('gallery-rail')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('操作表').last,
+      200,
+      scrollable: railScroll.first,
+    );
+    await tester.tap(find.text('操作表').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('action-sheet-title')), findsOneWidget);
+    expect(find.byKey(const Key('action-sheet-scope')), findsOneWidget);
+    expect(find.textContaining('系统操作表'), findsOneWidget);
+    expect(find.byKey(const Key('action-sheet-stage-titled')), findsOneWidget);
+    expect(
+      find.byKey(const Key('action-sheet-stage-destructive')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('action-sheet-stage-several')), findsOneWidget);
+    expect(find.byKey(const Key('action-sheet-stage-plain')), findsOneWidget);
+
+    final several = find.byKey(const Key('action-sheet-stage-several'));
+    double topOf(String label) {
+      return tester
+          .getRect(find.descendant(of: several, matching: find.text(label)))
+          .top;
+    }
+
+    expect(topOf('拷贝'), lessThan(topOf('存储')));
+    expect(topOf('存储'), lessThan(topOf('删除')));
+    expect(topOf('删除'), lessThan(topOf('取消')));
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('action-sheet-live-plain')),
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('action-sheet-gallery-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.textContaining('尚未弹出'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('action-sheet-live-plain')));
+    await tester.pumpAndSettle();
+    expect(find.text('打开'), findsWidgets);
+    await tester.tap(find.text('打开').last);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('上次结果：打开'), findsOneWidget);
+  });
+
   testWidgets('foundation gallery shows colors and text styles', (
     tester,
   ) async {
