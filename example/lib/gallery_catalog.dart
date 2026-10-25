@@ -30,8 +30,9 @@ class GalleryEntry {
 
 /// One headed group of demos inside a workbench page.
 ///
-/// The section title is not the card label. Every card on a workbench
-/// uses [GalleryGroup.workbenchTitle].
+/// The section title is the group name. The list label repeats
+/// [GalleryGroup.workbenchTitle]. The rows sit in that list, not in a
+/// separate Liquid Glass card.
 @immutable
 class GallerySection {
   const GallerySection({
@@ -70,7 +71,7 @@ class GalleryGroup {
   final IconData selectedIcon;
   final List<GallerySection> sections;
 
-  /// Page title and the label on every card in this workbench.
+  /// Page title and the label above every section list in this workbench.
   String get workbenchTitle => '$label工作台';
 
   List<GalleryEntry> get entries => [
@@ -90,8 +91,8 @@ class GallerySelection {
 /// Four fixed groups. Wave 3 long-tail demos are not listed.
 ///
 /// Each group is a workbench of several sections. A section holds one
-/// card; the card's list rows are the demos. Leaf order inside a group
-/// follows the design tree.
+/// inset list labeled with the workbench name; the rows are the demos.
+/// Leaf order inside a group follows the design tree.
 const List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     id: 'basics',

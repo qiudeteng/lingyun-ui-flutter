@@ -13,9 +13,10 @@ import 'wallpaper.dart';
 ///    [GlassTabBarStyle.floatingPill] with [LiquidGlassStyle.dock], drawn
 ///    by [LingyunPage]. It is not a sidebar rail and not Material navigation.
 /// 2. The selected tab's workbench page (「基础工作台」and the same
-///    pattern for the other three). Several sections. Each section is one
-///    Regular Medium card labeled with that workbench name. The card's
-///    content is a plain list of demo rows.
+///    pattern for the other three). Several sections. Each section is an
+///    inset grouped list on Materials Regular, labeled with that workbench
+///    name. Not a Liquid Glass tray. The page fill is the system grouped
+///    background.
 /// 3. A row stack-pushes the demo. [返回] pops back to the workbench.
 ///
 /// [lingyunPageSpecForBucket] would switch regular and wide to a sidebar
@@ -259,9 +260,10 @@ Widget _fillStage(Widget? current, List<Widget> previous) {
   );
 }
 
-/// Level 2. Each section card is Liquid Glass Regular Medium. The list
-/// inside is plain, so the card is the only platter. Not the Dock, and
-/// not a Materials tier.
+/// Level 2. Each section is one inset [GlassList]: Materials Regular
+/// around inset grouped rows. There is no Liquid Glass tray around the
+/// group, and it is not Thick. The page fill is the system grouped
+/// background. Plain lists have no platter; this page does not use them.
 class GalleryWorkbench extends StatelessWidget {
   const GalleryWorkbench({
     super.key,
@@ -279,7 +281,8 @@ class GalleryWorkbench extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = LingyunColors.forBrightness(Theme.brightnessOf(context));
+    final brightness = Theme.brightnessOf(context);
+    final colors = LingyunColors.forBrightness(brightness);
     final label = colors.liquidGlassLabels.primary;
     final secondary = colors.liquidGlassLabels.secondary;
     final title = Column(
@@ -298,54 +301,68 @@ class GalleryWorkbench extends StatelessWidget {
         ),
       ],
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final tools = preview;
-                if (tools == null) return title;
-                if (constraints.maxWidth < 820) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      title,
-                      const SizedBox(height: 8),
-                      Align(alignment: Alignment.centerRight, child: tools),
-                    ],
-                  );
-                }
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: title),
-                    const SizedBox(width: 12),
-                    tools,
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            key: const Key('gallery-workbench'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: [
-              for (final section in group.sections)
-                _WorkbenchSection(
-                  section: section,
-                  cardLabel: group.workbenchTitle,
-                  onOpen: onOpen,
+    return CupertinoTheme(
+      data: CupertinoThemeData(brightness: brightness),
+      child: Builder(
+        builder: (context) {
+          return ColoredBox(
+            key: const Key('gallery-workbench-background'),
+            color: CupertinoColors.systemGroupedBackground.resolveFrom(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final tools = preview;
+                        if (tools == null) return title;
+                        if (constraints.maxWidth < 820) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              title,
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: tools,
+                              ),
+                            ],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: title),
+                            const SizedBox(width: 12),
+                            tools,
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
-            ],
-          ),
-        ),
-      ],
+                Expanded(
+                  child: ListView(
+                    key: const Key('gallery-workbench'),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    children: [
+                      for (final section in group.sections)
+                        _WorkbenchSection(
+                          section: section,
+                          cardLabel: group.workbenchTitle,
+                          onOpen: onOpen,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -372,7 +389,7 @@ class _WorkbenchSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
             child: Text(
               section.title,
               key: Key('gallery-section-${section.id}'),
@@ -382,44 +399,32 @@ class _WorkbenchSection extends StatelessWidget {
               ),
             ),
           ),
-          GlassCard(
-            key: Key('gallery-card-${section.id}'),
-            style: LiquidGlassStyle.regularMedium,
-            padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-                  child: Text(
-                    cardLabel,
-                    key: Key('gallery-card-label-${section.id}'),
-                    style: LingyunTextStyles.footnote(
-                      emphasized: true,
-                      color: label,
-                    ),
-                  ),
-                ),
-                GlassList(
-                  style: GlassListStyle.plain,
-                  sections: [
-                    GlassListSection(
-                      tiles: [
-                        for (final entry in section.entries)
-                          GlassListTile(
-                            key: Key('gallery-entry-${entry.id}'),
-                            title: entry.label,
-                            subtitle: entry.detail,
-                            leading: Icon(entry.icon),
-                            showChevron: true,
-                            onTap: () => onOpen(entry.id),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              cardLabel,
+              key: Key('gallery-card-label-${section.id}'),
+              style: LingyunTextStyles.footnote(emphasized: true, color: label),
             ),
+          ),
+          GlassList(
+            key: Key('gallery-card-${section.id}'),
+            style: GlassListStyle.inset,
+            sections: [
+              GlassListSection(
+                tiles: [
+                  for (final entry in section.entries)
+                    GlassListTile(
+                      key: Key('gallery-entry-${entry.id}'),
+                      title: entry.label,
+                      subtitle: entry.detail,
+                      leading: Icon(entry.icon),
+                      showChevron: true,
+                      onTap: () => onOpen(entry.id),
+                    ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
