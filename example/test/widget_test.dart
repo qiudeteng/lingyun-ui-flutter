@@ -50,7 +50,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('Glass').last);
+    await tester.tap(find.text('玻璃').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
     expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
@@ -66,7 +66,7 @@ void main() {
       find.byKey(const Key('glass-button-prominent-disabled')),
       findsOneWidget,
     );
-    expect(find.text('Regular Small'), findsWidgets);
+    expect(find.text('常规小'), findsWidgets);
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('glass-button-live')),
@@ -75,7 +75,7 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('glass-button-live')));
     await tester.pumpAndSettle();
-    expect(find.text('Tapped 1'), findsOneWidget);
+    expect(find.text('已点 1'), findsOneWidget);
 
     await tester.tap(find.text('Layout').last);
     await tester.pumpAndSettle();
@@ -92,7 +92,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('wide · sidebar'), findsOneWidget);
 
-    await tester.tap(find.text('Tabs').last);
+    await tester.tap(find.text('标签栏').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
     await tester.scrollUntilVisible(
@@ -105,7 +105,7 @@ void main() {
     expect(find.byKey(const Key('tab-stage-floating-4')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-floating-5')), findsOneWidget);
     expect(find.byKey(const Key('tab-stage-tinted')), findsOneWidget);
-    expect(find.textContaining('System Blue'), findsWidgets);
+    expect(find.textContaining('系统蓝'), findsWidgets);
 
     await tester.tap(find.text('Access').last);
     await tester.pumpAndSettle();
@@ -168,12 +168,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
 
-    await tester.tap(find.text('Glass').last);
+    await tester.tap(find.text('玻璃').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
 
-    await tester.tap(find.text('Tabs').last);
+    await tester.tap(find.text('标签栏').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsWidgets);

@@ -176,17 +176,17 @@ class DemoHome extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.layers_outlined),
       selectedIcon: Icon(Icons.layers),
-      label: 'Materials',
+      label: '材质',
     ),
     NavigationDestination(
       icon: Icon(Icons.auto_awesome_outlined),
       selectedIcon: Icon(Icons.auto_awesome),
-      label: 'Glass',
+      label: '玻璃',
     ),
     NavigationDestination(
       icon: Icon(Icons.view_carousel_outlined),
       selectedIcon: Icon(Icons.view_carousel),
-      label: 'Tabs',
+      label: '标签栏',
     ),
     NavigationDestination(
       icon: Icon(Icons.brightness_6_outlined),
