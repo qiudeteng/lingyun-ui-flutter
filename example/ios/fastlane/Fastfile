@@ -133,10 +133,9 @@ def flutter_on_path?
 end
 
 def ios_directory
-  dir = Dir.pwd
-  return dir if File.directory?(File.join(dir, "Runner.xcodeproj"))
-
-  UI.user_error!("请在 example/ios 下运行 bundle exec fastlane ios beta（当前目录 #{dir}）。")
+  CiSupport.ios_directory(Dir.pwd)
+rescue CiSupport::Error => e
+  UI.user_error!(e.message)
 end
 
 def asc_api_key
