@@ -9,6 +9,7 @@ import 'package:example/gallery_catalog.dart';
 import 'package:example/gallery_preview.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/form_controls_page.dart';
+import 'package:example/pages/materials_pack_page.dart';
 import 'package:example/pages/wave1c_page.dart';
 import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
@@ -65,6 +66,27 @@ Future<void> revealGalleryTarget(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
+/// Tops increase down the page. Off-screen children of a single scroll
+/// view are still laid out, so this does not require them to be visible.
+void _expectTopsIncrease(WidgetTester tester, List<Key> keys) {
+  double? previous;
+  for (final key in keys) {
+    final top = tester.getRect(find.byKey(key)).top;
+    if (previous != null) {
+      expect(top, greaterThan(previous), reason: '$key');
+    }
+    previous = top;
+  }
+}
+
+/// [Scrollable.ensureVisible] with alignment 0 puts the section title on
+/// the leading edge of the demo scroller.
+void _expectSectionAtTop(WidgetTester tester, Key key) {
+  final viewport = tester.getRect(galleryContentScrollable());
+  final title = tester.getRect(find.byKey(key));
+  expect((title.top - viewport.top).abs(), lessThan(24), reason: '$key');
+}
+
 /// Opens a demo from its group tab and workbench list row.
 ///
 /// [settle] stays false for the progress page, whose indeterminate
@@ -83,7 +105,7 @@ Future<void> openGalleryEntry(
     ),
   );
   await tester.pumpAndSettle();
-  final card = find.byKey(Key('gallery-entry-$entryId'));
+  final card = find.byKey(Key('gallery-entry-${selection.entry.id}'));
   await tester.ensureVisible(card);
   await tester.tap(card);
   if (settle) {
@@ -200,19 +222,57 @@ void main() {
           .data,
       '基础工作台',
     );
-    expect(find.text('液态玻璃'), findsWidgets);
+    expect(
+      find.byKey(const Key('gallery-entry-materials-pack')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('gallery-entry-materials')), findsNothing);
+    expect(find.byKey(const Key('gallery-entry-glass')), findsNothing);
+    expect(find.text('材质封装'), findsOneWidget);
+    expect(find.text('液态玻璃'), findsNothing);
     expect(find.text('玻璃按钮'), findsWidgets);
     expect(find.byKey(const Key('materials-title')), findsNothing);
 
     await openGalleryEntry(tester, 'materials');
+    expect(find.byKey(const Key('materials-pack-title')), findsOneWidget);
+    expect(find.text('材质封装'), findsWidgets);
     expect(find.text('材质'), findsWidgets);
     expect(find.text('超薄'), findsWidgets);
     expect(find.text('厚'), findsWidgets);
+    expect(find.byKey(const Key('controls-title')), findsOneWidget);
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
     expect(find.byKey(const Key('materials-title')), findsOneWidget);
-    expect(find.byKey(const Key('material-ultrathin')), findsOneWidget);
-    expect(find.byKey(const Key('material-thin')), findsOneWidget);
-    expect(find.byKey(const Key('material-regular')), findsOneWidget);
-    expect(find.byKey(const Key('material-thick')), findsOneWidget);
+    expect(find.byKey(const Key('materials-thick-note')), findsOneWidget);
+    expect(find.textContaining('Sheet'), findsWidgets);
+    expect(find.textContaining('Sidebar'), findsWidgets);
+    expect(find.byKey(const Key('knob-light-idle')), findsOneWidget);
+    expect(find.byKey(const Key('knob-light-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('knob-dark-idle-missing')), findsOneWidget);
+    expect(find.byKey(const Key('knob-dark-clicked')), findsOneWidget);
+    expect(find.byKey(const Key('track-light-filled-idle')), findsOneWidget);
+    expect(
+      find.byKey(const Key('track-dark-unfilled-disabled')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('slider-idle')), findsNothing);
+    expect(find.byType(GlassButton), findsNothing);
+    expect(find.textContaining('模糊'), findsNothing);
+    expect(find.textContaining('饱和'), findsNothing);
+    _expectTopsIncrease(tester, const [
+      Key('controls-title'),
+      Key('glass-title'),
+      Key('materials-title'),
+      Key('material-light-thick'),
+      Key('material-light-regular'),
+      Key('material-light-thin'),
+      Key('material-light-ultrathin'),
+    ]);
+    _expectTopsIncrease(tester, const [
+      Key('material-dark-thick'),
+      Key('material-dark-regular'),
+      Key('material-dark-thin'),
+      Key('material-dark-ultrathin'),
+    ]);
     await tester.scrollUntilVisible(
       find.byKey(const Key('radius-large')),
       200,
@@ -254,9 +314,14 @@ void main() {
     await tester.pumpWidget(const LingyunGlassDemoApp());
     await openGalleryEntry(tester, 'glass');
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
-    expect(find.byKey(const Key('glass-clear')), findsOneWidget);
-    expect(find.byKey(const Key('glass-regularSmall')), findsOneWidget);
-    expect(find.byKey(const Key('glass-dock')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-clear')), findsOneWidget);
+    expect(find.byKey(const Key('glass-dark-clear')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-regularSmall')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-regularMedium')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-regularLarge')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-dock')), findsOneWidget);
+    expect(find.byKey(const Key('glass-dark-dock')), findsOneWidget);
+    expect(find.byKey(const Key('glass-light-widgetGlass')), findsOneWidget);
     expect(find.byKey(const Key('glass-button-default')), findsNothing);
     expect(find.text('常规小'), findsWidgets);
 
@@ -636,46 +701,76 @@ void main() {
     expect(find.textContaining('大标题'), findsWidgets);
   });
 
-  testWidgets('knob and track page switches brightness', (tester) async {
+  test('materials pack queries map onto the three sections', () {
+    expect(MaterialsPackSection.fromQuery('materials-pack'), isNull);
+    expect(MaterialsPackSection.fromQuery(null), isNull);
+    expect(MaterialsPackSection.fromQuery('buttons'), isNull);
+    expect(
+      MaterialsPackSection.fromQuery('knob'),
+      MaterialsPackSection.controls,
+    );
+    expect(
+      MaterialsPackSection.fromQuery('controls'),
+      MaterialsPackSection.controls,
+    );
+    expect(
+      MaterialsPackSection.fromQuery('track'),
+      MaterialsPackSection.controls,
+    );
+    expect(
+      MaterialsPackSection.fromQuery('glass'),
+      MaterialsPackSection.liquidGlass,
+    );
+    expect(
+      MaterialsPackSection.fromQuery('materials'),
+      MaterialsPackSection.materials,
+    );
+  });
+
+  testWidgets('materials pack deep links land on the matching section', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(1280, 1200);
+    tester.view.physicalSize = const Size(900, 800);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
-    await tester.pumpWidget(const LingyunGlassDemoApp());
-    await openGalleryEntry(tester, 'knob');
 
-    expect(find.byKey(const Key('controls-title')), findsOneWidget);
-    expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
-    expect(find.byKey(const Key('track-filled-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('track-unfilled-idle')), findsOneWidget);
-    expect(find.byKey(const Key('track-unfilled-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('track-unfilled-disabled')), findsOneWidget);
+    Future<void> open(GalleryLaunch launch) async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(LingyunGlassDemoApp(launch: launch));
+      await tester.pumpAndSettle();
+    }
+
+    await open(const GalleryLaunch(home: 'controls'));
     expect(
-      find.byKey(const Key('track-filled-disabled-missing')),
-      findsOneWidget,
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '控件工作台',
     );
-    expect(find.byKey(const Key('knob-idle')), findsOneWidget);
-    expect(find.byKey(const Key('knob-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('slider-idle')), findsOneWidget);
-    expect(find.byKey(const Key('slider-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('knob-idle-missing')), findsNothing);
-    expect(find.text('旋钮与轨道'), findsOneWidget);
-    expect(find.textContaining('不是材质四档'), findsOneWidget);
-    expect(find.textContaining('圆旋钮叠在轨道上'), findsOneWidget);
+    expect(find.byKey(const Key('gallery-entry-knob')), findsNothing);
+    expect(find.byKey(const Key('gallery-section-track')), findsNothing);
+    expect(find.text('旋钮与轨道'), findsNothing);
+    expect(find.byKey(const Key('gallery-entry-lists')), findsOneWidget);
 
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('controls-brightness')),
-        matching: find.text('深色'),
-      ),
+    await open(const GalleryLaunch(page: 'materials-pack', chrome: '0'));
+    expect(find.byKey(const Key('materials-pack-title')), findsOneWidget);
+    expect(
+      tester.state<ScrollableState>(galleryContentScrollable()).position.pixels,
+      0,
     );
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('knob-idle')), findsNothing);
-    expect(find.byKey(const Key('knob-idle-missing')), findsOneWidget);
-    expect(find.byKey(const Key('knob-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('slider-clicked')), findsOneWidget);
-    expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
-    expect(find.textContaining('#0091FF'), findsWidgets);
+    expect(find.byType(GlassButton), findsNothing);
+
+    await open(const GalleryLaunch(page: 'materials', chrome: '0'));
+    _expectSectionAtTop(tester, const Key('materials-title'));
+
+    await open(const GalleryLaunch(page: 'glass', chrome: '0'));
+    _expectSectionAtTop(tester, const Key('glass-title'));
+
+    for (final page in ['knob', 'controls', 'track']) {
+      await open(GalleryLaunch(page: page, chrome: '0'));
+      _expectSectionAtTop(tester, const Key('controls-title'));
+    }
   });
 
   testWidgets('form gallery pages use Simplified Chinese copy', (tester) async {
@@ -1045,14 +1140,18 @@ void main() {
     expect(resolveGallerySelection('button')?.entry.id, 'buttons');
     expect(resolveGallerySelection('buttons')?.group.id, 'basics');
     expect(resolveGallerySelection('buttons')?.entry.label, '玻璃按钮');
-    expect(resolveGallerySelection('glass')?.entry.label, '液态玻璃');
-    expect(resolveGallerySelection('knob')?.entry.label, '旋钮与轨道');
+    expect(resolveGallerySelection('glass')?.entry.label, '材质封装');
+    expect(resolveGallerySelection('glass')?.entry.id, 'materials-pack');
+    expect(resolveGallerySelection('knob')?.entry.label, '材质封装');
+    expect(resolveGallerySelection('knob')?.group.id, 'basics');
+    expect(resolveGallerySelection('materials')?.entry.id, 'materials-pack');
+    expect(resolveGallerySelection('track')?.entry.id, 'materials-pack');
     expect(resolveGallerySelection('segmented')?.entry.label, '分段与页控');
     expect(resolveGallerySelection('toggle')?.entry.id, 'toggles');
     expect(resolveGallerySelection('slider')?.entry.id, 'sliders');
     expect(resolveGallerySelection('stepper')?.entry.id, 'steppers');
     expect(resolveGallerySelection('pages')?.entry.id, 'segmented');
-    expect(resolveGallerySelection('controls')?.entry.id, 'knob');
+    expect(resolveGallerySelection('controls')?.entry.id, 'materials-pack');
     expect(resolveGalleryWorkbench('controls')?.id, 'controls');
     expect(resolveGalleryWorkbench('foundation')?.label, '基础');
     expect(resolveGalleryWorkbench('chrome')?.label, '导航壳');
