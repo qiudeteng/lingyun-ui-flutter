@@ -1,5 +1,5 @@
 name: lingyun_ui_flutter
-description: Liquid Glass Flutter primitives for iPhone, iPhone Duo, iPad, and macOS — tokens, theme, GlassSurface, GlassButton, GlassTabBar, adaptive layout, the LingyunPage shell, formal system Alerts and Action Sheets via cupertino_ui, Controls knob/track styles, LingyunToggle, LingyunSlider, LingyunStepper, LingyunSegmentedControl, LingyunPageControl, Sheets and formal Sidebars on Materials Thick, and Flutter toolbars as floating Liquid Glass groups.
+description: Liquid Glass Flutter primitives for iPhone, iPhone Duo, iPad, and macOS — tokens, theme, GlassSurface, GlassButton, GlassTabBar, adaptive layout, the LingyunPage shell, formal system Alerts and Action Sheets via cupertino_ui, Controls knob/track styles, LingyunToggle, LingyunSlider, LingyunStepper, LingyunSegmentedControl, LingyunPageControl, Sheets and formal Sidebars on Materials Thick, Flutter toolbars as floating Liquid Glass groups, and anchored Popovers on Liquid Glass Regular Medium.
 version: 0.4.0
 homepage: https://github.com/qiudeteng/lingyun-ui-flutter
 repository: https://github.com/qiudeteng/lingyun-ui-flutter

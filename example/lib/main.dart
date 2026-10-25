@@ -11,6 +11,7 @@ import 'pages/layout_page.dart';
 import 'pages/lists_page.dart';
 import 'pages/materials_page.dart';
 import 'pages/native_page.dart';
+import 'pages/popovers_page.dart';
 import 'pages/progress_page.dart';
 import 'pages/sheets_page.dart';
 import 'pages/sidebars_page.dart';
@@ -87,6 +88,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'pagecontrol' => 15,
       'sidebars' || 'sidebar' => 16,
       'toolbars' || 'toolbar' => 17,
+      'popovers' || 'popover' => 18,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -280,6 +282,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.view_agenda),
       label: '工具栏',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.chat_bubble_outline),
+      selectedIcon: Icon(Icons.chat_bubble),
+      label: '弹出框',
+    ),
   ];
 
   @override
@@ -345,6 +352,12 @@ class DemoHome extends StatelessWidget {
           brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
         ),
       ),
+      PopoversPage(
+        brightness: Theme.of(context).brightness,
+        onBrightnessChanged: (brightness) => onThemeModeChanged(
+          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        ),
+      ),
     ];
 
     return LingyunTheme(
@@ -388,7 +401,7 @@ class DemoHome extends StatelessWidget {
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
-                    // Eighteen labeled destinations do not fit a short window.
+                    // Nineteen labeled destinations do not fit a short window.
                     scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [

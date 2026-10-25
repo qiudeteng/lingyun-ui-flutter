@@ -329,6 +329,65 @@ void main() {
     expect(find.textContaining('上次结果：打开'), findsOneWidget);
   });
 
+  testWidgets('popovers page is Chinese and can open, press, and dismiss', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.pumpAndSettle();
+    final railScroll = find.descendant(
+      of: find.byKey(const Key('gallery-rail')),
+      matching: find.byType(Scrollable),
+    );
+    if (railScroll.evaluate().isNotEmpty) {
+      await tester.scrollUntilVisible(
+        find.text('弹出框'),
+        200,
+        scrollable: railScroll.first,
+      );
+    }
+    await tester.tap(find.text('弹出框').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('popover-title')), findsOneWidget);
+    expect(find.byKey(const Key('popover-motion-note')), findsOneWidget);
+    expect(find.textContaining('Regular Medium'), findsOneWidget);
+    expect(find.byKey(const Key('popover-stage-below')), findsOneWidget);
+    expect(find.byKey(const Key('popover-stage-above')), findsOneWidget);
+    expect(find.byKey(const Key('popover-stage-after')), findsOneWidget);
+    expect(find.byKey(const Key('popover-stage-pressed')), findsOneWidget);
+    expect(find.text('浅色'), findsWidgets);
+    expect(find.text('深色'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('popover-theme-dark')));
+    await tester.pumpAndSettle();
+    final title = tester.element(find.byKey(const Key('popover-title')));
+    expect(Theme.of(title).brightness, Brightness.dark);
+    await tester.tap(find.byKey(const Key('popover-theme-light')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('尚未弹出'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('popover-open')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('popover-action-detail')), findsOneWidget);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const Key('popover-action-detail'))),
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('上次结果：查看详情'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('popover-open')));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(24, 860));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('上次结果：已关闭'), findsOneWidget);
+  });
+
   testWidgets('foundation gallery shows colors and text styles', (
     tester,
   ) async {
