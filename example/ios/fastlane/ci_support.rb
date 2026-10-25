@@ -13,6 +13,26 @@ module CiSupport
 
   module_function
 
+  # Fastlane loads the Fastfile with Dir.pwd set to the directory that contains
+  # it (example/ios/fastlane), even when `bundle exec fastlane` was started in
+  # example/ios. Accept that folder when its parent holds Runner.xcodeproj.
+  # Do not search higher: a cwd outside this iOS tree must still fail.
+  def ios_directory(start_dir = Dir.pwd)
+    dir = File.expand_path(start_dir.to_s)
+    return dir if runner_xcodeproj?(dir)
+
+    if %w[fastlane .fastlane].include?(File.basename(dir))
+      parent = File.expand_path("..", dir)
+      return parent if runner_xcodeproj?(parent)
+    end
+
+    raise Error, "请在 example/ios 下运行 bundle exec fastlane ios beta（当前目录 #{dir}）。"
+  end
+
+  def runner_xcodeproj?(dir)
+    File.directory?(File.join(dir, "Runner.xcodeproj"))
+  end
+
   def normalize_private_key(raw)
     text = raw.to_s.dup
     text = text.gsub("\\n", "\n") unless text.include?("\n")
