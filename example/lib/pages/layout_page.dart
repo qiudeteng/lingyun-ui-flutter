@@ -186,9 +186,8 @@ class _LayoutPageState extends State<LayoutPage> {
         child: simulated == null
             ? page
             : MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(size: simulated, padding: _paddingFor(_preset)),
+                data: MediaQuery.of(context)
+                    .copyWith(size: simulated, padding: _paddingFor(_preset)),
                 child: page,
               ),
       ),

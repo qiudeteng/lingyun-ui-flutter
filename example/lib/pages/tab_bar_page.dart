@@ -217,10 +217,8 @@ class _LabeledStage extends StatelessWidget {
         children: [
           Text(
             kicker,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: label,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700, color: label),
           ),
           const SizedBox(height: 8),
           _PhoneStage(key: stageKey, width: width, child: child),
