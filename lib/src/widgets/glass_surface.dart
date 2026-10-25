@@ -28,11 +28,14 @@ import '../tokens/liquid_glass_tokens.dart';
 /// 3. Saturation [ColorFilter]
 /// 4. Tint fill
 /// 5. Sketch-style overlay (Luminosity / Lighten)
-/// 6. Inner-lip shadows (kit specular) + tight top-leading catch
-/// 7. Directional inner refraction rim (not a second white border)
-/// 8. Quiet outer hairline
-/// 9. [child]
-/// 10. Foreground crisp rim + side hairlines (~0.5px)
+/// 6. Inner-lip shadows (standard optics) or a Dock edge caustic
+///    ([LiquidGlassOptics.lens] — no second backdrop filter)
+/// 7. Tight top-leading catch
+/// 8. Directional inner refraction rim (not a second white border)
+/// 9. Quiet outer hairline
+/// 10. [child]
+/// 11. Foreground crisp rim + side hairlines (~0.5px). Those side
+///     lines are outside this optical pass.
 ///
 /// Accessibility: [LingyunAdaptivity.useOpaqueFallback] — Reduce
 /// Transparency, high contrast ([MediaQuery] or gallery toggle), or
@@ -182,8 +185,10 @@ class _GlassSurfaceState extends State<GlassSurface> {
     } else {
       // iOS 27 Liquid Glass stack (platform-agnostic implementation):
       // clamp-tiled blur → saturate → tint → luminosity/lighten overlay →
-      // inner-lip + top-leading catch → directional refraction → quiet
-      // hairline. Child is never ColorFiltered so labels stay readable.
+      // inner-lip (or Dock edge caustic) + top-leading catch → directional
+      // refraction → quiet hairline. One backdrop filter. Child is never
+      // ColorFiltered so labels stay readable. Caustic alphas are
+      // approximations — 待核验 vs 真机/Sketch.
       surface = ClipRRect(
         borderRadius: radius,
         clipBehavior: widget.clipBehavior,
@@ -233,6 +238,7 @@ class _GlassSurfaceState extends State<GlassSurface> {
                         refractionWidth: resolved.refractionWidth,
                         hairlineColor: resolved.borderColor,
                         hairlineWidth: resolved.borderWidth,
+                        lens: resolved.optics == LiquidGlassOptics.lens,
                       ),
                     ),
                   ),
@@ -401,6 +407,7 @@ class _GlassLightingPainter extends CustomPainter {
     required this.refractionWidth,
     required this.hairlineColor,
     required this.hairlineWidth,
+    required this.lens,
   });
 
   final BorderRadius borderRadius;
@@ -413,6 +420,10 @@ class _GlassLightingPainter extends CustomPainter {
   final double refractionWidth;
   final Color hairlineColor;
   final double hairlineWidth;
+
+  /// Dock lens profile. Standard optics (Materials and non-Dock glass)
+  /// leave this false so their lip and specular stay as they are.
+  final bool lens;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -432,7 +443,7 @@ class _GlassLightingPainter extends CustomPainter {
     }
 
     final lip = math.min(innerShadowExtent, size.height * 0.42);
-    if (lip > 0 && innerShadowColor.a > 0) {
+    if (!lens && lip > 0 && innerShadowColor.a > 0) {
       final top = Rect.fromLTWH(0, 0, size.width, lip);
       canvas.drawRect(
         top,
@@ -454,20 +465,29 @@ class _GlassLightingPainter extends CustomPainter {
           ).createShader(bottom),
       );
     }
+    if (lens) {
+      _paintLensCaustic(canvas, size);
+    }
 
     if (specular.a > 0) {
+      // Lens keeps the catch tight so it does not fog the platter.
+      // Radius and stops are approximations — 待核验 vs 真机/Sketch.
+      final specularRadius = lens ? 0.42 : 0.72;
+      final specularStops = lens
+          ? const [0.0, 0.16, 0.40]
+          : const [0.0, 0.22, 0.55];
       canvas.drawRRect(
         rrect,
         Paint()
           ..shader = RadialGradient(
             center: const Alignment(-0.78, -0.92),
-            radius: 0.72,
+            radius: specularRadius,
             colors: [
               specular,
-              specular.withValues(alpha: specular.a * 0.22),
+              specular.withValues(alpha: specular.a * (lens ? 0.10 : 0.22)),
               specular.withValues(alpha: 0),
             ],
-            stops: const [0.0, 0.22, 0.55],
+            stops: specularStops,
           ).createShader(bounds)
           ..blendMode = BlendMode.softLight,
       );
@@ -506,6 +526,60 @@ class _GlassLightingPainter extends CustomPainter {
     canvas.restore();
   }
 
+  /// Short top transmission band and a faint bottom bounce.
+  ///
+  /// Stand-in for Dock lensing. One surface, no extra backdrop filter.
+  /// Heights and alphas are **待核验 vs 真机/Sketch**.
+  void _paintLensCaustic(Canvas canvas, Size size) {
+    final sheenH = math.min(innerShadowExtent, size.height * 0.36);
+    if (sheenH > 0 && specular.a > 0) {
+      final sheen = Rect.fromLTWH(
+        size.width * 0.06,
+        0.5,
+        size.width * 0.88,
+        sheenH,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(sheen, Radius.circular(sheenH)),
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              specular.withValues(alpha: (specular.a * 0.50).clamp(0.0, 0.50)),
+              specular.withValues(alpha: 0),
+            ],
+          ).createShader(sheen)
+          ..blendMode = BlendMode.softLight,
+      );
+    }
+
+    final footH = math.min(sheenH * 0.45, size.height * 0.16);
+    if (footH > 0.5 && refractionColor.a > 0) {
+      final foot = Rect.fromLTWH(
+        size.width * 0.12,
+        size.height - footH - 0.4,
+        size.width * 0.76,
+        footH,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(foot, Radius.circular(footH)),
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [
+              refractionColor.withValues(
+                alpha: (refractionColor.a * 0.22).clamp(0.0, 0.22),
+              ),
+              refractionColor.withValues(alpha: 0),
+            ],
+          ).createShader(foot)
+          ..blendMode = BlendMode.softLight,
+      );
+    }
+  }
+
   @override
   bool shouldRepaint(covariant _GlassLightingPainter oldDelegate) {
     return oldDelegate.borderRadius != borderRadius ||
@@ -517,6 +591,7 @@ class _GlassLightingPainter extends CustomPainter {
         oldDelegate.refractionColor != refractionColor ||
         oldDelegate.refractionWidth != refractionWidth ||
         oldDelegate.hairlineColor != hairlineColor ||
-        oldDelegate.hairlineWidth != hairlineWidth;
+        oldDelegate.hairlineWidth != hairlineWidth ||
+        oldDelegate.lens != lens;
   }
 }

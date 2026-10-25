@@ -5,6 +5,21 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'glass_material.dart';
 import 'liquid_glass_style.dart';
 
+/// How a Liquid Glass recipe turns light.
+///
+/// Materials tiers and non-Dock glass stay on [LiquidGlassOptics.standard]
+/// (static frost). [LiquidGlassOptics.lens] is the Dock profile only.
+enum LiquidGlassOptics {
+  /// Flat tint and a symmetric inner lip.
+  standard,
+
+  /// Dock. Volume from a short edge caustic, not a thicker veil.
+  ///
+  /// The caustic does not sample or displace the backdrop. **待核验 vs
+  /// 真机/Sketch.**
+  lens,
+}
+
 /// Shared visual recipe for Materials fills and Liquid Glass styles.
 ///
 /// ## Two systems (do not mix names)
@@ -31,6 +46,10 @@ import 'liquid_glass_style.dart';
 ///   (Luminosity on light, Lighten on dark).
 /// * **Specular** ([edgeHighlightColor]) — tight top-leading catch,
 ///   plus [innerShadowColor] bands (kit ±40 Y / −40 spread analog).
+///   Dock ([LiquidGlassOptics.lens]) replaces the symmetric dark lip
+///   with a short edge caustic. That caustic is an approximation —
+///   **待核验 vs 真机/Sketch** — not a live backdrop displacement and
+///   not a second glass layer.
 /// * **Hover** (pointer platforms) may boost specular opacity.
 ///
 /// [light] / [dark] are **Liquid Glass Regular Large**. Materials and
@@ -60,6 +79,7 @@ class LiquidGlassTokens {
     this.rimSideSpread = -0.75,
     required this.innerShadowColor,
     this.innerShadowExtent = 28,
+    this.optics = LiquidGlassOptics.standard,
   });
 
   /// Shared ~0.5px hairline / rim spread.
@@ -144,7 +164,15 @@ class LiquidGlassTokens {
   final Color innerShadowColor;
 
   /// How far the inner-lip gradient extends from the top/bottom edges.
+  ///
+  /// On [LiquidGlassOptics.lens] this is the caustic band height instead
+  /// of a dark lip. **待核验 vs 真机/Sketch** for Dock.
   final double innerShadowExtent;
+
+  /// Light model. Dock is [LiquidGlassOptics.lens]; every other preset
+  /// stays [LiquidGlassOptics.standard] so Materials tiers do not pick
+  /// up the Dock caustic.
+  final LiquidGlassOptics optics;
 
   // ---------------------------------------------------------------------------
   // B. Liquid Glass — Regular Large (default `light` / `dark` aliases)
@@ -350,55 +378,70 @@ class LiquidGlassTokens {
 
   /// Liquid Glass **Dock** (light). Tab Bar chrome.
   ///
-  /// Cool milky fill (not the warm Regular beige, and not Materials Thick).
+  /// Cool veil, thinner than Regular Medium, so the platter does not read
+  /// as a milk plate. Not Materials Thick. [blurSigma], [saturation], the
+  /// tint alpha, the soft shadow, and the caustic band are implementation
+  /// approximations — **待核验 vs 真机/Sketch**, not Design Tokens.
+  ///
+  /// Live backdrop displacement and a content-reactive shadow are not
+  /// sampled. The stand-in is this lighter tint, a slightly lower blur,
+  /// saturation above 1 so backdrop chroma can transmit, and
+  /// [LiquidGlassOptics.lens]. Not a second glass layer.
+  ///
   /// Corner 28 is an implementation stand-in — **not** a measured token.
   /// [GlassTabBar] floating pills override it with stadium `100`.
   static const LiquidGlassTokens lightDock = LiquidGlassTokens(
-    blurSigma: 18,
-    saturation: 1.14,
-    tintColor: Color(0xB8F5F5F7),
-    overlayColor: Color(0x12FFFFFF),
-    overlayBlend: BlendMode.srcOver,
-    edgeHighlightColor: Color(0x73FFFFFF),
-    refractionColor: Color(0x80FFFFFF),
+    blurSigma: 14,
+    saturation: 1.20,
+    tintColor: Color(0x5CF4F5F8),
+    overlayColor: Color(0x0CFFFFFF),
+    overlayBlend: BlendMode.softLight,
+    edgeHighlightColor: Color(0xA6FFFFFF),
+    refractionColor: Color(0x99FFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x2EFFFFFF),
     borderWidth: hairlineWidth,
     borderRadius: BorderRadius.all(Radius.circular(28)),
     opaqueFallbackColor: Color(0xF2F5F5F7),
-    shadowColor: Color(0x29000000),
-    shadowBlurRadius: 28,
-    shadowOffset: Offset(0, 10),
-    shadowSpread: -2,
+    shadowColor: Color(0x1A000000),
+    shadowBlurRadius: 24,
+    shadowOffset: Offset(0, 8),
+    shadowSpread: -4,
     rimColor: Color(0xFFE4E4E8),
-    innerShadowColor: Color(0x14282828),
-    innerShadowExtent: 10,
+    innerShadowColor: Color(0x10282828),
+    innerShadowExtent: 16,
+    optics: LiquidGlassOptics.lens,
   );
 
   /// Liquid Glass **Dock** (dark). Tab Bar chrome.
   ///
-  /// Charcoal body so the platter reads on the `#000000` gallery canvas.
-  /// Corner 28 is an implementation stand-in, not a measured token.
+  /// Translucent charcoal so the platter stays readable on the `#000000`
+  /// gallery canvas without a solid soot plate. [blurSigma], [saturation],
+  /// tint alpha, and the caustic band are approximations — **待核验 vs
+  /// 真机/Sketch**. Corner 28 is an implementation stand-in, not a
+  /// measured token. Same lens stand-in as [lightDock]: no second glass
+  /// layer, no live backdrop displacement.
   static const LiquidGlassTokens darkDock = LiquidGlassTokens(
-    blurSigma: 20,
-    saturation: 1.10,
-    tintColor: Color(0xE61E1E22),
-    overlayColor: Color(0x141E1E22),
-    overlayBlend: BlendMode.srcOver,
-    edgeHighlightColor: Color(0x38FFFFFF),
-    refractionColor: Color(0x40FFFFFF),
+    blurSigma: 16,
+    saturation: 1.16,
+    tintColor: Color(0x8C16161A),
+    overlayColor: Color(0x14FFFFFF),
+    overlayBlend: BlendMode.softLight,
+    edgeHighlightColor: Color(0x5CFFFFFF),
+    refractionColor: Color(0x6BFFFFFF),
     refractionWidth: hairlineWidth,
     borderColor: Color(0x1AFFFFFF),
     borderWidth: hairlineWidth,
     borderRadius: BorderRadius.all(Radius.circular(28)),
     opaqueFallbackColor: Color(0xF21C1C1E),
-    shadowColor: Color(0x59000000),
-    shadowBlurRadius: 28,
-    shadowOffset: Offset(0, 10),
-    shadowSpread: -2,
+    shadowColor: Color(0x40000000),
+    shadowBlurRadius: 24,
+    shadowOffset: Offset(0, 8),
+    shadowSpread: -4,
     rimColor: Color(0x59FFFFFF),
-    innerShadowColor: Color(0x40101010),
-    innerShadowExtent: 10,
+    innerShadowColor: Color(0x28101010),
+    innerShadowExtent: 16,
+    optics: LiquidGlassOptics.lens,
   );
 
   /// Liquid Glass **Widget Glass** (light).
@@ -793,6 +836,7 @@ class LiquidGlassTokens {
     double? rimSideSpread,
     Color? innerShadowColor,
     double? innerShadowExtent,
+    LiquidGlassOptics? optics,
   }) {
     return LiquidGlassTokens(
       blurSigma: blurSigma ?? this.blurSigma,
@@ -817,6 +861,7 @@ class LiquidGlassTokens {
       rimSideSpread: rimSideSpread ?? this.rimSideSpread,
       innerShadowColor: innerShadowColor ?? this.innerShadowColor,
       innerShadowExtent: innerShadowExtent ?? this.innerShadowExtent,
+      optics: optics ?? this.optics,
     );
   }
 
@@ -864,6 +909,7 @@ class LiquidGlassTokens {
         other.innerShadowExtent,
         t,
       )!,
+      optics: t < 0.5 ? optics : other.optics,
     );
   }
 
@@ -892,7 +938,8 @@ class LiquidGlassTokens {
         other.rimSideOffset == rimSideOffset &&
         other.rimSideSpread == rimSideSpread &&
         other.innerShadowColor == innerShadowColor &&
-        other.innerShadowExtent == innerShadowExtent;
+        other.innerShadowExtent == innerShadowExtent &&
+        other.optics == optics;
   }
 
   @override
@@ -919,5 +966,6 @@ class LiquidGlassTokens {
     rimSideSpread,
     innerShadowColor,
     innerShadowExtent,
+    optics,
   ]);
 }
