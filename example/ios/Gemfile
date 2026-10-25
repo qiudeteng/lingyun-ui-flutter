@@ -1,0 +1,7 @@
+source "https://rubygems.org"
+
+# Exact pin. Transitive gems are resolved on the runner (no Gemfile.lock:
+# fastlane 2.241 requires Ruby >= 3.2, and this repo's Linux CI does not
+# install Ruby). CocoaPods is intentionally not in this Gemfile; Flutter
+# invokes the runner's `pod`.
+gem "fastlane", "2.241.1"

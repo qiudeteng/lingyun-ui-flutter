@@ -27,6 +27,19 @@ Flutter/flutter_export_environment.sh
 ServiceDefinitions.json
 Runner/GeneratedPluginRegistrant.*
 
+# TestFlight signing material. CI writes these; never commit them.
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+fastlane/README.md
+fastlane/ExportOptions.plist
+vendor/
+.bundle/
+
 # Exceptions to above rules.
 !default.mode1v3
 !default.mode2v3

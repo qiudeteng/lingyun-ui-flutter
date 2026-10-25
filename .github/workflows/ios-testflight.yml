@@ -1,0 +1,122 @@
+# 手动构建 example/ 并上传 TestFlight。不提交 App Review，也不送外部测试审核。
+# 不在 v* tag 上触发：这个仓库的 tag 是 Flutter 包版本，不是示例 App 发版。
+# 用法、证书和 secrets：docs/IOS-TESTFLIGHT.md
+
+name: iOS TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_name:
+        description: "营销版本 CFBundleShortVersionString。留空则用 example/pubspec.yaml（去掉 +构建号）。"
+        required: false
+        default: ""
+        type: string
+      build_number:
+        description: "构建号 CFBundleVersion。留空则用本次 GitHub run number。同一营销版本不能重复。"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      FASTLANE_OPT_OUT_USAGE: "1"
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      FASTLANE_HIDE_CHANGELOG: "1"
+      FASTLANE_DISABLE_ANIMATION: "1"
+      BUILD_NAME: ${{ inputs.build_name }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      IOS_DISTRIBUTION_CERT_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERT_P12_BASE64 }}
+      IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
+      IOS_APPSTORE_PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_BASE64 }}
+    steps:
+      - name: Check required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_API_KEY_P8 IOS_DISTRIBUTION_CERT_P12_BASE64 IOS_DISTRIBUTION_CERT_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing secret::GitHub Actions secret ${name} is empty. See docs/IOS-TESTFLIGHT.md"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          case "$APP_STORE_CONNECT_API_KEY_P8" in
+            *"BEGIN PRIVATE KEY"*|*"BEGIN EC PRIVATE KEY"*) ;;
+            *)
+              echo "::error title=Invalid API key::APP_STORE_CONNECT_API_KEY_P8 must be the full .p8 PEM, not the Key ID and not Base64."
+              exit 1
+              ;;
+          esac
+
+      - uses: actions/checkout@v4
+
+      - name: Xcode
+        run: xcodebuild -version
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          working-directory: example/ios
+
+      - name: Test signing helpers
+        working-directory: example/ios
+        shell: bash
+        run: ruby fastlane/ci_support_test.rb
+
+      - name: Install Fastlane
+        working-directory: example/ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle config set --local path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Build example IPA and upload to TestFlight
+        working-directory: example/ios
+        shell: bash
+        run: bundle exec fastlane ios beta
+
+      - name: Stage IPA artifact
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/ipa"
+          shopt -s nullglob
+          cp example/build/ios/ipa/*.ipa "${RUNNER_TEMP}/ipa/" || true
+
+      - name: Upload IPA artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lingyun-ui-ipa
+          path: ${{ runner.temp }}/ipa
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,3 @@
+# Example app registered in App Store Connect as 凌云UI.
+# Team ID is resolved at runtime (APPLE_TEAM_ID or the bundle id's seedId).
+app_identifier("com.qiudeteng.lingyunui")
