@@ -83,6 +83,38 @@ jobs:
           ruby-version: "3.3"
           working-directory: example/ios
 
+      # setup-ruby 会从 PATH 去掉 Homebrew Ruby 3.4 的 gem bin
+      # （/opt/homebrew/lib/ruby/gems/3.4.0/bin、ruby@3.4/bin），并改用 Ruby 3.3。
+      # 镜像自带的 pod 因此跑不起来，Flutter 会把 `pod --version` 失败当成
+      # “CocoaPods is installed but broken”并跳过 pod install。
+      # 把 CocoaPods 装进这次的 Ruby，让它的 pod 排在 /opt/homebrew/bin/pod 前面。
+      - name: Install CocoaPods
+        shell: bash
+        run: |
+          set -euo pipefail
+          gem install cocoapods -v 1.17.0 --no-document
+          bindir="$(ruby -e 'print Gem.bindir')"
+          # Later steps (including flutter build ipa) only see GITHUB_PATH.
+          echo "$bindir" >> "$GITHUB_PATH"
+          export PATH="${bindir}:${PATH}"
+          hash -r
+          pod_bin="$(command -v pod)"
+          case "$pod_bin" in
+            "$bindir"/*) ;;
+            *)
+              echo "::error::pod is ${pod_bin}, expected an executable in ${bindir}"
+              exit 1
+              ;;
+          esac
+          version="$(pod --version)"
+          echo "pod ${version} (${pod_bin})"
+          ruby -e '
+            version = ARGV.fetch(0).strip
+            abort "pod --version must be a dotted version, got #{version.inspect}" unless version.match?(/\A\d+(?:\.\d+)+\z/)
+            minimum = Gem::Version.new("1.16.2")
+            abort "pod #{version} is older than Flutter recommended #{minimum}" if Gem::Version.new(version) < minimum
+          ' "$version"
+
       - name: Test signing helpers
         working-directory: example/ios
         shell: bash
