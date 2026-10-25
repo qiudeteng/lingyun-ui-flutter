@@ -16,6 +16,7 @@ import 'pages/sheets_page.dart';
 import 'pages/tab_bar_page.dart';
 import 'pages/text_fields_page.dart';
 import 'pages/themes_page.dart';
+import 'pages/wave1c_page.dart';
 import 'wallpaper.dart';
 
 void main() {
@@ -36,6 +37,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _highContrast = false;
   int _index = 0;
   FormControlPanel _formPanel = FormControlPanel.toggles;
+  Wave1cPanel _wave1cPanel = Wave1cPanel.segmented;
   ThemesPanel _themesPanel = ThemesPanel.colors;
   bool _bare = false;
   GalleryBackground _background = GalleryBackground.canvas;
@@ -55,6 +57,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     _bare = chrome == '0';
     _background = GalleryBackground.fromQuery(bg);
     _formPanel = FormControlPanel.fromQuery(page) ?? FormControlPanel.toggles;
+    _wave1cPanel = Wave1cPanel.fromQuery(page) ?? Wave1cPanel.segmented;
     _index = switch (page) {
       'glass' => 1,
       'tabs' => 2,
@@ -75,6 +78,11 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'stepper' => 12,
       'sheets' => 13,
       'actions' || 'action-sheets' => 14,
+      'segmented' ||
+      'segments' ||
+      'pages' ||
+      'page-controls' ||
+      'pagecontrol' => 15,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -124,6 +132,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
             reduceTransparency: _reduceTransparency,
             reduceMotion: _reduceMotion,
             highContrast: _highContrast,
+            wave1cPanel: _wave1cPanel,
             onIndexChanged: (i) => setState(() => _index = i),
             onBackgroundChanged: (mode) => setState(() => _background = mode),
             onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
@@ -143,6 +152,7 @@ class DemoHome extends StatelessWidget {
     super.key,
     required this.index,
     required this.formPanel,
+    required this.wave1cPanel,
     required this.themesPanel,
     required this.bare,
     required this.background,
@@ -160,6 +170,7 @@ class DemoHome extends StatelessWidget {
 
   final int index;
   final FormControlPanel formPanel;
+  final Wave1cPanel wave1cPanel;
   final ThemesPanel themesPanel;
   final bool bare;
   final GalleryBackground background;
@@ -250,6 +261,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.more_horiz),
       label: '操作表',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.view_week_outlined),
+      selectedIcon: Icon(Icons.view_week),
+      label: '分段',
+    ),
   ];
 
   @override
@@ -298,6 +314,11 @@ class DemoHome extends StatelessWidget {
         ),
       ),
       ActionSheetsPage(brightness: Theme.of(context).brightness),
+      Wave1cPage(
+        themeMode: themeMode,
+        onThemeModeChanged: onThemeModeChanged,
+        initialPanel: wave1cPanel,
+      ),
     ];
 
     return LingyunTheme(
@@ -341,7 +362,7 @@ class DemoHome extends StatelessWidget {
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
-                    // Fifteen labeled destinations do not fit a short window.
+                    // Sixteen labeled destinations do not fit a short window.
                     scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [

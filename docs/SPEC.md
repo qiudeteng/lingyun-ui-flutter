@@ -297,3 +297,14 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 | Reduce Motion | 不跑弹簧。`LiquidGlassMotion.durationOf` → `Duration.zero` |
 
 284 与 Adopting Liquid Glass 写的是操作表从触发控件长出、锚定后可以不画取消。`cupertino_ui` 1.1.4 没有这条转场，**待核验**，不自绘。细节见 [`docs/ACTION-SHEETS.md`](ACTION-SHEETS.md)。示例 `?page=actions`，文案简体中文。
+
+## I. 分段控件与页面控件（Wave 1c）
+
+静态外形对照 Sketch / Figma（本会话 Figma MCP 额度用尽，尺寸标 **待核验**）。动效不从稿面取数。权威是 WWDC25「Meet Liquid Glass」、Adopting Liquid Glass，以及 HIG 的 Segmented Controls / Page Controls。Apple 没有公布选中透镜的弹簧刚度或回弹，**不写进令牌**。
+
+| 组件 | API | 材质 |
+| --- | --- | --- |
+| 分段 | `LingyunSegmentedControl` | 选中透镜 `GlassSurface` + `LiquidGlassStyle.regularSmall`。轨道是 `fills.tertiary`。不是 Materials Thick |
+| 页面 | `LingyunPageControl` | 圆点是内容层。可选托盘才是 Liquid Glass Regular Small。默认不可点 |
+
+选中标签默认液态玻璃主色（与玻璃按钮一致）。`tint` 只改标签或当前点，不把透镜涂成色块。尺寸：小 32、大 50，样张宽 370。透镜位移用 SwiftUI `spring(duration:bounce:)` 同一公式，`bounce` 保持 API 默认值，时长复用已有 `LiquidGlassMotion.quick`。按下缩放 0.97，与 `GlassButton` 相同。减少动态效果时取消弹性，直接落点。细节见 [`docs/SEGMENTED.md`](SEGMENTED.md)。
