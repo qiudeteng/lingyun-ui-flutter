@@ -2478,10 +2478,13 @@ void main() {
       isTrue,
     );
     expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
-    expect(
-      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
-      lessThan(40),
-    );
+    // Xcode Closed occlusion 37×37 at (399.67, 29.33): center inset 47.83.
+    const camInset = 29.33 + 37 / 2;
+    final portraitCam = Offset(frame.right - camInset, frame.top + camInset);
+    expect(await lumaAt(portraitCam), lessThan(40));
+    expect(await lumaAt(portraitCam + const Offset(-16, 0)), lessThan(40));
+    expect(await lumaAt(portraitCam + const Offset(0, -16)), lessThan(40));
+    expect(await lumaAt(portraitCam + const Offset(-24, 8)), greaterThan(180));
     expect(
       await lumaAt(frame.topCenter + const Offset(0, 30)),
       greaterThan(180),
@@ -2538,7 +2541,7 @@ void main() {
       greaterThan(180),
     );
     expect(
-      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      await lumaAt(Offset(frame.right - camInset, frame.top + camInset)),
       greaterThan(180),
     );
     expect(
@@ -2559,7 +2562,7 @@ void main() {
       greaterThan(180),
     );
     expect(
-      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      await lumaAt(Offset(frame.left + camInset, frame.top + camInset)),
       greaterThan(180),
     );
     expect(
@@ -2574,31 +2577,70 @@ void main() {
     frame = frameRect();
     bezel = bezelRect();
     expect(frame.size, const Size(678, 466));
-    expect(frame.left - bezel.left, closeTo(6.5, 0.6));
+    // Button pocket is the top edge. Left, right, and the bottom hinge are
+    // the plain 3px stroke.
+    expect(frame.top - bezel.top, closeTo(6.5, 0.6));
+    expect(frame.left - bezel.left, closeTo(3, 0.6));
     expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(bezel.bottom - frame.bottom, closeTo(3, 0.6));
     expect(find.byKey(const Key('gallery-duo-camera')), findsOneWidget);
-    expect(await lumaAt(Offset(frame.left + 26, frame.top + 20)), lessThan(40));
+    // Same 37×37 occlusion, Landscape Right origin (29.33, 29.33).
+    final landCam = Offset(frame.left + camInset, frame.top + camInset);
+    expect(await lumaAt(landCam), lessThan(40));
+    expect(await lumaAt(landCam + const Offset(16, 0)), lessThan(40));
+    expect(await lumaAt(landCam + const Offset(0, 16)), lessThan(40));
+    expect(await lumaAt(landCam + const Offset(24, 8)), greaterThan(180));
     expect(
-      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      await lumaAt(Offset(frame.right - camInset, frame.top + camInset)),
       greaterThan(180),
     );
     expect(
       await lumaAt(frame.topCenter + const Offset(0, 30)),
       greaterThan(180),
     );
-    // Hinge is the right edge. Rounds stay on the left. Camera is top-left.
-    final landStrokeMidY = (bezel.top + frame.top) / 2;
-    expect(await lumaAt(Offset(bezel.right - 4, landStrokeMidY)), lessThan(80));
+    // Landscape Right: top edge is round, bottom edge is the hinge.
+    expect(
+      await lumaAt(frame.topLeft + const Offset(2, 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(frame.topRight + const Offset(-2, 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(frame.bottomLeft + const Offset(2, -2)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.bottomRight + const Offset(-2, -2)),
+      greaterThan(180),
+    );
     expect(
       await lumaAt(Offset(frame.left - 2, frame.top - 2)),
       inInclusiveRange(140, 200),
     );
     expect(
-      await lumaAt(frame.topRight + const Offset(-2, 2)),
-      greaterThan(180),
+      await lumaAt(Offset(frame.right + 2, frame.top - 2)),
+      inInclusiveRange(140, 200),
     );
     expect(await lumaAt(Offset(frame.left + 20, frame.top + 13)), lessThan(80));
-    expect(await lumaAt(Offset(frame.left - 4, frame.top + 95)), lessThan(80));
+    expect(
+      await lumaAt(Offset(frame.right - 20, frame.top + 13)),
+      lessThan(80),
+    );
+    final landHingeY = (bezel.bottom + frame.bottom) / 2;
+    expect(await lumaAt(Offset(frame.center.dx, landHingeY)), lessThan(80));
+    // Keys follow the portrait right edge onto the top. Nothing on the
+    // left short edge.
+    expect(await lumaAt(Offset(frame.left + 131, frame.top - 4)), lessThan(80));
+    expect(
+      await lumaAt(Offset(frame.left + 40, frame.top - 4)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(Offset(frame.left - 4, frame.center.dy)),
+      inInclusiveRange(140, 200),
+    );
 
     await pumpFrame(
       GalleryPreviewFrame.duoOuter,
@@ -2611,10 +2653,10 @@ void main() {
       await lumaAt(Offset(frame.center.dx, (bezel.top + frame.top) / 2)),
       greaterThan(180),
     );
-    expect(
-      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
-      greaterThan(180),
-    );
+    final darkCam = Offset(frame.right - camInset, frame.top + camInset);
+    expect(await lumaAt(darkCam), greaterThan(180));
+    expect(await lumaAt(darkCam + const Offset(-16, 0)), greaterThan(180));
+    expect(await lumaAt(darkCam + const Offset(-24, 8)), lessThan(80));
     expect(await lumaAt(frame.center), lessThan(80));
 
     await pumpFrame(GalleryPreviewFrame.macos);
