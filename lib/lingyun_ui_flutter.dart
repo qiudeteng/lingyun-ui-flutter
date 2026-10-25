@@ -10,9 +10,9 @@
 /// tier and not a toolbar material.
 ///
 /// Alerts ([showLingyunAlert] / [LingyunAlertDialog]) are the iOS system
-/// dialog from `package:cupertino_ui` (showCupertinoDialog +
-/// CupertinoAlertDialog). They are not Liquid Glass and not a Materials
-/// tier.
+/// dialog from `package:cupertino_ui` ([CupertinoDialogRoute] +
+/// [CupertinoAlertDialog]). Non-destructive actions use the kit system blue.
+/// They are not Liquid Glass and not a Materials tier.
 ///
 /// [ControlLayerCatalog] / [ControlLayerView] are the Sketch Controls
 /// knob and track layer styles (fills, borders, shadows). They are not

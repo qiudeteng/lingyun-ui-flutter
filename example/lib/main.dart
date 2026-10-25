@@ -266,7 +266,12 @@ class DemoHome extends StatelessWidget {
         onHighContrast: onHighContrast,
       ),
       const NativePage(),
-      AlertsPage(brightness: Theme.of(context).brightness),
+      AlertsPage(
+        brightness: Theme.of(context).brightness,
+        onBrightnessChanged: (brightness) => onThemeModeChanged(
+          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        ),
+      ),
       ControlsPage(
         themeMode: themeMode,
         onThemeModeChanged: onThemeModeChanged,
