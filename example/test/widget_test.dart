@@ -1490,8 +1490,9 @@ void main() {
       'macOS',
     );
     expect(GalleryPreviewFrame.pro.canRotate, isTrue);
-    expect(GalleryPreviewFrame.duoHalf.canRotate, isTrue);
-    expect(GalleryPreviewFrame.duoTent.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoOuter.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoInnerLandscape.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoInnerPortrait.canRotate, isTrue);
     expect(GalleryPreviewFrame.macos.canRotate, isFalse);
     expect(GalleryPreviewFrame.windows.canRotate, isFalse);
     expect(GalleryPreviewFrame.window.canRotate, isFalse);
@@ -1508,54 +1509,20 @@ void main() {
       GalleryPreviewFrame.ipadMini.safePadding,
     );
 
-    expect(GalleryPreviewFrame.duoHalf.shortLabel, 'Duo 半折叠');
-    expect(GalleryPreviewFrame.duoHalf.label, 'Duo 半折叠 678×466');
-    expect(GalleryPreviewFrame.duoHalf.logicalSize, const Size(678, 466));
-    expect(GalleryPreviewFrame.duoHalf.platform, TargetPlatform.iOS);
-    expect(
-      GalleryPreviewFrame.duoHalf.safePadding,
-      const EdgeInsets.only(top: 24, bottom: 12),
-    );
-    expect(GalleryPreviewFrame.duoHalf.form, GalleryPreviewForm.duoHalf);
-    expect(GalleryPreviewFrame.duoTent.shortLabel, 'Duo 帐篷');
-    expect(GalleryPreviewFrame.duoTent.label, 'Duo 帐篷/台历 466×640');
-    expect(GalleryPreviewFrame.duoTent.logicalSize, const Size(466, 640));
-    expect(GalleryPreviewFrame.duoTent.platform, TargetPlatform.iOS);
-    expect(GalleryPreviewFrame.duoTent.form, GalleryPreviewForm.duoTent);
+    expect(GalleryPreviewFrame.tryParse('duo-half'), isNull);
+    expect(GalleryPreviewFrame.tryParse('半折叠'), isNull);
+    expect(GalleryPreviewFrame.tryParse('duo-tent'), isNull);
+    expect(GalleryPreviewFrame.tryParse('帐篷'), isNull);
+    expect(GalleryPreviewFrame.tryParse('台历'), isNull);
     expect(
       GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=半折叠'))
           .device,
-      GalleryPreviewFrame.duoHalf,
-    );
-    expect(
-      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=half-fold'))
-          .device,
-      GalleryPreviewFrame.duoHalf,
-    );
-    expect(
-      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=678×466'))
-          .device,
-      GalleryPreviewFrame.duoHalf,
-    );
-    expect(
-      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=台历'))
-          .device,
-      GalleryPreviewFrame.duoTent,
+      GalleryPreviewFrame.window,
     );
     expect(
       GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=帐篷'))
           .device,
-      GalleryPreviewFrame.duoTent,
-    );
-    expect(
-      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=duo-tent'))
-          .device,
-      GalleryPreviewFrame.duoTent,
-    );
-    expect(
-      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=466x640'))
-          .device,
-      GalleryPreviewFrame.duoTent,
+      GalleryPreviewFrame.window,
     );
     expect(
       GalleryLaunch.fromUri(
@@ -1968,8 +1935,6 @@ void main() {
       GalleryPreviewFrame.duoOuter: Size(466, 678),
       GalleryPreviewFrame.duoInnerLandscape: Size(951, 669),
       GalleryPreviewFrame.duoInnerPortrait: Size(669, 951),
-      GalleryPreviewFrame.duoHalf: Size(678, 466),
-      GalleryPreviewFrame.duoTent: Size(466, 640),
       GalleryPreviewFrame.ipadMini: Size(744, 1133),
       GalleryPreviewFrame.ipadAir11: Size(820, 1180),
       GalleryPreviewFrame.ipadPro11: Size(834, 1210),
@@ -2332,8 +2297,10 @@ void main() {
     expect(find.text('18 / 17 / 16 Pro 874×402'), findsOneWidget);
     expect(find.text('iPad mini 1133×744'), findsOneWidget);
     expect(find.text('Duo 内屏横 951×669'), findsOneWidget);
-    expect(find.text('Duo 半折叠 678×466'), findsOneWidget);
-    expect(find.text('Duo 帐篷/台历 640×466'), findsOneWidget);
+    expect(find.text('Duo 外屏 678×466'), findsOneWidget);
+    expect(find.text('Duo 内屏竖 951×669'), findsOneWidget);
+    expect(find.textContaining('半折叠'), findsNothing);
+    expect(find.textContaining('帐篷'), findsNothing);
     expect(find.text('macOS 1440×900'), findsOneWidget);
     expect(find.text('Windows 1280×800'), findsOneWidget);
     expect(find.text('自适应窗口'), findsOneWidget);
@@ -2381,7 +2348,7 @@ void main() {
     expect(find.byKey(const Key('gallery-device-camera')), findsOneWidget);
   });
 
-  testWidgets('device shells paint cameras and distinct Duo folds', (
+  testWidgets('device shells paint cameras and flat Duo strokes', (
     tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -2393,19 +2360,27 @@ void main() {
     Future<void> pumpFrame(
       GalleryPreviewFrame frame, {
       GalleryPreviewOrientation? orientation,
+      Brightness brightness = Brightness.light,
+      Color fill = const Color(0xFFE8E8EC),
     }) async {
       await tester.pumpWidget(
         MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: RepaintBoundary(
-            key: const Key('bezel-probe'),
-            child: ColoredBox(
-              color: const Color(0xFFFF00FF),
-              child: GalleryDeviceStage(
-                frame: frame,
-                orientation: orientation,
-                backdrop: const ColoredBox(color: Color(0xFFE8E8EC)),
-                child: const ColoredBox(color: Color(0xFFE8E8EC)),
+          theme: ThemeData(brightness: brightness),
+          // MaterialApp animates theme changes. The probe reads brightness
+          // on the first frame, so pin it on a descendant Theme.
+          home: Theme(
+            data: ThemeData(brightness: brightness),
+            child: RepaintBoundary(
+              key: const Key('bezel-probe'),
+              child: ColoredBox(
+                color: const Color(0xFFFF00FF),
+                child: GalleryDeviceStage(
+                  frame: frame,
+                  orientation: orientation,
+                  backdrop: ColoredBox(color: fill),
+                  child: ColoredBox(color: fill),
+                ),
               ),
             ),
           ),
@@ -2491,67 +2466,80 @@ void main() {
     await pumpFrame(GalleryPreviewFrame.duoOuter);
     frame = frameRect();
     bezel = bezelRect();
-    expect(frame.top - bezel.top, closeTo(12, 1));
-    final duoY = (bezel.top + frame.top) / 2;
-    expect(await lumaAt(Offset(frame.center.dx, duoY)), lessThan(40));
+    expect(frame.top - bezel.top, closeTo(3, 0.6));
+    expect(frame.left - bezel.left, closeTo(3, 0.6));
+    expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(bezel.bottom - frame.bottom, closeTo(3, 0.6));
+    expect(find.byKey(const Key('gallery-duo-camera')), findsOneWidget);
     expect(
-      await lumaAt(Offset(frame.left + frame.width * 0.3, duoY)),
-      greaterThan(45),
+      tester
+          .widget<IgnorePointer>(find.byKey(const Key('gallery-duo-camera')))
+          .ignoring,
+      isTrue,
+    );
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      lessThan(40),
+    );
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 30)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.centerLeft + const Offset(12, 0)),
+      greaterThan(180),
     );
 
     await pumpFrame(GalleryPreviewFrame.duoInnerPortrait);
     frame = frameRect();
-    bezel = bezelRect();
-    final portraitY = (bezel.top + frame.top) / 2;
+    expect(frame.top - bezelRect().top, closeTo(3, 0.6));
+    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
     expect(
-      await lumaAt(Offset(frame.left + frame.width * 0.72, portraitY)),
-      lessThan(40),
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
     );
-    expect(await lumaAt(Offset(frame.center.dx, portraitY)), greaterThan(45));
 
     await pumpFrame(GalleryPreviewFrame.duoInnerLandscape);
     frame = frameRect();
-    bezel = bezelRect();
-    final landY = (bezel.top + frame.top) / 2;
+    expect(frame.size, const Size(951, 669));
+    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
     expect(
-      await lumaAt(Offset(frame.left + frame.width * 0.78, landY)),
-      lessThan(40),
-    );
-    expect(await lumaAt(Offset(frame.center.dx, landY)), greaterThan(45));
-
-    await pumpFrame(GalleryPreviewFrame.duoHalf);
-    frame = frameRect();
-    bezel = bezelRect();
-    expect(frame.size, const Size(678, 466));
-    expect(bezel.bottom - frame.bottom, closeTo(96, 1));
-    expect(frame.top - bezel.top, closeTo(14, 1));
-    expect(
-      await lumaAt(Offset(frame.center.dx, (bezel.top + frame.top) / 2)),
-      lessThan(40),
-    );
-    expect(
-      await lumaAt(frame.bottomCenter + const Offset(0, 40)),
-      lessThan(80),
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
     );
 
     await pumpFrame(
-      GalleryPreviewFrame.duoHalf,
-      orientation: GalleryPreviewOrientation.portrait,
+      GalleryPreviewFrame.duoOuter,
+      orientation: GalleryPreviewOrientation.landscape,
+    );
+    frame = frameRect();
+    expect(frame.size, const Size(678, 466));
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      lessThan(40),
+    );
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 30)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(
+      GalleryPreviewFrame.duoOuter,
+      brightness: Brightness.dark,
+      fill: const Color(0xFF204060),
     );
     frame = frameRect();
     bezel = bezelRect();
-    expect(frame.size, const Size(466, 678));
-    expect(bezel.right - frame.right, closeTo(96, 1));
-    expect(bezel.bottom - frame.bottom, closeTo(16, 1));
-
-    await pumpFrame(GalleryPreviewFrame.duoTent);
-    frame = frameRect();
-    bezel = bezelRect();
-    expect(frame.size, const Size(466, 640));
-    expect(frame.top - bezel.top, closeTo(36, 1));
-    expect(frame.left - bezel.left, closeTo(28, 1));
-    expect(await lumaAt(Offset(frame.center.dx, bezel.top + 12)), lessThan(80));
-    expect(await lumaAt(Offset(frame.center.dx, frame.top - 6)), lessThan(40));
+    expect(
+      await lumaAt(Offset(frame.center.dx, (bezel.top + frame.top) / 2)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
+    );
+    expect(await lumaAt(frame.center), lessThan(80));
 
     await pumpFrame(GalleryPreviewFrame.macos);
     frame = frameRect();

@@ -381,10 +381,8 @@ class GalleryDeviceStage extends StatelessWidget {
     if (logical == null) return child;
     final canonical = frame.logicalSize;
     final swapped = canonical != null && canonical.width != logical.width;
-    final metrics = _BezelMetrics.of(
-      frame.form,
-      landscape: logical.width > logical.height,
-    );
+    final metrics = _BezelMetrics.of(frame.form);
+    final brightness = Theme.brightnessOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxW = constraints.maxWidth;
@@ -414,6 +412,7 @@ class GalleryDeviceStage extends StatelessWidget {
                             frame: frame,
                             metrics: metrics,
                             swapped: swapped,
+                            brightness: brightness,
                           ),
                           child: const SizedBox.expand(),
                         ),
@@ -461,6 +460,19 @@ class GalleryDeviceStage extends StatelessWidget {
                                             _DynamicIslandPainter(
                                               swapped: swapped,
                                             ),
+                                        child: const SizedBox.expand(),
+                                      ),
+                                    ),
+                                  if (frame.form == GalleryPreviewForm.duo)
+                                    IgnorePointer(
+                                      key: const Key('gallery-duo-camera'),
+                                      child: CustomPaint(
+                                        foregroundPainter: _DuoDotPainter(
+                                          outer:
+                                              frame ==
+                                              GalleryPreviewFrame.duoOuter,
+                                          color: _duoChrome(brightness),
+                                        ),
                                         child: const SizedBox.expand(),
                                       ),
                                     ),
@@ -550,70 +562,60 @@ class _BezelMetrics {
     outerRadius: 0,
   );
 
-  static _BezelMetrics of(GalleryPreviewForm form, {bool landscape = false}) =>
-      switch (form) {
-        GalleryPreviewForm.window => _window,
-        GalleryPreviewForm.phone => const _BezelMetrics(
-          outset: EdgeInsets.all(14),
-          screenRadius: 36,
-          outerRadius: 50,
-        ),
-        GalleryPreviewForm.pad => const _BezelMetrics(
-          outset: EdgeInsets.all(18),
-          screenRadius: 18,
-          outerRadius: 36,
-        ),
-        GalleryPreviewForm.duo => const _BezelMetrics(
-          outset: EdgeInsets.all(12),
-          screenRadius: 16,
-          outerRadius: 28,
-        ),
-        // Laptop fold keeps the deck under the display. Book fold parks it
-        // on the right. The logical rect is only the facing screen.
-        GalleryPreviewForm.duoHalf =>
-          landscape
-              ? const _BezelMetrics(
-                  outset: EdgeInsets.fromLTRB(16, 14, 16, 96),
-                  screenRadius: 16,
-                  outerRadius: 26,
-                )
-              : const _BezelMetrics(
-                  outset: EdgeInsets.fromLTRB(16, 14, 96, 16),
-                  screenRadius: 16,
-                  outerRadius: 26,
-                ),
-        // The peaked rear panel and the base hinge live in the margin.
-        GalleryPreviewForm.duoTent => const _BezelMetrics(
-          outset: EdgeInsets.fromLTRB(28, 36, 28, 18),
-          screenRadius: 16,
-          outerRadius: 24,
-        ),
-        GalleryPreviewForm.desktop => const _BezelMetrics(
-          outset: EdgeInsets.fromLTRB(8, 32, 8, 8),
-          screenRadius: 8,
-          outerRadius: 14,
-        ),
-      };
+  static _BezelMetrics of(GalleryPreviewForm form) => switch (form) {
+    GalleryPreviewForm.window => _window,
+    GalleryPreviewForm.phone => const _BezelMetrics(
+      outset: EdgeInsets.all(14),
+      screenRadius: 36,
+      outerRadius: 50,
+    ),
+    GalleryPreviewForm.pad => const _BezelMetrics(
+      outset: EdgeInsets.all(18),
+      screenRadius: 18,
+      outerRadius: 36,
+    ),
+    // Flat device-page stroke. The outset is the stroke itself: no metal
+    // slab. Corner radius matches the large SoT rounds.
+    GalleryPreviewForm.duo => const _BezelMetrics(
+      outset: EdgeInsets.all(3),
+      screenRadius: 48,
+      outerRadius: 51,
+    ),
+    GalleryPreviewForm.desktop => const _BezelMetrics(
+      outset: EdgeInsets.fromLTRB(8, 32, 8, 8),
+      screenRadius: 8,
+      outerRadius: 14,
+    ),
+  };
+}
+
+/// Duo device-page chrome. Light and dark are the two stroke colors.
+Color _duoChrome(Brightness brightness) {
+  return brightness == Brightness.dark
+      ? const Color(0xFFF2F2F7)
+      : const Color(0xFF1C1C1E);
 }
 
 /// Vector device shell. No image assets. Painted behind the screen and
 /// wrapped in [IgnorePointer] by the stage.
 ///
-/// Phone, iPad, and flat Duo bezels are symmetric, so a swapped orientation
-/// redraws the canonical shell and rotates it a quarter turn. The physical
-/// top — and the camera on it — moves to the left. Half-fold and tent keep
-/// their posture and only move the deck. Windows draws no camera. 「自适应窗口」
-/// never reaches this painter.
+/// Phone and iPad bezels are symmetric, so a swapped orientation redraws
+/// the canonical shell and rotates it a quarter turn. The physical top —
+/// and the camera on it — moves to the left. Duo is a flat stroke in the
+/// current orientation; its dot is a separate overlay. Windows draws no
+/// camera. 「自适应窗口」 never reaches this painter.
 class _DeviceBezelPainter extends CustomPainter {
   const _DeviceBezelPainter({
     required this.frame,
     required this.metrics,
     required this.swapped,
+    required this.brightness,
   });
 
   final GalleryPreviewFrame frame;
   final _BezelMetrics metrics;
   final bool swapped;
+  final Brightness brightness;
 
   static const Color _metalTop = Color(0xFF3A3A3C);
   static const Color _metalMid = Color(0xFF1C1C1E);
@@ -622,9 +624,7 @@ class _DeviceBezelPainter extends CustomPainter {
   static const Color _slot = Color(0xFF050506);
 
   bool get _spins => switch (frame.form) {
-    GalleryPreviewForm.phone ||
-    GalleryPreviewForm.pad ||
-    GalleryPreviewForm.duo => true,
+    GalleryPreviewForm.phone || GalleryPreviewForm.pad => true,
     _ => false,
   };
 
@@ -663,17 +663,13 @@ class _DeviceBezelPainter extends CustomPainter {
 
   void _paintBody(Canvas canvas, Size size) {
     switch (frame.form) {
-      case GalleryPreviewForm.duoHalf:
-        _paintHalfFold(canvas, size);
-        return;
-      case GalleryPreviewForm.duoTent:
-        _paintTent(canvas, size);
+      case GalleryPreviewForm.duo:
+        _paintDuoStroke(canvas, size);
         return;
       case GalleryPreviewForm.window:
         return;
       case GalleryPreviewForm.phone:
       case GalleryPreviewForm.pad:
-      case GalleryPreviewForm.duo:
       case GalleryPreviewForm.desktop:
         _paintSlab(canvas, size);
     }
@@ -685,16 +681,33 @@ class _DeviceBezelPainter extends CustomPainter {
         _paintSideButton(canvas, size, top: screen.top + 124, height: 48);
       case GalleryPreviewForm.pad:
         _paintLens(canvas, Offset(size.width / 2, screen.top / 2), 5);
-      case GalleryPreviewForm.duo:
-        _paintDuoCamera(canvas, size, screen);
-        _paintHinge(canvas, size, screen);
       case GalleryPreviewForm.desktop:
         _paintDesktopChrome(canvas, size, screen);
       case GalleryPreviewForm.window:
-      case GalleryPreviewForm.duoHalf:
-      case GalleryPreviewForm.duoTent:
+      case GalleryPreviewForm.duo:
         break;
     }
+  }
+
+  /// Hairline band just outside the screen. No metal fill, no hinge slot.
+  void _paintDuoStroke(Canvas canvas, Size size) {
+    final screen = _screenRect(size);
+    final stroke = metrics.outset.top;
+    final outer = RRect.fromRectAndRadius(
+      screen.inflate(stroke),
+      Radius.circular(metrics.screenRadius + stroke),
+    );
+    final inner = RRect.fromRectAndRadius(
+      screen,
+      Radius.circular(metrics.screenRadius),
+    );
+    canvas.drawPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRRect(outer)
+        ..addRRect(inner),
+      Paint()..color = _duoChrome(brightness),
+    );
   }
 
   Rect _screenRect(Size size) {
@@ -780,152 +793,6 @@ class _DeviceBezelPainter extends CustomPainter {
     canvas.drawRRect(button, Paint()..color = const Color(0xFF5A5A5E));
   }
 
-  /// Flat Duo front cameras, each on the canonical top bezel.
-  ///
-  /// Outer is centered and carries a mic dot. Inner portrait sits toward
-  /// the right of the upper panel. Inner landscape sits on the right panel.
-  void _paintDuoCamera(Canvas canvas, Size size, Rect screen) {
-    final y = screen.top / 2;
-    final Offset center = switch (frame) {
-      GalleryPreviewFrame.duoInnerPortrait => Offset(
-        screen.left + screen.width * 0.72,
-        y,
-      ),
-      GalleryPreviewFrame.duoInnerLandscape => Offset(
-        screen.left + screen.width * 0.78,
-        y,
-      ),
-      _ => Offset(size.width / 2, y),
-    };
-    _paintLens(canvas, center, 3.6);
-    if (frame == GalleryPreviewFrame.duoOuter) {
-      canvas.drawCircle(
-        center + const Offset(14, 0),
-        1.3,
-        Paint()..color = _slot,
-      );
-    }
-  }
-
-  void _paintHinge(Canvas canvas, Size size, Rect screen) {
-    final paint = Paint()..color = const Color(0xFF3A3A3E);
-    final mid = screen.center.dy;
-    for (final x in [
-      metrics.outset.left / 2,
-      size.width - metrics.outset.right / 2,
-    ]) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(x, mid), width: 3, height: 36),
-          const Radius.circular(1.5),
-        ),
-        paint,
-      );
-    }
-  }
-
-  /// Half-fold: facing screen plus a foreshortened deck and a hinge slot.
-  void _paintHalfFold(Canvas canvas, Size size) {
-    final screen = _screenRect(size);
-    final deckBelow = metrics.outset.bottom >= metrics.outset.right;
-    final display = RRect.fromRectAndRadius(
-      screen.inflate(10),
-      Radius.circular(metrics.outerRadius),
-    );
-    final Path deck;
-    final RRect hinge;
-    if (deckBelow) {
-      final top = screen.bottom + 16;
-      final bottom = size.height - 8;
-      deck = Path()
-        ..moveTo(screen.left + 4, top)
-        ..lineTo(screen.right - 4, top)
-        ..lineTo(screen.right - 28, bottom)
-        ..lineTo(screen.left + 28, bottom)
-        ..close();
-      hinge = RRect.fromRectAndRadius(
-        Rect.fromLTWH(screen.left + 8, screen.bottom + 3, screen.width - 16, 8),
-        const Radius.circular(3),
-      );
-    } else {
-      final left = screen.right + 16;
-      deck = Path()
-        ..moveTo(left, screen.top + 4)
-        ..lineTo(size.width - 8, screen.top + 28)
-        ..lineTo(size.width - 8, screen.bottom - 28)
-        ..lineTo(left, screen.bottom - 4)
-        ..close();
-      hinge = RRect.fromRectAndRadius(
-        Rect.fromLTWH(screen.right + 3, screen.top + 8, 8, screen.height - 16),
-        const Radius.circular(3),
-      );
-    }
-    canvas.drawPath(
-      deck,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF4A4A4E), Color(0xFF2A2A2E), Color(0xFF141416)],
-        ).createShader(deck.getBounds()),
-    );
-    canvas.drawPath(
-      deck,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = _edge.withValues(alpha: 0.45),
-    );
-    canvas.drawRRect(hinge, Paint()..color = _slot);
-    _paintMetal(canvas, display);
-    _paintLip(canvas, screen);
-    _paintLens(canvas, Offset(screen.center.dx, screen.top / 2), 3.6);
-  }
-
-  /// Tent / calendar stand: a peaked rear panel behind a front face.
-  void _paintTent(Canvas canvas, Size size) {
-    final screen = _screenRect(size);
-    final rear = Path()
-      ..moveTo(screen.center.dx - 42, 8)
-      ..lineTo(screen.center.dx + 42, 8)
-      ..lineTo(screen.right + 16, screen.bottom + 4)
-      ..lineTo(screen.left - 16, screen.bottom + 4)
-      ..close();
-    canvas.drawPath(rear, Paint()..color = const Color(0xFF2E2E32));
-    canvas.drawPath(
-      rear,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = _edge.withValues(alpha: 0.4),
-    );
-    final rearGlass = Path()
-      ..moveTo(screen.center.dx - 28, 18)
-      ..lineTo(screen.center.dx + 28, 18)
-      ..lineTo(screen.right - 6, screen.top - 2)
-      ..lineTo(screen.left + 6, screen.top - 2)
-      ..close();
-    canvas.drawPath(rearGlass, Paint()..color = const Color(0xFF121214));
-    final front = RRect.fromRectAndRadius(
-      screen.inflate(11),
-      Radius.circular(metrics.outerRadius),
-    );
-    _paintMetal(canvas, front);
-    _paintLip(canvas, screen);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(screen.center.dx, screen.bottom + 8),
-          width: screen.width * 0.7,
-          height: 7,
-        ),
-        const Radius.circular(3),
-      ),
-      Paint()..color = _slot,
-    );
-    _paintLens(canvas, Offset(screen.center.dx, screen.top - 6), 3.4);
-  }
-
   void _paintDesktopChrome(Canvas canvas, Size size, Rect screen) {
     canvas.drawLine(
       Offset(screen.left, screen.top),
@@ -995,7 +862,31 @@ class _DeviceBezelPainter extends CustomPainter {
   bool shouldRepaint(_DeviceBezelPainter oldDelegate) =>
       oldDelegate.frame != frame ||
       oldDelegate.swapped != swapped ||
+      oldDelegate.brightness != brightness ||
       oldDelegate.metrics != metrics;
+}
+
+/// Small Duo camera. Outer sits in the top corner. Inner sits top-center.
+/// Not a Dynamic Island. [IgnorePointer] in the stage.
+class _DuoDotPainter extends CustomPainter {
+  const _DuoDotPainter({required this.outer, required this.color});
+
+  final bool outer;
+  final Color color;
+
+  static const double _radius = 4.5;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = outer
+        ? Offset(size.width - 26, 20)
+        : Offset(size.width / 2, 16);
+    canvas.drawCircle(center, _radius, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_DuoDotPainter oldDelegate) =>
+      oldDelegate.outer != outer || oldDelegate.color != color;
 }
 
 /// Dynamic Island over the phone screen. [IgnorePointer] in the stage.

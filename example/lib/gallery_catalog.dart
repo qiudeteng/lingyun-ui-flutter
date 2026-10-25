@@ -387,7 +387,7 @@ String _galleryQueryKey(String? raw) {
 /// Hardware family for a [GalleryPreviewFrame].
 ///
 /// Picks the vector bezel and the simplified safe-area inset.
-enum GalleryPreviewForm { window, phone, pad, duo, duoHalf, duoTent, desktop }
+enum GalleryPreviewForm { window, phone, pad, duo, desktop }
 
 /// Portrait or landscape for a rotatable preview board.
 ///
@@ -420,8 +420,6 @@ enum GalleryPreviewOrientation {
 /// Pro class 402×874, Pro Max 440×956, iPhone Air 420×912,
 /// Duo outer 466×678, Duo inner landscape 951×669,
 /// Duo inner portrait 669×951,
-/// Duo half-fold 678×466 (one screen as a laptop display; the deck is bezel),
-/// Duo tent 466×640 (front face of a calendar stand),
 /// iPad mini 744×1133, iPad Air 11" 820×1180, iPad Pro 11" 834×1210,
 /// iPad Air 13" 1024×1366, iPad Pro 13" 1032×1376,
 /// macOS 1440×900, Windows 1280×800.
@@ -495,24 +493,6 @@ enum GalleryPreviewFrame {
     ['duo-inner-portrait', 'duo-inner-port', 'duo-portrait', '669x951'],
     platform: TargetPlatform.iOS,
     form: GalleryPreviewForm.duo,
-  ),
-  duoHalf(
-    'duo-half',
-    'Duo 半折叠',
-    'Duo 半折叠 678×466',
-    Size(678, 466),
-    ['duo-half', 'duo-half-fold', 'half-fold', 'half', '半折叠', '678x466'],
-    platform: TargetPlatform.iOS,
-    form: GalleryPreviewForm.duoHalf,
-  ),
-  duoTent(
-    'duo-tent',
-    'Duo 帐篷',
-    'Duo 帐篷/台历 466×640',
-    Size(466, 640),
-    ['duo-tent', 'tent', 'calendar', '台历', '帐篷', 'duo-calendar', '466x640'],
-    platform: TargetPlatform.iOS,
-    form: GalleryPreviewForm.duoTent,
   ),
   ipadMini(
     'ipad-mini',
@@ -614,24 +594,19 @@ enum GalleryPreviewFrame {
     GalleryPreviewForm.window || GalleryPreviewForm.desktop => false,
     GalleryPreviewForm.phone ||
     GalleryPreviewForm.pad ||
-    GalleryPreviewForm.duo ||
-    GalleryPreviewForm.duoHalf ||
-    GalleryPreviewForm.duoTent => true,
+    GalleryPreviewForm.duo => true,
   };
 
   /// Status and home inset inside the logical board.
   ///
   /// Phone uses a Dynamic Island band and a home indicator. Pad uses a
-  /// status bar and a shorter home indicator. Duo, including half-fold and
-  /// tent, uses a short status band and a small gesture inset. Desktop and
-  /// 「自适应窗口」 stay zero.
+  /// status bar and a shorter home indicator. Duo uses a short status band
+  /// and a small gesture inset. Desktop and 「自适应窗口」 stay zero.
   EdgeInsets get safePadding => switch (form) {
     GalleryPreviewForm.window || GalleryPreviewForm.desktop => EdgeInsets.zero,
     GalleryPreviewForm.phone => const EdgeInsets.only(top: 59, bottom: 34),
     GalleryPreviewForm.pad => const EdgeInsets.only(top: 24, bottom: 20),
-    GalleryPreviewForm.duo ||
-    GalleryPreviewForm.duoHalf ||
-    GalleryPreviewForm.duoTent => const EdgeInsets.only(top: 24, bottom: 12),
+    GalleryPreviewForm.duo => const EdgeInsets.only(top: 24, bottom: 12),
   };
 
   /// [logicalSize] after [orientation] / [swap].
