@@ -14,6 +14,12 @@
 /// [CupertinoAlertDialog]). Non-destructive actions use the kit system blue.
 /// They are not Liquid Glass and not a Materials tier.
 ///
+/// Action sheets ([showLingyunActionSheet] / [LingyunActionSheet]) are the
+/// iOS system sheet from `package:cupertino_ui` (CupertinoModalPopupRoute +
+/// CupertinoActionSheet). Enter and exit use that route's spring. Reduce
+/// Motion skips the spring. They are not Liquid Glass, not a glass button,
+/// and not [LingyunSheet].
+///
 /// [ControlLayerCatalog] / [ControlLayerView] are the Sketch Controls
 /// knob and track layer styles (fills, borders, shadows). They are not
 /// Materials tiers and not Liquid Glass Clear / Regular / Dock.
@@ -63,6 +69,7 @@ export 'src/widgets/glass_progress_indicator.dart';
 export 'src/widgets/glass_surface.dart';
 export 'src/widgets/glass_tab_bar.dart';
 export 'src/widgets/glass_text_field.dart';
+export 'src/widgets/lingyun_action_sheet.dart';
 export 'src/widgets/lingyun_alert.dart';
 export 'src/widgets/lingyun_sheet.dart';
 export 'src/widgets/lingyun_slider.dart';

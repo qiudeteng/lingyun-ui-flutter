@@ -49,6 +49,23 @@ flutter test tool/capture_sheet_screenshots.dart
 flutter test tool/capture_sheet_screenshots.dart
 ```
 
+- `action_sheets_light.png` — 操作表：标题和信息、破坏性、多项（取消在最下）、仅操作。系统 `cupertino_ui` 操作表，遮罩 `kCupertinoModalBarrierColor`，设计画布 `#D1D1D6`，1280×1400。文案简体中文。静帧，不含弹簧中间帧。
+- `action_sheets_dark.png` — 同一版面，深色，设计画布 `#000000`，1280×1400。
+
+在 `example/` 重拍（bash、PowerShell、cmd 相同）：
+
+```bash
+flutter test tool/capture_action_sheet_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_action_sheet_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_action_sheet_screenshots.dart
+```
+
 Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. Confirm and cancel are the kit system blue. The typeface on these boards is the ambient desktop family (Roboto on this Linux host, plus a CJK UI fallback when a glyph is missing), not SF Pro on device. Regenerate from `example/` (bash, PowerShell, or cmd):
 
 ```bash

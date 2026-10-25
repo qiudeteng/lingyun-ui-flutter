@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 import 'pages/accessibility_page.dart';
+import 'pages/action_sheets_page.dart';
 import 'pages/alerts_page.dart';
 import 'pages/controls_page.dart';
 import 'pages/form_controls_page.dart';
@@ -73,6 +74,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'steppers' ||
       'stepper' => 12,
       'sheets' => 13,
+      'actions' || 'action-sheets' => 14,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -243,6 +245,11 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.horizontal_split),
       label: '工作表',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.more_horiz_outlined),
+      selectedIcon: Icon(Icons.more_horiz),
+      label: '操作表',
+    ),
   ];
 
   @override
@@ -290,6 +297,7 @@ class DemoHome extends StatelessWidget {
           brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
         ),
       ),
+      ActionSheetsPage(brightness: Theme.of(context).brightness),
     ];
 
     return LingyunTheme(
@@ -333,7 +341,7 @@ class DemoHome extends StatelessWidget {
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
-                    // Fourteen labeled destinations do not fit a short window.
+                    // Fifteen labeled destinations do not fit a short window.
                     scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [
