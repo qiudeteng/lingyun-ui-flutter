@@ -2468,7 +2468,7 @@ void main() {
     bezel = bezelRect();
     expect(frame.top - bezel.top, closeTo(3, 0.6));
     expect(frame.left - bezel.left, closeTo(3, 0.6));
-    expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(bezel.right - frame.right, closeTo(6.5, 0.6));
     expect(bezel.bottom - frame.bottom, closeTo(3, 0.6));
     expect(find.byKey(const Key('gallery-duo-camera')), findsOneWidget);
     expect(
@@ -2490,23 +2490,81 @@ void main() {
       await lumaAt(frame.centerLeft + const Offset(12, 0)),
       greaterThan(180),
     );
+    // Hinge (left) is a sharp stroke. The rounded side's bounding corner
+    // falls outside the 59pt arc, so the stage shows through.
+    final strokeMidY = (bezel.top + frame.top) / 2;
+    // The lip lightens the band a little. It stays far below the stage.
+    expect(await lumaAt(Offset(bezel.left + 4, strokeMidY)), lessThan(80));
+    expect(
+      await lumaAt(Offset(frame.right + 2, frame.top - 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(await lumaAt(frame.topLeft + const Offset(2, 2)), greaterThan(180));
+    expect(
+      await lumaAt(frame.topRight + const Offset(-2, 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(frame.bottomLeft + const Offset(2, -2)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.bottomRight + const Offset(-2, -2)),
+      inInclusiveRange(140, 200),
+    );
+    // Mid-band on the 59pt corner. A 48pt corner is already screen fill here.
+    expect(
+      await lumaAt(Offset(frame.right - 20, frame.top + 13)),
+      lessThan(80),
+    );
+    expect(
+      await lumaAt(Offset(frame.right + 4, frame.top + 131)),
+      lessThan(80),
+    );
+    expect(
+      await lumaAt(Offset(frame.right + 4, frame.top + 40)),
+      inInclusiveRange(140, 200),
+    );
 
     await pumpFrame(GalleryPreviewFrame.duoInnerPortrait);
     frame = frameRect();
-    expect(frame.top - bezelRect().top, closeTo(3, 0.6));
-    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
+    bezel = bezelRect();
+    expect(frame.top - bezel.top, closeTo(3, 0.6));
+    expect(frame.left - bezel.left, closeTo(3, 0.6));
+    expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(find.byKey(const Key('gallery-duo-camera')), findsNothing);
+    expect(
+      await lumaAt(Offset(frame.center.dx, frame.top + 16)),
+      greaterThan(180),
+    );
     expect(
       await lumaAt(Offset(frame.right - 26, frame.top + 20)),
       greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.topLeft + const Offset(2, 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(Offset(frame.right - 20, frame.top + 13)),
+      lessThan(80),
     );
 
     await pumpFrame(GalleryPreviewFrame.duoInnerLandscape);
     frame = frameRect();
     expect(frame.size, const Size(951, 669));
-    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
+    expect(find.byKey(const Key('gallery-duo-camera')), findsNothing);
+    expect(
+      await lumaAt(Offset(frame.center.dx, frame.top + 16)),
+      greaterThan(180),
+    );
     expect(
       await lumaAt(Offset(frame.right - 26, frame.top + 20)),
       greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.topRight + const Offset(-2, 2)),
+      inInclusiveRange(140, 200),
     );
 
     await pumpFrame(
@@ -2514,15 +2572,33 @@ void main() {
       orientation: GalleryPreviewOrientation.landscape,
     );
     frame = frameRect();
+    bezel = bezelRect();
     expect(frame.size, const Size(678, 466));
+    expect(frame.left - bezel.left, closeTo(6.5, 0.6));
+    expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(find.byKey(const Key('gallery-duo-camera')), findsOneWidget);
+    expect(await lumaAt(Offset(frame.left + 26, frame.top + 20)), lessThan(40));
     expect(
       await lumaAt(Offset(frame.right - 26, frame.top + 20)),
-      lessThan(40),
+      greaterThan(180),
     );
     expect(
       await lumaAt(frame.topCenter + const Offset(0, 30)),
       greaterThan(180),
     );
+    // Hinge is the right edge. Rounds stay on the left. Camera is top-left.
+    final landStrokeMidY = (bezel.top + frame.top) / 2;
+    expect(await lumaAt(Offset(bezel.right - 4, landStrokeMidY)), lessThan(80));
+    expect(
+      await lumaAt(Offset(frame.left - 2, frame.top - 2)),
+      inInclusiveRange(140, 200),
+    );
+    expect(
+      await lumaAt(frame.topRight + const Offset(-2, 2)),
+      greaterThan(180),
+    );
+    expect(await lumaAt(Offset(frame.left + 20, frame.top + 13)), lessThan(80));
+    expect(await lumaAt(Offset(frame.left - 4, frame.top + 95)), lessThan(80));
 
     await pumpFrame(
       GalleryPreviewFrame.duoOuter,

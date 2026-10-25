@@ -381,7 +381,13 @@ class GalleryDeviceStage extends StatelessWidget {
     if (logical == null) return child;
     final canonical = frame.logicalSize;
     final swapped = canonical != null && canonical.width != logical.width;
-    final metrics = _BezelMetrics.of(frame.form);
+    final duoLandscape =
+        frame.form == GalleryPreviewForm.duo && logical.width > logical.height;
+    final metrics = _BezelMetrics.of(
+      frame.form,
+      frame: frame,
+      landscape: duoLandscape,
+    );
     final brightness = Theme.brightnessOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -444,8 +450,10 @@ class GalleryDeviceStage extends StatelessWidget {
                               systemGestureInsets: EdgeInsets.zero,
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                metrics.screenRadius,
+                              borderRadius: _screenRadius(
+                                frame,
+                                logical,
+                                metrics,
                               ),
                               child: Stack(
                                 fit: StackFit.expand,
@@ -463,14 +471,12 @@ class GalleryDeviceStage extends StatelessWidget {
                                         child: const SizedBox.expand(),
                                       ),
                                     ),
-                                  if (frame.form == GalleryPreviewForm.duo)
+                                  if (frame == GalleryPreviewFrame.duoOuter)
                                     IgnorePointer(
                                       key: const Key('gallery-duo-camera'),
                                       child: CustomPaint(
                                         foregroundPainter: _DuoDotPainter(
-                                          outer:
-                                              frame ==
-                                              GalleryPreviewFrame.duoOuter,
+                                          landscape: duoLandscape,
                                           color: _duoChrome(brightness),
                                         ),
                                         child: const SizedBox.expand(),
@@ -550,8 +556,9 @@ class _BezelMetrics {
     required this.outerRadius,
   });
 
-  /// Thickness outside the logical screen. Left and right match so the
-  /// screen stays centered in the stage.
+  /// Thickness outside the logical screen. Phone, iPad, and desktop keep
+  /// left and right equal so the screen stays centered. Duo outer adds
+  /// the side-button pocket on one edge only.
   final EdgeInsets outset;
   final double screenRadius;
   final double outerRadius;
@@ -562,7 +569,41 @@ class _BezelMetrics {
     outerRadius: 0,
   );
 
-  static _BezelMetrics of(GalleryPreviewForm form) => switch (form) {
+  static const _BezelMetrics _duoInner = _BezelMetrics(
+    outset: EdgeInsets.all(_DuoCorners.stroke),
+    screenRadius: _DuoCorners.round,
+    outerRadius: _DuoCorners.round + _DuoCorners.stroke,
+  );
+
+  /// Hinge on the left, buttons in the right pocket.
+  static const _BezelMetrics _duoOuterPortrait = _BezelMetrics(
+    outset: EdgeInsets.fromLTRB(
+      _DuoCorners.stroke,
+      _DuoCorners.stroke,
+      _DuoCorners.stroke + _DuoCorners.buttonReach,
+      _DuoCorners.stroke,
+    ),
+    screenRadius: _DuoCorners.round,
+    outerRadius: _DuoCorners.round + _DuoCorners.stroke,
+  );
+
+  /// Hinge on the right, buttons in the left pocket.
+  static const _BezelMetrics _duoOuterLandscape = _BezelMetrics(
+    outset: EdgeInsets.fromLTRB(
+      _DuoCorners.stroke + _DuoCorners.buttonReach,
+      _DuoCorners.stroke,
+      _DuoCorners.stroke,
+      _DuoCorners.stroke,
+    ),
+    screenRadius: _DuoCorners.round,
+    outerRadius: _DuoCorners.round + _DuoCorners.stroke,
+  );
+
+  static _BezelMetrics of(
+    GalleryPreviewForm form, {
+    GalleryPreviewFrame? frame,
+    bool landscape = false,
+  }) => switch (form) {
     GalleryPreviewForm.window => _window,
     GalleryPreviewForm.phone => const _BezelMetrics(
       outset: EdgeInsets.all(14),
@@ -574,19 +615,110 @@ class _BezelMetrics {
       screenRadius: 18,
       outerRadius: 36,
     ),
-    // Flat device-page stroke. The outset is the stroke itself: no metal
-    // slab. Corner radius matches the large SoT rounds.
-    GalleryPreviewForm.duo => const _BezelMetrics(
-      outset: EdgeInsets.all(3),
-      screenRadius: 48,
-      outerRadius: 51,
-    ),
+    GalleryPreviewForm.duo => _duoMetrics(frame, landscape: landscape),
     GalleryPreviewForm.desktop => const _BezelMetrics(
       outset: EdgeInsets.fromLTRB(8, 32, 8, 8),
       screenRadius: 8,
       outerRadius: 14,
     ),
   };
+
+  static _BezelMetrics _duoMetrics(
+    GalleryPreviewFrame? frame, {
+    required bool landscape,
+  }) {
+    if (frame == GalleryPreviewFrame.duoOuter) {
+      return landscape ? _duoOuterLandscape : _duoOuterPortrait;
+    }
+    return _duoInner;
+  }
+}
+
+/// Screen clip. Duo uses the device-page corners; every other form stays
+/// a single radius so phone, iPad, and desktop frames do not change.
+BorderRadius _screenRadius(
+  GalleryPreviewFrame frame,
+  Size logical,
+  _BezelMetrics metrics,
+) {
+  if (frame.form != GalleryPreviewForm.duo) {
+    return BorderRadius.circular(metrics.screenRadius);
+  }
+  final corners = frame == GalleryPreviewFrame.duoOuter
+      ? _DuoCorners.outer(landscape: logical.width > logical.height)
+      : _DuoCorners.inner;
+  return corners.borderRadius;
+}
+
+/// Per-corner radii for the Duo device-page stroke and the screen clip.
+///
+/// Outer portrait is the cover: hinge (sharp) on the left, 59 on the right.
+/// Outer landscape is that shell turned so the hinge is on the right and
+/// the camera moves to the top-left — not a uniform radius on a swapped
+/// rect. Inner screens are 59 on every corner.
+class _DuoCorners {
+  const _DuoCorners({
+    required this.topLeft,
+    required this.topRight,
+    required this.bottomRight,
+    required this.bottomLeft,
+  });
+
+  static const double stroke = 3;
+  static const double round = 59;
+  static const double hinge = 0;
+  static const double buttonReach = 3.5;
+
+  final double topLeft;
+  final double topRight;
+  final double bottomRight;
+  final double bottomLeft;
+
+  static const inner = _DuoCorners(
+    topLeft: round,
+    topRight: round,
+    bottomRight: round,
+    bottomLeft: round,
+  );
+
+  static const _outerPortrait = _DuoCorners(
+    topLeft: hinge,
+    topRight: round,
+    bottomRight: round,
+    bottomLeft: hinge,
+  );
+
+  static const _outerLandscape = _DuoCorners(
+    topLeft: round,
+    topRight: hinge,
+    bottomRight: hinge,
+    bottomLeft: round,
+  );
+
+  static _DuoCorners outer({required bool landscape}) =>
+      landscape ? _outerLandscape : _outerPortrait;
+
+  BorderRadius get borderRadius => BorderRadius.only(
+    topLeft: Radius.circular(topLeft),
+    topRight: Radius.circular(topRight),
+    bottomRight: Radius.circular(bottomRight),
+    bottomLeft: Radius.circular(bottomLeft),
+  );
+
+  /// [grow] is added only on the rounded corners. A hinge stays a sharp
+  /// right angle, so the outer stroke path does not soften it by the
+  /// stroke width.
+  RRect rrect(Rect rect, {double grow = 0}) {
+    Radius grown(double radius) =>
+        Radius.circular(radius <= 0 ? 0 : radius + grow);
+    return RRect.fromRectAndCorners(
+      rect,
+      topLeft: grown(topLeft),
+      topRight: grown(topRight),
+      bottomRight: grown(bottomRight),
+      bottomLeft: grown(bottomLeft),
+    );
+  }
 }
 
 /// Duo device-page chrome. Light and dark are the two stroke colors.
@@ -601,9 +733,10 @@ Color _duoChrome(Brightness brightness) {
 ///
 /// Phone and iPad bezels are symmetric, so a swapped orientation redraws
 /// the canonical shell and rotates it a quarter turn. The physical top —
-/// and the camera on it — moves to the left. Duo is a flat stroke in the
-/// current orientation; its dot is a separate overlay. Windows draws no
-/// camera. 「自适应窗口」 never reaches this painter.
+/// and the camera on it — moves to the left. Duo is a flat per-corner
+/// stroke: the outer cover remaps hinge, rounds, camera, and side buttons
+/// when the board is landscape. The inner display has no camera dot.
+/// Windows draws no camera. 「自适应窗口」 never reaches this painter.
 class _DeviceBezelPainter extends CustomPainter {
   const _DeviceBezelPainter({
     required this.frame,
@@ -689,18 +822,18 @@ class _DeviceBezelPainter extends CustomPainter {
     }
   }
 
-  /// Hairline band just outside the screen. No metal fill, no hinge slot.
+  /// Hairline band just outside the screen. No metal slab, no hinge slot,
+  /// no half-fold and no tent. Outer cover corners are asymmetric.
   void _paintDuoStroke(Canvas canvas, Size size) {
     final screen = _screenRect(size);
-    final stroke = metrics.outset.top;
-    final outer = RRect.fromRectAndRadius(
-      screen.inflate(stroke),
-      Radius.circular(metrics.screenRadius + stroke),
-    );
-    final inner = RRect.fromRectAndRadius(
-      screen,
-      Radius.circular(metrics.screenRadius),
-    );
+    final stroke = _DuoCorners.stroke;
+    final outerCover = frame == GalleryPreviewFrame.duoOuter;
+    final landscape = outerCover && screen.width > screen.height;
+    final corners = outerCover
+        ? _DuoCorners.outer(landscape: landscape)
+        : _DuoCorners.inner;
+    final outer = corners.rrect(screen.inflate(stroke), grow: stroke);
+    final inner = corners.rrect(screen);
     canvas.drawPath(
       Path()
         ..fillType = PathFillType.evenOdd
@@ -708,6 +841,68 @@ class _DeviceBezelPainter extends CustomPainter {
         ..addRRect(inner),
       Paint()..color = _duoChrome(brightness),
     );
+    _paintDuoMetalLip(canvas, outer, inner);
+    if (outerCover) {
+      _paintDuoSideButtons(canvas, screen, onLeft: landscape);
+    }
+  }
+
+  /// Light lip on the outside of the band and a quieter inner edge.
+  /// The middle of the ~3px stroke stays [_duoChrome].
+  void _paintDuoMetalLip(Canvas canvas, RRect outer, RRect inner) {
+    final dark = brightness == Brightness.dark;
+    canvas.drawRRect(
+      outer,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..strokeJoin = StrokeJoin.miter
+        ..color = dark
+            ? const Color(0xFFFFFFFF).withValues(alpha: 0.55)
+            : const Color(0xFF8E8E93).withValues(alpha: 0.9),
+    );
+    canvas.drawRRect(
+      inner,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8
+        ..color = dark
+            ? const Color(0xFF636366).withValues(alpha: 0.45)
+            : const Color(0xFFFFFFFF).withValues(alpha: 0.18),
+    );
+  }
+
+  /// Outer-cover side keys. Portrait: right edge. Landscape: left edge,
+  /// the side opposite the hinge. They sit in the button pocket, proud
+  /// of the stroke, and do not enter the screen.
+  void _paintDuoSideButtons(
+    Canvas canvas,
+    Rect screen, {
+    required bool onLeft,
+  }) {
+    final stroke = _DuoCorners.stroke;
+    final width = _DuoCorners.buttonReach - 0.4;
+    final left = onLeft
+        ? screen.left - stroke - width + 0.5
+        : screen.right + stroke - 0.5;
+    final paint = Paint()..color = _duoChrome(brightness);
+    final keys = onLeft
+        ? const <(double, double)>[(84, 22), (116, 36)]
+        : const <(double, double)>[(118, 26), (156, 46)];
+    final lip = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.6
+      ..color = brightness == Brightness.dark
+          ? const Color(0xFFFFFFFF).withValues(alpha: 0.45)
+          : const Color(0xFF8E8E93);
+    for (final (top, height) in keys) {
+      final button = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, screen.top + top, width, height),
+        const Radius.circular(1.1),
+      );
+      canvas.drawRRect(button, paint);
+      canvas.drawRRect(button, lip);
+    }
   }
 
   Rect _screenRect(Size size) {
@@ -866,27 +1061,32 @@ class _DeviceBezelPainter extends CustomPainter {
       oldDelegate.metrics != metrics;
 }
 
-/// Small Duo camera. Outer sits in the top corner. Inner sits top-center.
-/// Not a Dynamic Island. [IgnorePointer] in the stage.
+/// Outer-cover camera. Not a Dynamic Island. [IgnorePointer] in the stage.
+///
+/// Portrait keeps the dot in the top-right. Landscape moves it to the
+/// top-left with the rotated shell. The inner display does not use this
+/// painter: the front camera stays hidden until it is active.
 class _DuoDotPainter extends CustomPainter {
-  const _DuoDotPainter({required this.outer, required this.color});
+  const _DuoDotPainter({required this.landscape, required this.color});
 
-  final bool outer;
+  final bool landscape;
   final Color color;
 
   static const double _radius = 4.5;
+  static const double _insetX = 26;
+  static const double _insetY = 20;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = outer
-        ? Offset(size.width - 26, 20)
-        : Offset(size.width / 2, 16);
+    final center = landscape
+        ? const Offset(_insetX, _insetY)
+        : Offset(size.width - _insetX, _insetY);
     canvas.drawCircle(center, _radius, Paint()..color = color);
   }
 
   @override
   bool shouldRepaint(_DuoDotPainter oldDelegate) =>
-      oldDelegate.outer != outer || oldDelegate.color != color;
+      oldDelegate.landscape != landscape || oldDelegate.color != color;
 }
 
 /// Dynamic Island over the phone screen. [IgnorePointer] in the stage.
