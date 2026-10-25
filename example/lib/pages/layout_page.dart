@@ -6,34 +6,22 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 /// [horizontalSizeClass] is set only when the width proxy would disagree
 /// with the size class being shown.
 enum LayoutPreset {
-  live('Live window', null, 'This window’s bounds. No device check.'),
-  compact(
-    'Compact',
-    Size(390, 844),
-    'Width under 600. Spec is tab + stack. Bottom Dock.',
-  ),
+  live('当前窗口', null, '用这块窗口的范围，不按机型判断。'),
+  compact('紧凑', Size(390, 844), '宽度小于 600。规格是标签加栈。底栏是程序坞。'),
   compactBounds(
-    'Compact bounds',
+    '紧凑范围',
     Size(678, 466),
-    'Explicit compact size class. The width proxy would call 678 regular.',
+    '显式指定紧凑尺寸类别。若只看宽度，678 会被当成常规。',
     horizontalSizeClass: 'compact',
   ),
-  regular(
-    'Regular',
-    Size(834, 1112),
-    'Spec is sidebar + split. Glass rail, one content column.',
-  ),
+  regular('常规', Size(834, 1112), '规格是侧栏加分栏。玻璃侧栏，一列内容。'),
   division(
-    'Regular + division',
+    '常规加分割',
     Size(951, 669),
-    'none + split, plus an active division region. Not a pose.',
+    '无饰条加分栏，并带一块激活的分割区域。这不是姿态。',
     splitOnly: true,
   ),
-  wide(
-    'Wide',
-    Size(1440, 900),
-    'Sidebar + split at ≥ 1200. Three columns. 待核验 vs design.',
-  );
+  wide('宽屏', Size(1440, 900), '宽度至少 1200 时用侧栏加分栏。三列。相对设计稿待核验。');
 
   const LayoutPreset(
     this.label,
@@ -79,10 +67,10 @@ class _LayoutPageState extends State<LayoutPage> {
     GlassTabBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home,
-      label: 'Home',
+      label: '首页',
     ),
-    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Browse'),
-    GlassTabBarItem(icon: Icons.person_outline, label: 'Profile'),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: '浏览'),
+    GlassTabBarItem(icon: Icons.person_outline, label: '我的'),
   ];
 
   @override
@@ -123,7 +111,7 @@ class _LayoutPageState extends State<LayoutPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Layout',
+                '布局',
                 key: const Key('layout-title'),
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
@@ -131,10 +119,10 @@ class _LayoutPageState extends State<LayoutPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'LingyunPage sends LingyunPageSpec to the iOS host and, off '
-                'iOS, paints the same container map. Compact is tab + stack. '
-                'Regular and wide are sidebar + split. ArrangementView stays '
-                'on the native track (LY_IOS_27_1_SDK=1).',
+                'LingyunPage 把 LingyunPageSpec 交给 iOS 宿主；'
+                '不在 iOS 上时，按同一张容器表绘制。紧凑是标签加栈。'
+                '常规和宽屏是侧栏加分栏。ArrangementView 只在原生侧'
+                '（LY_IOS_27_1_SDK=1）。',
                 style: textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
@@ -244,13 +232,13 @@ class _DemoPage extends StatelessWidget {
         ? const LingyunPageSpec(
             chrome: LingyunPageChrome.none,
             navigation: LingyunPageNavigation.split,
-            primaryLabel: 'Primary',
-            secondaryLabel: 'Secondary',
+            primaryLabel: '主栏',
+            secondaryLabel: '次栏',
           )
         : lingyunPageSpecForBucket(
             bucket,
-            primaryLabel: 'Home',
-            secondaryLabel: 'Browse',
+            primaryLabel: '首页',
+            secondaryLabel: '浏览',
           );
     final regions = preset.splitOnly && simulated != null
         ? [lingyunPageDivisionStub(simulated!)]
@@ -262,10 +250,7 @@ class _DemoPage extends StatelessWidget {
       destinations: destinations,
       currentIndex: index,
       onDestinationSelected: onIndex,
-      secondary: const _Pane(
-        title: 'Secondary',
-        body: 'Content column when the container has two content panes.',
-      ),
+      secondary: const _Pane(title: '次栏', body: '容器有两列内容时显示这一列。'),
       primary: const _PrimaryPane(),
     );
   }
@@ -279,14 +264,30 @@ class _PrimaryPane extends StatelessWidget {
     final scope = LingyunPageScope.of(context);
     final size = MediaQuery.sizeOf(context);
     return _Pane(
-      title: 'Primary',
+      title: '主栏',
       body:
-          '${scope.bucket.name} · ${scope.spec.chrome.name} · '
+          '${_bucketLabel(scope.bucket)} · ${_chromeLabel(scope.spec.chrome)} · '
           '${scope.container.root}\n'
           '${size.width.toStringAsFixed(0)}×${size.height.toStringAsFixed(0)}',
       labelKey: const Key('layout-class-label'),
     );
   }
+}
+
+String _bucketLabel(LingyunPageWidthBucket bucket) {
+  return switch (bucket) {
+    LingyunPageWidthBucket.compact => '紧凑',
+    LingyunPageWidthBucket.regular => '常规',
+    LingyunPageWidthBucket.wide => '宽屏',
+  };
+}
+
+String _chromeLabel(LingyunPageChrome chrome) {
+  return switch (chrome) {
+    LingyunPageChrome.tab => '标签',
+    LingyunPageChrome.sidebar => '侧栏',
+    LingyunPageChrome.none => '无',
+  };
 }
 
 class _Pane extends StatelessWidget {

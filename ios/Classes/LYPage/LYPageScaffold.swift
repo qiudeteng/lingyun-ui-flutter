@@ -122,7 +122,7 @@ struct LYPageSplitHost: View {
       Text(session.spec.primaryLabel)
       Text(session.spec.secondaryLabel)
     }
-    .navigationTitle("Sidebar")
+    .navigationTitle("侧栏")
   }
 }
 
@@ -159,17 +159,33 @@ struct LYPagePane: View {
     let host = metrics.hostSafeArea
     let content = metrics.contentSafeArea
     return """
-    Bucket \(metrics.widthBucket.rawValue) \
-    H \(metrics.horizontalSizeClass.rawValue) \
-    V \(metrics.verticalSizeClass.rawValue)
-    Bounds \(format(metrics.boundsWidth))×\(format(metrics.boundsHeight)) pt
-    Host safe LTRB \
+    宽度档 \(bucketLabel(metrics.widthBucket)) \
+    水平 \(sizeClassLabel(metrics.horizontalSizeClass)) \
+    垂直 \(sizeClassLabel(metrics.verticalSizeClass))
+    范围 \(format(metrics.boundsWidth))×\(format(metrics.boundsHeight)) pt
+    宿主安全区 左上右下 \
     \(format(host.leading)) \(format(host.top)) \
     \(format(host.trailing)) \(format(host.bottom))
-    Content safe LTRB \
+    内容安全区 左上右下 \
     \(format(content.leading)) \(format(content.top)) \
     \(format(content.trailing)) \(format(content.bottom))
     """
+  }
+
+  private func bucketLabel(_ bucket: LYPageWidthBucket) -> String {
+    switch bucket {
+    case .compact: return "紧凑"
+    case .regular: return "常规"
+    case .wide: return "宽屏"
+    }
+  }
+
+  private func sizeClassLabel(_ name: LYPageSizeClassName) -> String {
+    switch name {
+    case .compact: return "紧凑"
+    case .regular: return "常规"
+    case .unspecified: return "未指定"
+    }
   }
 
   private var regionCopy: String {
@@ -181,11 +197,19 @@ struct LYPagePane: View {
       return LYPagePaneCopy.regionsEmpty
     }
     return metrics.regions.map { region in
-      let state = region.isActive ? "active" : "inactive"
-      return "\(region.kind) \(state) \
-        x \(format(region.x)) y \(format(region.y)) \
+      let state = region.isActive ? "激活" : "未激活"
+      return "\(regionKindLabel(region.kind)) \(state) \
+        横 \(format(region.x)) 纵 \(format(region.y)) \
         \(format(region.width))×\(format(region.height))"
     }.joined(separator: "\n")
+  }
+
+  private func regionKindLabel(_ kind: String) -> String {
+    switch kind {
+    case "division": return "分割"
+    case "occlusion": return "遮挡"
+    default: return kind
+    }
   }
 
   private var containerNote: String {
@@ -202,17 +226,16 @@ struct LYPagePane: View {
 
 enum LYPagePaneCopy {
   static let safeArea =
-    "Content stays in the safe area on every edge. When the system places "
-    + "the tab bar or toolbar on the side, the leading or trailing inset "
-    + "grows. This skeleton does not add a fixed bottom inset."
+    "内容在每一边都留在安全区内。系统把标签栏或工具栏放到侧面时，"
+    + "前缘或后缘的内边距会变大。这个骨架不加固定的底部内边距。"
 
   static let regionsUnavailable =
-    "Reserved regions are not readable in this binary. Build with the "
-    + "iOS 27.1 SDK and LY_IOS_27_1_SDK to query division and occlusion."
+    "当前二进制读不到预留区域。请用 iOS 27.1 SDK，并打开 LY_IOS_27_1_SDK，"
+    + "才能查询分割和遮挡。"
 
   static let regionsEmpty =
-    "No reserved regions intersect this view. An active division is the "
-    + "hinge. Half-open and fully open stay Regular. Folded outer stays Compact."
+    "没有预留区域和这个视图相交。处于激活状态的分割区域就是铰链。"
+    + "半开和全开都是常规。外屏折叠是紧凑。"
 }
 
 /// Reads the safe area the pane actually sees, inside the system container.

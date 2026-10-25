@@ -101,7 +101,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'lingyun-ui-flutter',
+      title: '凌云界面',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: ThemeData(
@@ -209,17 +209,17 @@ class DemoHome extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.devices_outlined),
       selectedIcon: Icon(Icons.devices),
-      label: 'Layout',
+      label: '布局',
     ),
     NavigationDestination(
       icon: Icon(Icons.accessibility_new_outlined),
       selectedIcon: Icon(Icons.accessibility_new),
-      label: 'Access',
+      label: '辅助功能',
     ),
     NavigationDestination(
       icon: Icon(Icons.phone_iphone_outlined),
       selectedIcon: Icon(Icons.phone_iphone),
-      label: 'Native',
+      label: '原生',
     ),
     NavigationDestination(
       icon: Icon(Icons.notifications_outlined),

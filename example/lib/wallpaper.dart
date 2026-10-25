@@ -11,11 +11,11 @@ import 'package:material_ui/material_ui.dart';
 /// vanishes against it) and `#000000` in dark (Sketch dark preview canvas /
 /// `systemBackground`).
 enum GalleryBackground {
-  canvas('canvas', 'Canvas', 'Design canvas'),
-  wash('wash', 'Wash', 'Muted wash'),
-  meadow('meadow', 'Nature', 'Nature'),
-  abstract('abstract', 'Color', 'Abstract color'),
-  busy('busy', 'Busy', 'Busy UI');
+  canvas('canvas', '画布', '设计画布'),
+  wash('wash', '淡洗', '淡洗底'),
+  meadow('meadow', '自然', '自然风景'),
+  abstract('abstract', '色块', '抽象色块'),
+  busy('busy', '繁忙', '繁忙界面');
 
   const GalleryBackground(this.query, this.shortLabel, this.label);
 
@@ -115,7 +115,7 @@ class GalleryBackgroundButton extends StatelessWidget {
     final bg = dark ? const Color(0xCC1C1C1E) : const Color(0xE6FFFFFF);
     return PopupMenuButton<GalleryBackground>(
       key: const Key('gallery-bg-control'),
-      tooltip: 'Gallery background',
+      tooltip: '画廊背景',
       initialValue: mode,
       onSelected: onChanged,
       itemBuilder: (context) => [

@@ -409,9 +409,8 @@ class _ArrangementFallback extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
-            '${spec.primaryLabel}. ArrangementView is the iOS host and '
-            'links only when LY_IOS_27_1_SDK=1. This skeleton does not '
-            'draw a hinge.',
+            '${spec.primaryLabel}。ArrangementView 属于 iOS 宿主，'
+            '仅在 LY_IOS_27_1_SDK=1 时链接。此骨架不绘制铰链。',
             style: text.bodySmall,
           ),
         ),

@@ -1,5 +1,7 @@
 # Screenshots
 
+Gallery chrome is Simplified Chinese. The PNGs in this folder still show the previous English labels. Re-shoot them on a Mac after this copy change. Do not treat these files as current.
+
 Gallery captures (committed as PNGs in this folder):
 
 - `materials_light.png` — 材质 超薄 / 薄 / 常规 / 厚，浅色，设计画布 `#D1D1D6`，1280×1200。板后灰条是材质页样张，不是令牌。越薄越能看见条纹，越厚越不透明。

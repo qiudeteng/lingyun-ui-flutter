@@ -134,18 +134,18 @@ void _expectBucket(LayoutPreset preset) {
   expect(find.byKey(const Key('layout-class-label')), findsOneWidget);
   switch (preset) {
     case LayoutPreset.compact:
-      expect(find.textContaining('compact · tab'), findsOneWidget);
+      expect(find.textContaining('紧凑 · 标签'), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-sidebar')), findsNothing);
       expect(find.byKey(const Key('lingyun-page-secondary')), findsNothing);
     case LayoutPreset.regular:
-      expect(find.textContaining('regular · sidebar'), findsOneWidget);
+      expect(find.textContaining('常规 · 侧栏'), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-sidebar')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-primary')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-tab-bar')), findsNothing);
       expect(find.byKey(const Key('lingyun-page-secondary')), findsNothing);
     case LayoutPreset.wide:
-      expect(find.textContaining('wide · sidebar'), findsOneWidget);
+      expect(find.textContaining('宽屏 · 侧栏'), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-sidebar')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-secondary')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-primary')), findsOneWidget);

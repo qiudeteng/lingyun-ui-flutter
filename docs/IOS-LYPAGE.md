@@ -40,7 +40,7 @@ Dart 侧 `LingyunPage` 已经接上同一套 `LingyunPageSpec`。非 iOS 和画�
 
 ## 安全区
 
-宿主铺满可用 bounds（`edgesForExtendedLayout = .all`）。正文留在安全区内，leading / trailing 分开读。条变竖时，侧向 inset 变大；骨架不加固定底边距。验收看 pane 里的 Host safe 与 Content safe。
+宿主铺满可用 bounds（`edgesForExtendedLayout = .all`）。正文留在安全区内，leading / trailing 分开读。条变竖时，侧向 inset 变大；骨架不加固定底边距。验收看 pane 里的「宿主安全区」与「内容安全区」。
 
 ## 27.1 SDK 缺口
 

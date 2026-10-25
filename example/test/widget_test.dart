@@ -78,20 +78,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('已点 1'), findsOneWidget);
 
-    await tester.tap(find.text('Layout').last);
+    await tester.tap(find.text('布局').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('layout-title')), findsOneWidget);
     expect(find.byKey(const Key('preset-regular')), findsOneWidget);
     expect(find.byKey(const Key('layout-class-label')), findsOneWidget);
-    expect(find.textContaining('regular · sidebar'), findsOneWidget);
+    expect(find.textContaining('常规 · 侧栏'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('preset-compact')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('compact · tab'), findsOneWidget);
+    expect(find.textContaining('紧凑 · 标签'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('preset-wide')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('wide · sidebar'), findsOneWidget);
+    expect(find.textContaining('宽屏 · 侧栏'), findsOneWidget);
 
     await tester.tap(find.text('标签栏').last);
     await tester.pumpAndSettle();
@@ -108,11 +108,11 @@ void main() {
     expect(find.byKey(const Key('tab-stage-tinted')), findsOneWidget);
     expect(find.textContaining('系统蓝'), findsWidgets);
 
-    await tester.tap(find.text('Access').last);
+    await tester.tap(find.text('辅助功能').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);
-    expect(find.text('Reduce transparency'), findsOneWidget);
-    expect(find.text('Reduce motion'), findsOneWidget);
+    expect(find.text('降低透明度'), findsOneWidget);
+    expect(find.text('减弱动态'), findsOneWidget);
   });
 
   testWidgets('native page lists compact and regular skeletons', (
