@@ -17,8 +17,8 @@ flutter build linux --debug --dart-define=GALLERY_CHROME=0 --dart-define=GALLERY
 - `glass_button_dark.png` — same button gallery, dark, design canvas `#000000`
 - `tab_bar_light.png` — Tab Bars: standard, floating pill (3, 4, and 5), tinted, light, design canvas `#D1D1D6`
 - `tab_bar_dark.png` — same page, dark, design canvas `#000000`
-- `alerts_light.png` — Alerts probe: system `cupertino_ui` dialogs (one button, two buttons with cancel leading, destructive, title + message, message only) on `kCupertinoModalBarrierColor`, design canvas `#D1D1D6`. Demo copy is Simplified Chinese.
-- `alerts_dark.png` — same states, dark, design canvas `#000000`. Demo copy is Simplified Chinese.
+- `alerts_light.png` — Alerts formal: system `cupertino_ui` dialogs (one button, two buttons with cancel leading, destructive, title + message, message only) on `kCupertinoModalBarrierColor`, design canvas `#D1D1D6`, 1280×960. Confirm and cancel use kit system blue. Demo copy is Simplified Chinese. The capture host is a Material theme so desktop type can follow the ambient family; it is still not SF Pro.
+- `alerts_dark.png` — same states, dark, design canvas `#000000`, 1280×960. Confirm and cancel use the dark kit system blue. Demo copy is Simplified Chinese.
 - [lists_light.png](./lists_light.png) / [lists_dark.png](./lists_dark.png) — 列表：内嵌分组（液态玻璃常规中号托盘）与通栏。浅色画布 `#D1D1D6`，深色画布 `#000000`，1280×900，隐藏导航。页面文案为简体中文。设计已验收。
 - [text_fields_light.png](./text_fields_light.png) / [text_fields_dark.png](./text_fields_dark.png) — 文本框：默认、聚焦、错误、禁用、密码、实时编辑。同上画布与视口。设计已验收。
 - [progress_light.png](./progress_light.png) / [progress_dark.png](./progress_dark.png) — 进度指示器：线性与圆形，确定与不确定，以及着色。同上画布与视口。设计已验收。
@@ -49,9 +49,17 @@ flutter test tool/capture_sheet_screenshots.dart
 flutter test tool/capture_sheet_screenshots.dart
 ```
 
-Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. The typeface is Flutter's desktop fallback, not SF Pro on device. Regenerate from `example/`:
+Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. Confirm and cancel are the kit system blue. The typeface on these boards is the ambient desktop family (Roboto on this Linux host, plus a CJK UI fallback when a glyph is missing), not SF Pro on device. Regenerate from `example/` (bash, PowerShell, or cmd):
 
 ```bash
+flutter test tool/capture_alert_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_alert_screenshots.dart
+```
+
+```bat
 flutter test tool/capture_alert_screenshots.dart
 ```
 

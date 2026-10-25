@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
@@ -132,6 +133,16 @@ void main() {
           .style;
       expect(confirmStyle.fontWeight, FontWeight.w600);
       expect(cancelStyle.fontWeight, isNot(FontWeight.w600));
+      expect(
+        confirmStyle.color!.toARGB32(),
+        LingyunAlert.actionBlue(Brightness.light).toARGB32(),
+      );
+      expect(cancelStyle.color!.toARGB32(), confirmStyle.color!.toARGB32());
+      expect(
+        confirmStyle.color!.toARGB32(),
+        isNot(const Color(0xFF007AFF).toARGB32()),
+      );
+      expect(confirmStyle.fontFamily, LingyunAlert.systemFontFamily);
 
       final titleStyle = DefaultTextStyle.of(tester.element(find.text('短标题最好')))
           .style;
@@ -326,6 +337,262 @@ void main() {
       await tester.tapAt(const Offset(8, 8));
       await tester.pumpAndSettle();
       expect(result, isNull);
+    });
+
+    testWidgets('dark confirm uses the kit system blue', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          const LingyunAlertDialog(
+            title: '已保存',
+            actions: [LingyunAlertAction.confirm(label: '好')],
+          ),
+          brightness: Brightness.dark,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final style = DefaultTextStyle.of(tester.element(find.text('好'))).style;
+      expect(
+        style.color!.toARGB32(),
+        LingyunAlert.actionBlue(Brightness.dark).toARGB32(),
+      );
+      expect(style.color!.toARGB32(), const Color(0xFF0091FF).toARGB32());
+      expect(
+        style.color!.toARGB32(),
+        isNot(const Color(0xFF0A84FF).toARGB32()),
+      );
+    });
+
+    testWidgets('system route is mid scale-fade before it rests', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: Builder(
+            builder: (context) {
+              return CupertinoButton(
+                onPressed: () => showLingyunAlert(
+                  context,
+                  title: '已保存',
+                  actions: const [LingyunAlertAction.confirm(label: '好')],
+                ),
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+
+      expect(find.byType(CupertinoAlertDialog), findsOneWidget);
+      final scale = tester.widget<ScaleTransition>(
+        find
+            .ancestor(
+              of: find.byType(CupertinoAlertDialog),
+              matching: find.byType(ScaleTransition),
+            )
+            .first,
+      );
+      final fade = tester.widget<FadeTransition>(
+        find
+            .ancestor(
+              of: find.byType(CupertinoAlertDialog),
+              matching: find.byType(FadeTransition),
+            )
+            .first,
+      );
+      expect(scale.scale.value, greaterThan(1));
+      expect(fade.opacity.value, lessThan(1));
+
+      await tester.pumpAndSettle();
+      final restedScale = tester.widget<ScaleTransition>(
+        find
+            .ancestor(
+              of: find.byType(CupertinoAlertDialog),
+              matching: find.byType(ScaleTransition),
+            )
+            .first,
+      );
+      final restedFade = tester.widget<FadeTransition>(
+        find
+            .ancestor(
+              of: find.byType(CupertinoAlertDialog),
+              matching: find.byType(FadeTransition),
+            )
+            .first,
+      );
+      expect(restedScale.scale.value, closeTo(1, 0.01));
+      expect(restedFade.opacity.value, closeTo(1, 0.01));
+    });
+
+    testWidgets('reduce motion shows the dialog without the scale fade', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        CupertinoApp(
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+          home: Builder(
+            builder: (context) {
+              return CupertinoButton(
+                onPressed: () => showLingyunAlert(
+                  context,
+                  title: '已保存',
+                  actions: const [LingyunAlertAction.confirm(label: '好')],
+                ),
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pump();
+
+      expect(find.text('已保存'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(CupertinoAlertDialog),
+          matching: find.byType(ScaleTransition),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('LingyunAdaptivity.reduceMotion skips the scale fade', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: LingyunAdaptivity(
+            reduceMotion: true,
+            child: Builder(
+              builder: (context) {
+                return CupertinoButton(
+                  onPressed: () => showLingyunAlert(
+                    context,
+                    message: '链接已复制。',
+                    actions: const [LingyunAlertAction.confirm(label: '好')],
+                  ),
+                  child: const Text('Open'),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pump();
+      expect(find.text('链接已复制。'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(CupertinoAlertDialog),
+          matching: find.byType(ScaleTransition),
+        ),
+        findsNothing,
+      );
+    });
+  });
+
+  group('desktop type', () {
+    test('action blue is the kit system blue', () {
+      expect(
+        LingyunAlert.actionBlue(Brightness.light),
+        LingyunColors.light.system.blue,
+      );
+      expect(
+        LingyunAlert.actionBlue(Brightness.dark),
+        LingyunColors.dark.system.blue,
+      );
+      expect(
+        LingyunAlert.actionBlue(Brightness.light).toARGB32(),
+        const Color(0xFF0088FF).toARGB32(),
+      );
+      expect(
+        LingyunAlert.actionBlue(Brightness.dark).toARGB32(),
+        const Color(0xFF0091FF).toARGB32(),
+      );
+    });
+
+    testWidgets('non-Apple adopts an ambient family and keeps system size', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      try {
+        await tester.pumpWidget(
+          _host(
+            const DefaultTextStyle(
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 14),
+              child: LingyunAlertDialog(
+                title: '短标题最好',
+                message: '信息应简短完整。',
+                actions: [
+                  LingyunAlertAction.confirm(label: '确认'),
+                  LingyunAlertAction.cancel(label: '取消'),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final title = tester.widget<Text>(find.text('短标题最好'));
+        final parent = DefaultTextStyle.of(tester.element(find.text('短标题最好')))
+            .style;
+        final painted = parent.merge(title.style);
+        expect(parent.fontFamily, LingyunAlert.systemFontFamily);
+        expect(parent.fontSize, 17);
+        expect(painted.fontFamily, 'Roboto');
+        expect(painted.fontSize, 17);
+        expect(painted.fontWeight, FontWeight.w600);
+        expect(painted.fontFamilyFallback, LingyunAlert.desktopCjkFallback);
+
+        final confirm = DefaultTextStyle.of(tester.element(find.text('确认')))
+            .style;
+        expect(confirm.fontFamily, 'Roboto');
+        expect(confirm.fontWeight, FontWeight.w600);
+        expect(
+          confirm.color!.toARGB32(),
+          LingyunAlert.actionBlue(Brightness.light).toARGB32(),
+        );
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('Apple keeps the system font proxy', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        await tester.pumpWidget(
+          _host(
+            const DefaultTextStyle(
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 14),
+              child: LingyunAlertDialog(
+                title: '短标题最好',
+                actions: [LingyunAlertAction.confirm(label: '好')],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final title = tester.widget<Text>(find.text('短标题最好'));
+        expect(title.style, isNull);
+        final parent = DefaultTextStyle.of(tester.element(find.text('短标题最好')))
+            .style;
+        expect(parent.fontFamily, LingyunAlert.systemFontFamily);
+        final action = DefaultTextStyle.of(tester.element(find.text('好')))
+            .style;
+        expect(action.fontFamily, LingyunAlert.systemFontFamily);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
   });
 }

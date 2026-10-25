@@ -10,8 +10,10 @@ Layout (`LingyunPage` compact / regular / wide bounds), Accessibility,
 `?page=native`). The UIKit skeleton is iOS-only. See
 [`docs/IOS-LYPAGE.md`](../docs/IOS-LYPAGE.md) and
 [`docs/PAGE.md`](../docs/PAGE.md).
-**Alerts** (`?page=alerts`): system `cupertino_ui` dialog, not Liquid Glass.
-Demo titles, buttons, and messages on that page are Simplified Chinese.
+**Alerts** (`?page=alerts`): formal system `cupertino_ui` dialog, not Liquid Glass.
+浅色 / 深色 is on the page. Demo titles, buttons, and messages are Simplified Chinese.
+Confirm and cancel use the kit system blue. Desktop type follows the ambient
+family; SF Pro is not bundled.
 **Sheets** (`?page=sheets`): Materials Thick platter, grabber, medium / large
 detents. 浅色 / 深色 is on the page. Demo copy is Simplified Chinese.
 Run `flutter run` from this directory, then open that query (or the 工作表 rail).

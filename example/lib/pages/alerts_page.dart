@@ -5,12 +5,20 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 ///
 /// Each plate is a `cupertino_ui` [LingyunAlertDialog] on the system barrier
 /// color. Live buttons call [showLingyunAlert]. Nothing here is Liquid Glass.
+/// Page chrome uses [LingyunTextStyles] (ambient face, not a bundled SF Pro).
 class AlertsPage extends StatefulWidget {
   /// [brightness] follows the gallery light / dark toggle.
-  const AlertsPage({super.key, this.brightness = Brightness.light});
+  const AlertsPage({
+    super.key,
+    this.brightness = Brightness.light,
+    this.onBrightnessChanged,
+  });
 
   /// Cupertino theme brightness for the system dialogs.
   final Brightness brightness;
+
+  /// Asks the gallery to switch 浅色 / 深色. Null in the screenshot host.
+  final ValueChanged<Brightness>? onBrightnessChanged;
 
   @override
   State<AlertsPage> createState() => _AlertsPageState();
@@ -40,43 +48,55 @@ class _AlertsPageState extends State<AlertsPage> {
   Widget build(BuildContext context) {
     final locale =
         Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US');
-    return CupertinoTheme(
-      data: CupertinoThemeData(brightness: widget.brightness),
-      child: Localizations(
-        locale: kCupertinoSupportedLanguages.contains(locale.languageCode)
-            ? locale
-            : const Locale('en', 'US'),
-        delegates: const <LocalizationsDelegate<dynamic>>[
-          DefaultCupertinoLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        child: Builder(builder: _buildBody),
+    return LingyunTheme(
+      brightness: widget.brightness,
+      child: CupertinoTheme(
+        data: LingyunTheme.cupertinoThemeFor(widget.brightness),
+        child: Localizations(
+          locale: kCupertinoSupportedLanguages.contains(locale.languageCode)
+              ? locale
+              : const Locale('en', 'US'),
+          delegates: const <LocalizationsDelegate<dynamic>>[
+            DefaultCupertinoLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          child: Builder(builder: _buildBody),
+        ),
       ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
-    final label = CupertinoColors.label.resolveFrom(context);
-    final secondary = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final colors = LingyunColors.forBrightness(widget.brightness);
+    final label = colors.labels.primary;
+    final secondary = colors.labels.secondary;
     return ListView(
       padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
       children: [
         Text(
           '提示',
           key: const Key('alert-title'),
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: label,
-            letterSpacing: -0.4,
-          ),
+          style: LingyunTextStyles.title1(emphasized: true, color: label),
         ),
         const SizedBox(height: 6),
         Text(
           '系统提示。不是液态玻璃，不是玻璃按钮，不是程序坞，也不是厚材质。'
-          '稿面状态：单按钮、双按钮（取消在前）、破坏性、标题加信息、仅信息。',
+          '稿面状态：单按钮、双按钮（取消在前）、破坏性、标题加信息、仅信息。'
+          '确认和取消是稿面系统蓝。破坏性仍是对话框自己的红。'
+          '字由系统对话框绘制；桌面不捆绑 SF Pro。',
           key: const Key('alert-scope'),
-          style: TextStyle(fontSize: 13, height: 1.35, color: secondary),
+          style: LingyunTextStyles.footnote(color: secondary),
+        ),
+        const SizedBox(height: 10),
+        CupertinoSlidingSegmentedControl<Brightness>(
+          groupValue: widget.brightness,
+          children: const {
+            Brightness.light: Text('浅色', key: Key('alert-theme-light')),
+            Brightness.dark: Text('深色', key: Key('alert-theme-dark')),
+          },
+          onValueChanged: (value) {
+            if (value != null) widget.onBrightnessChanged?.call(value);
+          },
         ),
         const SizedBox(height: 14),
         LayoutBuilder(
@@ -101,11 +121,7 @@ class _AlertsPageState extends State<AlertsPage> {
         Text(
           '实时路由 · 上次结果：$_result',
           key: const Key('alert-result'),
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: label,
-          ),
+          style: LingyunTextStyles.footnote(emphasized: true, color: label),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -147,11 +163,7 @@ class _AlertsPageState extends State<AlertsPage> {
         children: [
           Text(
             stage.label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: label,
-            ),
+            style: LingyunTextStyles.footnote(emphasized: true, color: label),
           ),
           const SizedBox(height: 6),
           ClipRRect(

@@ -1,14 +1,24 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:example/pages/alerts_page.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Writes the light and dark Alerts gallery boards.
 ///
-/// Run from `example/`: `flutter test tool/capture_alert_screenshots.dart`
+/// The host is a Material theme so non-Apple dialog text can adopt the
+/// ambient family. Run from `example/`:
+///
+/// ```bash
+/// flutter test tool/capture_alert_screenshots.dart
+/// ```
+///
+/// ```powershell
+/// flutter test tool/capture_alert_screenshots.dart
+/// ```
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -31,7 +41,7 @@ Future<void> _capture(
   required Brightness brightness,
   required String path,
 }) async {
-  await tester.binding.setSurfaceSize(const Size(1280, 800));
+  await tester.binding.setSurfaceSize(const Size(1280, 960));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final canvas = brightness == Brightness.dark
       ? const Color(0xFF000000)
@@ -42,9 +52,9 @@ Future<void> _capture(
       key: const Key('alert-shot'),
       child: ColoredBox(
         color: canvas,
-        child: CupertinoApp(
+        child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: CupertinoThemeData(brightness: brightness),
+          theme: LingyunMaterialTheme.themeData(brightness),
           home: AlertsPage(brightness: brightness),
         ),
       ),
