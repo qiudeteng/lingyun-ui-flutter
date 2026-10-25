@@ -181,12 +181,16 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
           highContrast: _highContrast,
           child: GalleryShell(
             initialPage: _launch.page,
+            initialHome: _launch.home,
+            initialTab: _launch.tab,
             bare: _launch.bare,
             background: GalleryBackground.fromQuery(_launch.background),
             onBackgroundChanged: (mode) {
               setState(() {
                 _launch = GalleryLaunch(
                   page: _launch.page,
+                  home: _launch.home,
+                  tab: _launch.tab,
                   theme: _launch.theme,
                   chrome: _launch.chrome,
                   background: mode.query,

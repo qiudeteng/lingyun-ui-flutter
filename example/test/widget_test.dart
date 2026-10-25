@@ -875,6 +875,12 @@ void main() {
       '浮层',
       '导航壳',
     ]);
+    expect(galleryGroups.map((group) => group.homeKey).toList(), [
+      'foundation',
+      'controls',
+      'overlays',
+      'chrome',
+    ]);
     for (final group in galleryGroups) {
       expect(group.sections.length, greaterThanOrEqualTo(2));
       expect(group.workbenchTitle, '${group.label}工作台');
@@ -898,6 +904,11 @@ void main() {
     expect(resolveGallerySelection('slider')?.entry.id, 'sliders');
     expect(resolveGallerySelection('stepper')?.entry.id, 'steppers');
     expect(resolveGallerySelection('pages')?.entry.id, 'segmented');
+    expect(resolveGallerySelection('controls')?.entry.id, 'knob');
+    expect(resolveGalleryWorkbench('controls')?.id, 'controls');
+    expect(resolveGalleryWorkbench('foundation')?.label, '基础');
+    expect(resolveGalleryWorkbench('chrome')?.label, '导航壳');
+    expect(resolveGalleryWorkbench('tabs'), isNull);
   });
 
   test('launch reads page, theme, chrome, and bg', () {
@@ -911,6 +922,93 @@ void main() {
     expect(launch.bare, isTrue);
     expect(launch.themeMode, ThemeMode.dark);
     expect(launch.background, 'meadow');
+
+    final home = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?home=controls'),
+    );
+    expect(home.page, isNull);
+    expect(home.workbench?.id, 'controls');
+
+    final tab = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?tab=chrome'),
+    );
+    expect(tab.workbench?.homeKey, 'chrome');
+
+    final tabWins = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?home=foundation&tab=overlays'),
+    );
+    expect(tabWins.workbench?.id, 'overlays');
+
+    final pageWins = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?page=menus&home=foundation'),
+    );
+    expect(pageWins.page, 'menus');
+    expect(resolveGallerySelection(pageWins.page)?.entry.id, 'menus');
+
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?home=nope'))
+          .workbench,
+      isNull,
+    );
+  });
+
+  testWidgets('home and tab queries open that workbench', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(home: 'overlays')),
+    );
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '浮层工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-alerts')), findsOneWidget);
+    expect(find.byKey(const Key('alert-title')), findsNothing);
+    final tabs = tester.widget<GlassTabBar>(
+      find.byKey(const Key('lingyun-page-tab-bar')),
+    );
+    expect(tabs.currentIndex, 2);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(tab: 'chrome')),
+    );
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '导航壳工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-tabs')), findsOneWidget);
+    expect(find.byKey(const Key('tab-bar-title')), findsNothing);
+    expect(
+      tester
+          .widget<GlassTabBar>(find.byKey(const Key('lingyun-page-tab-bar')))
+          .items
+          .map((item) => item.label),
+      isNot(contains('标签栏')),
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'glass', home: 'controls'),
+      ),
+    );
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '基础工作台',
+    );
   });
 
   testWidgets('deep link opens the demo and back returns to its workbench', (

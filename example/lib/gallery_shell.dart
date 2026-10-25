@@ -21,8 +21,11 @@ import 'wallpaper.dart';
 /// rail. This shell does not: the locked IA is tabs, then the workbench,
 /// then the demo. The rail stays inside the layout demo and the 侧栏 page.
 ///
-/// A known [initialPage] opens level 3 directly. Null or an unknown id
-/// opens the 基础 workbench. [bare] hides the tabs, the back bar, and the
+/// A known [initialPage] opens level 3 directly and wins over
+/// [initialHome] / [initialTab]. Otherwise a known `home` or `tab`
+/// (`foundation`, `controls`, `overlays`, `chrome`) opens that workbench.
+/// [tab] wins when both name a workbench. Missing or unknown values open
+/// the 基础 workbench. [bare] hides the tabs, the back bar, and the
 /// background chip (`chrome=0`).
 class GalleryShell extends StatefulWidget {
   const GalleryShell({
@@ -31,10 +34,14 @@ class GalleryShell extends StatefulWidget {
     required this.background,
     required this.onBackgroundChanged,
     this.initialPage,
+    this.initialHome,
+    this.initialTab,
     this.bare = false,
   });
 
   final String? initialPage;
+  final String? initialHome;
+  final String? initialTab;
   final bool bare;
   final GalleryBackground background;
   final ValueChanged<GalleryBackground> onBackgroundChanged;
@@ -53,15 +60,20 @@ class _GalleryShellState extends State<GalleryShell> {
   void initState() {
     super.initState();
     final selection = resolveGallerySelection(widget.initialPage);
-    if (selection == null) {
-      _groupIndex = 0;
-      _pushedId = null;
-    } else {
+    if (selection != null) {
       _groupIndex = galleryGroups.indexWhere(
         (group) => group.id == selection.group.id,
       );
       _pushedId = selection.entry.id;
+      return;
     }
+    final workbench =
+        resolveGalleryWorkbench(widget.initialTab) ??
+        resolveGalleryWorkbench(widget.initialHome);
+    _groupIndex = workbench == null
+        ? 0
+        : galleryGroups.indexWhere((group) => group.id == workbench.id);
+    _pushedId = null;
   }
 
   GalleryGroup get _group => galleryGroups[_groupIndex];

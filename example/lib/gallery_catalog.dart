@@ -50,6 +50,7 @@ class GalleryGroup {
   const GalleryGroup({
     required this.id,
     required this.label,
+    required this.homeKey,
     required this.icon,
     required this.selectedIcon,
     required this.sections,
@@ -57,6 +58,13 @@ class GalleryGroup {
 
   final String id;
   final String label;
+
+  /// `?home=` / `?tab=` value that opens this workbench (level 2).
+  ///
+  /// Distinct from leaf `?page=` ids. `controls` is both this workbench
+  /// and the 旋钮与轨道 leaf; the parameter name decides which.
+  final String homeKey;
+
   final IconData icon;
   final IconData selectedIcon;
   final List<GallerySection> sections;
@@ -87,6 +95,7 @@ const List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     id: 'basics',
     label: '基础',
+    homeKey: 'foundation',
     icon: Icons.grid_view_outlined,
     selectedIcon: Icons.grid_view,
     sections: [
@@ -162,6 +171,7 @@ const List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     id: 'controls',
     label: '控件',
+    homeKey: 'controls',
     icon: Icons.tune_outlined,
     selectedIcon: Icons.tune,
     sections: [
@@ -250,6 +260,7 @@ const List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     id: 'overlays',
     label: '浮层',
+    homeKey: 'overlays',
     icon: Icons.flip_to_front_outlined,
     selectedIcon: Icons.flip_to_front,
     sections: [
@@ -305,6 +316,7 @@ const List<GalleryGroup> galleryGroups = [
   GalleryGroup(
     id: 'shell',
     label: '导航壳',
+    homeKey: 'chrome',
     icon: Icons.view_quilt_outlined,
     selectedIcon: Icons.view_quilt,
     sections: [
@@ -358,6 +370,16 @@ GallerySelection? resolveGallerySelection(String? page) {
   return null;
 }
 
+/// Workbench named by `?home=` or `?tab=`, or null when [key] is missing
+/// or not one of foundation / controls / overlays / chrome.
+GalleryGroup? resolveGalleryWorkbench(String? key) {
+  if (key == null || key.isEmpty) return null;
+  for (final group in galleryGroups) {
+    if (group.homeKey == key) return group;
+  }
+  return null;
+}
+
 /// Launch query and `GALLERY_*` environment values.
 ///
 /// A query parameter wins over the matching environment value.
@@ -365,6 +387,8 @@ GallerySelection? resolveGallerySelection(String? page) {
 class GalleryLaunch {
   const GalleryLaunch({
     this.page,
+    this.home,
+    this.tab,
     this.theme,
     this.chrome,
     this.background,
@@ -372,10 +396,21 @@ class GalleryLaunch {
   });
 
   final String? page;
+
+  /// `?home=foundation|controls|overlays|chrome`. Opens that workbench.
+  final String? home;
+
+  /// Same values as [home]. A known [tab] wins over [home].
+  final String? tab;
+
   final String? theme;
   final String? chrome;
   final String? background;
   final String? panel;
+
+  /// Level-2 target. A known [page] is a leaf and is not applied here.
+  GalleryGroup? get workbench =>
+      resolveGalleryWorkbench(tab) ?? resolveGalleryWorkbench(home);
 
   bool get bare => chrome == '0';
 
@@ -397,6 +432,8 @@ class GalleryLaunch {
     final page = _first(query['page'], envPage);
     return GalleryLaunch(
       page: page,
+      home: query['home'],
+      tab: query['tab'],
       theme: _first(query['theme'], envTheme),
       chrome: _first(query['chrome'], envChrome),
       background: _first(query['bg'], envBg),

@@ -9,8 +9,11 @@ card labeled with the workbench name; the card holds a list of demos.
 A row pushes the demo; **返回** goes back to the workbench. These tabs are
 not the **标签栏** component demo (`?page=tabs`).
 
-No `?page=` opens the 基础 workbench. A known `?page=` / `GALLERY_PAGE`
-opens that demo directly. `theme`, `chrome=0`, and `bg` are unchanged.
+No `?page=` opens the 基础 workbench. `?home=` or `?tab=`
+(`foundation`, `controls`, `overlays`, `chrome`) opens that workbench
+without a demo; a known `tab` wins over `home`. A known `?page=` /
+`GALLERY_PAGE` still opens that demo and wins over `home` / `tab`.
+`theme`, `chrome=0`, and `bg` are unchanged.
 
 Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
 (Clear / Regular S·M·L / Dock / Widget Glass swatches), **Buttons**
