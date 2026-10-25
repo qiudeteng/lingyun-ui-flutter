@@ -164,7 +164,7 @@ void main() {
       );
     });
 
-    testWidgets('selection lens is a capsule, not a thin indicator bar', (
+    testWidgets('selection lens is a nested capsule, not a second platter', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -174,12 +174,191 @@ void main() {
       );
       expect(find.byType(NavigationBar), findsNothing);
       expect(find.byType(BottomNavigationBar), findsNothing);
-      final lens = tester.getSize(
-        find.byKey(const Key('glass-tab-selection-lens')),
-      );
+      expect(find.byType(AnimatedPositioned), findsNothing);
+      // One Dock platter. The lens is a light layer, not another blur.
+      expect(find.byType(GlassSurface), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      const lensKey = Key('glass-tab-selection-lens');
+      final lens = tester.getSize(find.byKey(lensKey));
       expect(lens.height, greaterThan(24));
       expect(lens.height, lessThan(54));
       expect(lens.width, greaterThan(24));
+      expect(
+        find.descendant(
+          of: find.byKey(lensKey),
+          matching: find.byType(CustomPaint),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.getCenter(find.byKey(lensKey)).dx,
+        closeTo(tester.getCenter(find.text('Home')).dx, 4),
+      );
+      expect(
+        tester
+            .widget<Opacity>(find.byKey(const Key('glass-tab-lens-glow')))
+            .opacity,
+        0,
+      );
+    });
+
+    testWidgets('drag follows the finger and selects on release', (
+      tester,
+    ) async {
+      var index = 0;
+      var calls = 0;
+      await tester.pumpWidget(
+        harness(
+          bar: GlassTabBar(
+            items: items,
+            currentIndex: index,
+            onChanged: (i) {
+              calls += 1;
+              index = i;
+            },
+          ),
+        ),
+      );
+      const lensKey = Key('glass-tab-selection-lens');
+      final start = tester.getCenter(find.byKey(lensKey)).dx;
+      final home = tester.getCenter(find.text('Home'));
+      final library = tester.getCenter(find.text('Library'));
+      final gesture = await tester.startGesture(home);
+      await gesture.moveBy(library - home);
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(index, 0);
+      expect(calls, 0);
+      expect(tester.getCenter(find.byKey(lensKey)).dx, greaterThan(start + 8));
+      await gesture.up();
+      await tester.pump();
+      expect(calls, 1);
+      expect(index, 2);
+    });
+
+    testWidgets('release on a disabled item does not select it', (
+      tester,
+    ) async {
+      var index = 0;
+      await tester.pumpWidget(
+        harness(
+          bar: GlassTabBar(
+            items: items,
+            currentIndex: index,
+            onChanged: (i) => index = i,
+          ),
+        ),
+      );
+      final home = tester.getCenter(find.text('Home'));
+      final locked = tester.getCenter(find.text('Locked'));
+      final gesture = await tester.startGesture(home);
+      await gesture.moveBy(locked - home);
+      await gesture.up();
+      await tester.pump();
+      expect(index, 0);
+    });
+
+    testWidgets('press lifts the glyph and lights the lens', (tester) async {
+      var index = 0;
+      var calls = 0;
+      await tester.pumpWidget(
+        harness(
+          bar: GlassTabBar(
+            items: items,
+            currentIndex: index,
+            onChanged: (i) {
+              calls += 1;
+              index = i;
+            },
+          ),
+        ),
+      );
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Home')),
+      );
+      await tester.pump(const Duration(milliseconds: 90));
+      final scale = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byKey(const Key('glass-tab-item-0')),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(scale.scale, greaterThan(1.12));
+      expect(scale.scale, lessThan(1.16));
+      expect(
+        tester
+            .widget<Opacity>(find.byKey(const Key('glass-tab-lens-glow')))
+            .opacity,
+        1,
+      );
+      final transform = tester.widget<Transform>(
+        find.byKey(const Key('glass-tab-lens-transform')),
+      );
+      expect(transform.transform.storage[0], greaterThan(1.03));
+      await gesture.up();
+      await tester.pump();
+      // Reselect still notifies so a shell can pop back to its workbench.
+      expect(calls, 1);
+      expect(index, 0);
+    });
+
+    testWidgets('lens travels across a far selection, then settles', (
+      tester,
+    ) async {
+      const lensKey = Key('glass-tab-selection-lens');
+      Future<void> show(int index) {
+        return tester.pumpWidget(
+          harness(
+            bar: GlassTabBar(
+              key: const Key('travel-bar'),
+              items: items,
+              currentIndex: index,
+              onChanged: (_) {},
+            ),
+          ),
+        );
+      }
+
+      await show(0);
+      final start = tester.getCenter(find.byKey(lensKey)).dx;
+      await show(4);
+      await tester.pump(const Duration(milliseconds: 80));
+      final mid = tester.getCenter(find.byKey(lensKey)).dx;
+      final profile = tester.getCenter(find.text('Profile')).dx;
+      expect(mid, greaterThan(start + 0.5));
+      expect((profile - mid).abs(), greaterThan(40));
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 20),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 3),
+      );
+      expect(tester.getCenter(find.byKey(lensKey)).dx, closeTo(profile, 8));
+    });
+
+    testWidgets('reduce motion snaps the lens without a flight', (
+      tester,
+    ) async {
+      const lensKey = Key('glass-tab-selection-lens');
+      Future<void> show(int index) {
+        return tester.pumpWidget(
+          harness(
+            disableAnimations: true,
+            bar: GlassTabBar(
+              key: const Key('reduce-bar'),
+              items: items,
+              currentIndex: index,
+              onChanged: (_) {},
+            ),
+          ),
+        );
+      }
+
+      await show(0);
+      await show(4);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(
+        tester.getCenter(find.byKey(lensKey)).dx,
+        closeTo(tester.getCenter(find.text('Profile')).dx, 8),
+      );
     });
 
     testWidgets('floating pill grows from 3 items to the 5-item cap', (
