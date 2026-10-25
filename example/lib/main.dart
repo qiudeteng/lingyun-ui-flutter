@@ -13,9 +13,11 @@ import 'pages/materials_page.dart';
 import 'pages/native_page.dart';
 import 'pages/progress_page.dart';
 import 'pages/sheets_page.dart';
+import 'pages/sidebars_page.dart';
 import 'pages/tab_bar_page.dart';
 import 'pages/text_fields_page.dart';
 import 'pages/themes_page.dart';
+import 'pages/toolbars_page.dart';
 import 'pages/wave1c_page.dart';
 import 'wallpaper.dart';
 
@@ -83,6 +85,8 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       'pages' ||
       'page-controls' ||
       'pagecontrol' => 15,
+      'sidebars' || 'sidebar' => 16,
+      'toolbars' || 'toolbar' => 17,
       _ => 0,
     };
     final panel = page == 'text' ? 'text' : query['panel'];
@@ -266,6 +270,16 @@ class DemoHome extends StatelessWidget {
       selectedIcon: Icon(Icons.view_week),
       label: '分段',
     ),
+    NavigationDestination(
+      icon: Icon(Icons.view_sidebar_outlined),
+      selectedIcon: Icon(Icons.view_sidebar),
+      label: '侧栏',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.view_agenda_outlined),
+      selectedIcon: Icon(Icons.view_agenda),
+      label: '工具栏',
+    ),
   ];
 
   @override
@@ -319,6 +333,18 @@ class DemoHome extends StatelessWidget {
         onThemeModeChanged: onThemeModeChanged,
         initialPanel: wave1cPanel,
       ),
+      SidebarsPage(
+        brightness: Theme.of(context).brightness,
+        onBrightnessChanged: (brightness) => onThemeModeChanged(
+          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        ),
+      ),
+      ToolbarsPage(
+        brightness: Theme.of(context).brightness,
+        onBrightnessChanged: (brightness) => onThemeModeChanged(
+          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        ),
+      ),
     ];
 
     return LingyunTheme(
@@ -362,7 +388,7 @@ class DemoHome extends StatelessWidget {
                     selectedIndex: index,
                     onDestinationSelected: onIndexChanged,
                     labelType: NavigationRailLabelType.all,
-                    // Sixteen labeled destinations do not fit a short window.
+                    // Eighteen labeled destinations do not fit a short window.
                     scrollable: true,
                     backgroundColor: Colors.white.withValues(alpha: 0.18),
                     destinations: [

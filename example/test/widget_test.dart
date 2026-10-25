@@ -647,4 +647,93 @@ void main() {
     );
     expect(find.text('Page Control'), findsNothing);
   });
+
+  testWidgets('sidebar and toolbar pages are Chinese and move', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+
+    final rail = find.descendant(
+      of: find.byKey(const Key('gallery-rail')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(find.text('侧栏'), 120, scrollable: rail);
+    await tester.tap(find.text('侧栏'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sidebar-title')), findsOneWidget);
+    expect(find.byKey(const Key('sidebar-thick-note')), findsOneWidget);
+    expect(find.textContaining('Materials Thick'), findsWidgets);
+    expect(find.byKey(const Key('sidebar-stage-light')), findsOneWidget);
+    expect(find.byKey(const Key('sidebar-stage-dark')), findsOneWidget);
+    expect(find.text('浅色'), findsWidgets);
+    expect(find.text('深色'), findsWidgets);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('sidebar-live')),
+      240,
+      scrollable: galleryContentScrollable(),
+    );
+    await tester.tap(find.byKey(const Key('sidebar-live-inbox')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sidebar-live-selection')), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    final mid = tester
+        .getSize(find.byKey(const Key('lingyun-sidebar-column')))
+        .width;
+    expect(mid, greaterThan(0));
+    expect(mid, lessThan(LingyunSidebarMetrics.preferredWidth));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byKey(const Key('lingyun-sidebar-column'))).width,
+      0,
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('sidebar-rail-toggle')),
+      200,
+      scrollable: galleryContentScrollable(),
+    );
+    final bar = tester.widget<GlassTabBar>(
+      find.byKey(const Key('sidebar-rail-bar')),
+    );
+    expect(bar.style, GlassTabBarStyle.floatingPill);
+    expect(bar.glassStyle, LiquidGlassStyle.dock);
+    await tester.tap(find.byKey(const Key('sidebar-rail-toggle')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<GlassTabBar>(find.byKey(const Key('sidebar-rail-bar')))
+          .style,
+      GlassTabBarStyle.sidebar,
+    );
+    expect(
+      tester
+          .widget<GlassTabBar>(find.byKey(const Key('sidebar-rail-bar')))
+          .glassStyle,
+      LiquidGlassStyle.dock,
+    );
+
+    await tester.scrollUntilVisible(find.text('工具栏'), 120, scrollable: rail);
+    await tester.tap(find.text('工具栏'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('toolbar-title')), findsOneWidget);
+    expect(find.byKey(const Key('toolbar-glass-note')), findsOneWidget);
+    expect(find.textContaining('Regular Medium'), findsOneWidget);
+    expect(find.byKey(const Key('toolbar-stage-light')), findsOneWidget);
+    expect(find.byKey(const Key('toolbar-stage-dark')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('toolbar-live-share')),
+      200,
+      scrollable: galleryContentScrollable(),
+    );
+    expect(find.text('已分享 0 次'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('toolbar-live-share')));
+    await tester.pumpAndSettle();
+    expect(find.text('已分享 1 次'), findsOneWidget);
+  });
 }

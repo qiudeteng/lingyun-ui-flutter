@@ -20,6 +20,10 @@ detents. 浅色 / 深色 is on the page. Demo copy is Simplified Chinese.
 Run `flutter run` from this directory, then open that query (or the 工作表 rail).
 **操作表** (`?page=actions`, also `action-sheets`): system `cupertino_ui` action
 sheet, not Liquid Glass and not the Thick sheet. Demo copy is Simplified Chinese.
+**侧栏** (`?page=sidebars`): formal Materials Thick sidebar, not the Layout
+page's Dock rail. 浅色 / 深色 specimens. Copy is Simplified Chinese.
+**工具栏** (`?page=toolbars`): floating Liquid Glass groups. Not Dock and
+not the native vertical toolbar. Copy is Simplified Chinese.
 **主题** (`?page=themes` or the nav item): color swatches by default, Large
 text specimens with `?page=text` or the 文本 segment. Light / dark is
 浅色 / 深色. Titles, buttons, group names, and samples are Simplified Chinese.

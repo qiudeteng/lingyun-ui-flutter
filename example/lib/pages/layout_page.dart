@@ -121,7 +121,9 @@ class _LayoutPageState extends State<LayoutPage> {
               Text(
                 'LingyunPage 把 LingyunPageSpec 交给 iOS 宿主；'
                 '不在 iOS 上时，按同一张容器表绘制。紧凑是标签加栈。'
-                '常规和宽屏是侧栏加分栏。ArrangementView 只在原生侧'
+                '常规和宽屏是侧栏加分栏。这条 rail 是 '
+                'GlassTabBarStyle.sidebar（液态玻璃 Dock），不是 '
+                'Materials Thick 正式侧栏。ArrangementView 只在原生侧'
                 '（LY_IOS_27_1_SDK=1）。',
                 style: textTheme.bodyMedium,
               ),

@@ -137,7 +137,8 @@ class LingyunPage extends StatelessWidget {
 
   /// Flutter glass-rail width, excluding the leading safe area.
   ///
-  /// Not the system sidebar width. **待核验 vs design**.
+  /// Not the system sidebar width, and not the formal Materials Thick
+  /// sidebar column. **待核验 vs design**.
   static const double flutterRailWidth = 96;
 
   @override

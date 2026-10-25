@@ -44,7 +44,7 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 - `none` + `stack` → 一列，无 tab
 - `arrangementSplit` / `arrangementOverlay` → 骨架只写一句说明（`LY_IOS_27_1_SDK=1`），不画铰链，也不套 Tab / Split
 
-底 Tab 和 rail 都是 Liquid Glass **Dock**，不是 Materials Thick。rail 内容宽 **96**（不含 leading 安全区），**待核验 vs design**。它不是 iOS 27.1 竖向系统条。
+底 Tab 和 rail 都是 Liquid Glass **Dock**，不是 Materials Thick。rail 内容宽 **96**（不含 leading 安全区），**待核验 vs design**。它不是 iOS 27.1 竖向系统条。正式侧栏是另一件：`LingyunSidebar`（Materials Thick，与工作表同一装配），不替换这条玻璃 rail。见 [SIDEBARS.md](SIDEBARS.md)。Flutter 横条工具栏见 [TOOLBARS.md](TOOLBARS.md)，不是竖向系统 Toolbar。
 
 ## 模拟中缝
 
