@@ -172,12 +172,75 @@ abstract final class LingyunAlert {
 
   /// Nominal [CupertinoDialogRoute.transitionDuration] when motion is on.
   ///
-  /// The route then runs its own spring (about 0.4s to rest), not a linear
-  /// tween of this length. Not a kit token. [showLingyunAlert] passes
-  /// [Duration.zero] instead when [reduceMotionOf] is true.
+  /// The route ignores this length and runs [springMass] / [springStiffness]
+  /// / [springDamping] instead. Not a kit token, and not a 250ms ease.
+  /// [showLingyunAlert] passes [Duration.zero] when [reduceMotionOf] is true.
   static const Duration cupertinoTransitionDuration = Duration(
     milliseconds: 250,
   );
+
+  /// Mass of the dialog spring. Critically damped with [springStiffness].
+  ///
+  /// Same description `cupertino_ui` measured from iOS `CASpringAnimation`
+  /// and installed on [CupertinoDialogRoute]. Not a kit token. Motion-on
+  /// [showLingyunAlert] leaves `transitionBuilder` null so this spring is
+  /// the one that runs. Enter and exit both use it.
+  static const double springMass = 1;
+
+  /// Stiffness of the dialog spring (`CASpringAnimation` in Xcode).
+  static const double springStiffness = 522.35;
+
+  /// Damping of the dialog spring. `2 * sqrt(springStiffness)` so the
+  /// damping ratio is 1 (critically damped).
+  static const double springDamping = 45.7099552;
+
+  /// Velocity tolerance on that spring. Position at [springRestDuration]
+  /// is about 0.999; velocity there is still about 0.02, so the route
+  /// does not wait for velocity to die.
+  static const double springVelocityTolerance = 0.03;
+
+  /// Time at which the spring position is about 0.999. The visible rest,
+  /// not [cupertinoTransitionDuration].
+  static const Duration springRestDuration = Duration(milliseconds: 404);
+
+  /// Enter scale at spring position 0. Exit does not scale.
+  static const double enterScaleBegin = 1.3;
+
+  /// Enter scale at spring position 1.
+  static const double enterScaleEnd = 1.0;
+
+  /// Idle action plate. The system dialog's fill, not a kit token.
+  ///
+  /// Light `0xCCF2F2F2`, dark `0xCC2D2D2D`.
+  static const Color actionIdleFillLight = Color(0xCCF2F2F2);
+
+  /// Dark idle action plate. See [actionIdleFillLight].
+  static const Color actionIdleFillDark = Color(0xCC2D2D2D);
+
+  /// Pressed action plate. Swapped in on the pointer-down frame.
+  ///
+  /// Light `0xFFE1E1E1`, dark `0xFF404040`. These are the dialog button
+  /// colors in `cupertino_ui` (that package's comment: eyeballed on the
+  /// iOS 13 simulator). No separate iOS 27.1 press token is published
+  /// there, so this kit does not invent a second fill.
+  static const Color actionPressedFillLight = Color(0xFFE1E1E1);
+
+  /// Dark pressed action plate. See [actionPressedFillLight].
+  static const Color actionPressedFillDark = Color(0xFF404040);
+
+  /// Idle plate for [brightness].
+  static Color actionIdleFill(Brightness brightness) {
+    return brightness == Brightness.light
+        ? actionIdleFillLight
+        : actionIdleFillDark;
+  }
+
+  /// Pressed plate for [brightness]. Immediate; not a timed fade.
+  static Color actionPressedFill(Brightness brightness) {
+    return brightness == Brightness.light
+        ? actionPressedFillLight
+        : actionPressedFillDark;
+  }
 
   /// Kit system blue for a non-destructive action.
   ///
@@ -285,10 +348,21 @@ abstract final class LingyunAlert {
 /// [showCupertinoDialog] uses). The barrier color is left unset so the route
 /// keeps [kCupertinoModalBarrierColor] (light `0x33000000`, dark `0x7A000000`).
 ///
-/// Entrance is that route's fade plus scale (1.3 → 1.0) on its spring.
+/// Entrance is that route's fade plus scale
+/// ([LingyunAlert.enterScaleBegin] → [LingyunAlert.enterScaleEnd]) on the
+/// critically damped spring ([LingyunAlert.springStiffness],
+/// [LingyunAlert.springDamping], mass [LingyunAlert.springMass]). Exit
+/// keeps the same spring on opacity and drops the scale
+/// (`AnimationStatus.reverse`). [LingyunAlert.cupertinoTransitionDuration]
+/// is only the nominal duration; the simulation ignores it and rests near
+/// [LingyunAlert.springRestDuration]. A custom `transitionBuilder` would
+/// skip this spring, so motion-on leaves it null.
+///
+/// Pressed actions use [LingyunAlert.actionPressedFill] on the frame the
+/// pointer goes down (the system button background, not a second animation).
 /// [LingyunAlert.reduceMotionOf] switches the same route to
-/// [Duration.zero] and an identity transition. This does not draw a second
-/// animation.
+/// [Duration.zero] and an identity transition. Press feedback still runs.
+/// This does not draw a second animation.
 ///
 /// Returns null when [barrierDismissible] is true and the barrier is tapped.
 ///

@@ -83,7 +83,8 @@ class _AlertsPageState extends State<AlertsPage> {
           '系统提示。不是液态玻璃，不是玻璃按钮，不是程序坞，也不是厚材质。'
           '稿面状态：单按钮、双按钮（取消在前）、破坏性、标题加信息、仅信息。'
           '确认和取消是稿面系统蓝。破坏性仍是对话框自己的红。'
-          '字由系统对话框绘制；桌面不捆绑 SF Pro。',
+          '点开是弹簧进场：从 1.3 缩到 1，同时淡入；关掉只淡出。'
+          '按住按钮，底板立刻换色。字由系统对话框绘制；桌面不捆绑 SF Pro。',
           key: const Key('alert-scope'),
           style: LingyunTextStyles.footnote(color: secondary),
         ),

@@ -45,7 +45,11 @@ final index = await showLingyunAlert(
 | `LingyunAlert.actionBlue` | 非破坏性按钮的稿面系统蓝。浅色 `#0088FF`，深色 `#0091FF`。经 `CupertinoThemeData.primaryColor` 交给 `CupertinoDialogAction` 绘制。不是 Cupertino `systemBlue`（`#007AFF` / `#0A84FF`） |
 | `LingyunAlert.arrangedIndices` | 两个按钮时取消在前（leading，LTR 为左）；三个及以上时取消在最后 |
 | `LingyunAlert.desktopTypeStyle` | 非 Apple，且周围已经有真实字族时，标题、信息和按钮改用该字族，并在后面加上常见中文界面黑体。Apple 返回 null，仍是 `CupertinoSystemText` |
-| `LingyunAlert.reduceMotionOf` | `MediaQuery.disableAnimations` 或 `LingyunAdaptivity.reduceMotion` 时，同一条路由时长为 0，过渡改为直接显示 |
+| `LingyunAlert.reduceMotionOf` | `MediaQuery.disableAnimations` 或 `LingyunAdaptivity.reduceMotion` 时，同一条路由时长为 0，过渡改为直接显示。按压换色仍在 |
+| `LingyunAlert.springMass` / `springStiffness` / `springDamping` | 对话框弹簧。质量 1，刚度 522.35，阻尼 45.7099552（`2 * sqrt(刚度)`，临界阻尼）。速度容差 0.03。约 404ms 位置到 0.999 |
+| `LingyunAlert.cupertinoTransitionDuration` | 名义时长 250ms。弹簧模拟忽略这段时长，不按 250ms 缓动 |
+| `LingyunAlert.enterScaleBegin` / `enterScaleEnd` | 进场缩放 1.3 → 1.0，跟弹簧位置走。出场不缩放 |
+| `LingyunAlert.actionPressedFill` / `actionIdleFill` | 按钮底板。按下当帧换成浅色 `0xFFE1E1E1` / 深色 `0xFF404040`。静止是 `0xCCF2F2F2` / `0xCC2D2D2D` |
 
 破坏性红色仍是 Cupertino `systemRed`（浅色 `#FF3B30`，深色 `#FF453A`），不是稿面系统红 `#FF383C` / `#FF4245`。`CupertinoDialogAction` 在 `isDestructiveAction` 时写死 `systemRed`，不读 `primaryColor`。不离开系统按钮去改这颗红。
 
@@ -63,19 +67,54 @@ final index = await showLingyunAlert(
 
 画廊页标题和说明用 `LingyunTextStyles`（Title 1 强调、Footnote），`fontFamily` 留空，跟别的正式页一样走环境字体。不再用手写的 28 / w800。
 
+## 动效
+
+进出场和按压都是 `CupertinoDialogRoute` / `CupertinoAlertDialog` 自己的，不是第二套曲线，也不是 Liquid Glass 的运动。动效开启时 `transitionBuilder` 保持 null，路由才会跑这条弹簧；传入自定义 builder 会把弹簧跳过。
+
+弹簧（`cupertino_ui` 对照 iOS `CASpringAnimation` 测得，临界阻尼）：
+
+| 项 | 值 |
+| --- | --- |
+| 质量 | 1 |
+| 刚度 | 522.35 |
+| 阻尼 | 45.7099552（`2 * sqrt(522.35)`） |
+| 速度容差 | 0.03。`snapToEnd` |
+| 名义时长 | 250ms（`transitionDuration`）。模拟忽略它 |
+| 静止 | 约 404ms，位置约 0.999。此时速度仍约 0.02，不等速度归零 |
+
+进场：透明度 = 弹簧位置。缩放 = 弹簧从 1.3 映到 1.0。出场：同一条弹簧只驱动透明度，从进场停住的位置（约 0.997）回到 0，初速为 0；`AnimationStatus.reverse` 时去掉缩放。头 50ms 会走到大约 0.68，不是停在 1 附近。
+
+按压：指针按下的下一帧，按钮底板从静止色换成按下色，不靠点击超时。浅色静止 `0xCCF2F2F2`、按下 `0xFFE1E1E1`；深色静止 `0xCC2D2D2D`、按下 `0xFF404040`。`cupertino_ui` 对按下色的注释是 iOS 13 模拟器目测。公开包里没有另一组 iOS 27.1 按压色，本库不另造。这不是稿面系统蓝。iOS / Android 上滑入按钮会有 `selectionClick`；指针刚按下、以及桌面平台，没有这下触觉。
+
+减少动态效果时不另写动画。`LingyunAlert.reduceMotionOf` 为真（`MediaQuery.disableAnimations`，或图库里的 `LingyunAdaptivity.reduceMotion`）时，同一条 `CupertinoDialogRoute` 的时长改为 `Duration.zero`，`transitionBuilder` 直接返回子节点。按压换色仍在。
+
 ## 动效自测
 
-进入动画是 `CupertinoDialogRoute` 自己的：淡入，同时从 1.3 缩到 1.0，弹簧（`cupertino_ui` 里对照 iOS 的 `CASpringAnimation`，大约 0.4 秒落到静止）。`transitionDuration` 的名义值是 250ms，弹簧不按这条直线走。退出只淡出。这些都不是 kit token。
+自测在 `test/lingyun_alert_test.dart`，Flutter stable 3.47.8，Linux。采样和 `cupertino_ui` 的对话框测试同一组时间点（误差 0.001），并和上面的 `SpringSimulation` 对上。
 
-减少动态效果时不另写动画。`LingyunAlert.reduceMotionOf` 为真（`MediaQuery.disableAnimations`，或图库里的 `LingyunAdaptivity.reduceMotion`）时，同一条 `CupertinoDialogRoute` 的时长改为 `Duration.zero`，`transitionBuilder` 直接返回子节点。
+进场，点开后先一帧，再每 50ms。缩放锁到 300ms，透明度再多一帧到 350ms（和 `cupertino_ui` 的两组测试对齐）：
 
-自测在 `test/lingyun_alert_test.dart`，Flutter stable 3.47.8，Linux：
+| 时刻 | 缩放 | 透明度 |
+| --- | --- | --- |
+| 0ms | 1.3 | 弹簧起点 |
+| 50ms | 1.205 | 0.316 |
+| 100ms | 1.100 | 0.665 |
+| 150ms | 1.043 | 0.856 |
+| 200ms | 1.017 | 0.942 |
+| 250ms | 1.006 | 0.977 |
+| 300ms | 1.002 | 0.991 |
+| 350ms | 缩放采样停在上一行 | 0.997 |
 
-- 普通路由：点开后约 16ms，缩放大于 1，淡入透明度小于 1。`pumpAndSettle` 之后缩放和透明度都到 1，按钮可点。
+出场从这一帧点「删除」开始。下一帧时钟不前进：缩放已去掉，透明度仍是约 0.997。再每 50ms（弹簧从约 0.997 回到 0，初速 0）：0.681、0.333、0.143、0.057、0.022。全程没有 `ScaleTransition`。
+
+按压：`pumpAndSettle` 后底板是静止色。`startGesture` 再 `pump` 一帧（不是 `pumpAndSettle`）变成按下色，再过 50ms 仍是按下色。浅色和深色各测一次。`disableAnimations` 时没有缩放，按下仍换成 `0xFFE1E1E1`。
+
+另外两条只查过渡是否关掉：
+
 - `disableAnimations: true`：第一帧对话框已在，祖先里没有 `ScaleTransition`。
 - 只开 `LingyunAdaptivity.reduceMotion`（不改 `MediaQuery`）：同样没有缩放过渡。
 
-遮罩仍是系统 `kCupertinoModalBarrierColor`。减少动态效果不改遮罩颜色。
+遮罩仍是系统 `kCupertinoModalBarrierColor`。减少动态效果不改遮罩颜色。截图是静止画面，不代替上面的采样。
 
 ## 图库与截图
 

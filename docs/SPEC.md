@@ -232,7 +232,7 @@ Dart 契约是 `LingyunPageSpec` / `LingyunNativePage`（[IOS-LYPAGE.md](IOS-LYP
 
 实现是 **iOS 包系统**：`showLingyunAlert` → `package:cupertino_ui` 的 `CupertinoDialogRoute` + `CupertinoAlertDialog`。不自绘一套假 Liquid Glass Alert，不套 GlassButton / Dock / Materials Thick。新代码不 import `package:flutter/cupertino.dart` 或 `package:flutter/material.dart`，也不使用 `CupertinoUiCompatibilityBridge`。
 
-非破坏性按钮的颜色是稿面系统蓝（浅 `#0088FF` / 深 `#0091FF`），经 `primaryColor` 交给系统按钮绘制。破坏性仍是 Cupertino `systemRed`。字族在 Apple 上保持 `CupertinoSystemText`（不捆绑 SF Pro）。非 Apple 且环境已有真实字族时改用该字族。减少动态效果把同一条路由收成零时长。细节见 [`docs/ALERTS.md`](ALERTS.md)。
+非破坏性按钮的颜色是稿面系统蓝（浅 `#0088FF` / 深 `#0091FF`），经 `primaryColor` 交给系统按钮绘制。破坏性仍是 Cupertino `systemRed`。字族在 Apple 上保持 `CupertinoSystemText`（不捆绑 SF Pro）。非 Apple 且环境已有真实字族时改用该字族。进出场是系统对话框弹簧（质量 1，刚度 522.35，阻尼 45.7099552，名义 250ms，静止约 404ms）：进场缩放 1.3→1 并淡入，出场只淡出。按压当帧换底板（浅 `0xFFE1E1E1` / 深 `0xFF404040`）。减少动态效果把同一条路由收成零时长，按压仍在。细节见 [`docs/ALERTS.md`](ALERTS.md)。
 
 | 稿面状态 | API |
 | --- | --- |
