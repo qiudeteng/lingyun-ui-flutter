@@ -587,11 +587,14 @@ class _BezelMetrics {
     outerRadius: _DuoCorners.round + _DuoCorners.stroke,
   );
 
-  /// Hinge on the right, buttons in the left pocket.
+  /// Hinge on the bottom, buttons in the top pocket.
+  ///
+  /// Landscape Right turns the portrait cover counter-clockwise, so the
+  /// right-edge keys land on the top edge. The left edge stays a plain stroke.
   static const _BezelMetrics _duoOuterLandscape = _BezelMetrics(
     outset: EdgeInsets.fromLTRB(
-      _DuoCorners.stroke + _DuoCorners.buttonReach,
       _DuoCorners.stroke,
+      _DuoCorners.stroke + _DuoCorners.buttonReach,
       _DuoCorners.stroke,
       _DuoCorners.stroke,
     ),
@@ -653,9 +656,11 @@ BorderRadius _screenRadius(
 /// Per-corner radii for the Duo device-page stroke and the screen clip.
 ///
 /// Outer portrait is the cover: hinge (sharp) on the left, 59 on the right.
-/// Outer landscape is that shell turned so the hinge is on the right and
-/// the camera moves to the top-left — not a uniform radius on a swapped
-/// rect. Inner screens are 59 on every corner.
+/// Outer landscape is that shell after Landscape Right (counter-clockwise):
+/// the left hinge moves to the bottom, so both bottom corners stay sharp
+/// and both top corners stay 59. The camera moves to the top-left. This is
+/// not a uniform radius, and not a width/height swap that leaves the sharp
+/// corners on the right. Inner screens are 59 on every corner.
 class _DuoCorners {
   const _DuoCorners({
     required this.topLeft,
@@ -688,11 +693,13 @@ class _DuoCorners {
     bottomLeft: hinge,
   );
 
+  /// Portrait TL/BL sharp and TR/BR round, rotated CCW one quarter.
+  /// Top stays round (TL+TR), bottom is the hinge (BL+BR).
   static const _outerLandscape = _DuoCorners(
     topLeft: round,
-    topRight: hinge,
+    topRight: round,
     bottomRight: hinge,
-    bottomLeft: round,
+    bottomLeft: hinge,
   );
 
   static _DuoCorners outer({required bool landscape}) =>
@@ -843,7 +850,7 @@ class _DeviceBezelPainter extends CustomPainter {
     );
     _paintDuoMetalLip(canvas, outer, inner);
     if (outerCover) {
-      _paintDuoSideButtons(canvas, screen, onLeft: landscape);
+      _paintDuoSideButtons(canvas, screen, onTop: landscape);
     }
   }
 
@@ -872,34 +879,39 @@ class _DeviceBezelPainter extends CustomPainter {
     );
   }
 
-  /// Outer-cover side keys. Portrait: right edge. Landscape: left edge,
-  /// the side opposite the hinge. They sit in the button pocket, proud
-  /// of the stroke, and do not enter the screen.
-  void _paintDuoSideButtons(
-    Canvas canvas,
-    Rect screen, {
-    required bool onLeft,
-  }) {
+  /// Outer-cover side keys. Portrait: right edge. Landscape: top edge,
+  /// the side opposite the bottom hinge. They sit in the button pocket,
+  /// proud of the stroke, and do not enter the screen.
+  ///
+  /// The two keys are the same physical buttons. Landscape Right lays the
+  /// portrait right edge along the top, so the offsets run left to right
+  /// and the long axis is horizontal.
+  void _paintDuoSideButtons(Canvas canvas, Rect screen, {required bool onTop}) {
     final stroke = _DuoCorners.stroke;
-    final width = _DuoCorners.buttonReach - 0.4;
-    final left = onLeft
-        ? screen.left - stroke - width + 0.5
-        : screen.right + stroke - 0.5;
+    final thickness = _DuoCorners.buttonReach - 0.4;
     final paint = Paint()..color = _duoChrome(brightness);
-    final keys = onLeft
-        ? const <(double, double)>[(84, 22), (116, 36)]
-        : const <(double, double)>[(118, 26), (156, 46)];
+    const keys = <(double, double)>[(118, 26), (156, 46)];
     final lip = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.6
       ..color = brightness == Brightness.dark
           ? const Color(0xFFFFFFFF).withValues(alpha: 0.45)
           : const Color(0xFF8E8E93);
-    for (final (top, height) in keys) {
-      final button = RRect.fromRectAndRadius(
-        Rect.fromLTWH(left, screen.top + top, width, height),
-        const Radius.circular(1.1),
-      );
+    for (final (offset, length) in keys) {
+      final rect = onTop
+          ? Rect.fromLTWH(
+              screen.left + offset,
+              screen.top - stroke - thickness + 0.5,
+              length,
+              thickness,
+            )
+          : Rect.fromLTWH(
+              screen.right + stroke - 0.5,
+              screen.top + offset,
+              thickness,
+              length,
+            );
+      final button = RRect.fromRectAndRadius(rect, const Radius.circular(1.1));
       canvas.drawRRect(button, paint);
       canvas.drawRRect(button, lip);
     }
@@ -1063,8 +1075,9 @@ class _DeviceBezelPainter extends CustomPainter {
 
 /// Outer-cover camera. Not a Dynamic Island. [IgnorePointer] in the stage.
 ///
-/// Portrait keeps the dot in the top-right. Landscape moves it to the
-/// top-left with the rotated shell. The inner display does not use this
+/// The dot fills the Xcode 27.1 Closed outer occlusion, 37×37 pt: portrait
+/// at (399.67, 29.33), which is the top-right, and Landscape Right at
+/// (29.33, 29.33), the top-left. The inner display does not use this
 /// painter: the front camera stays hidden until it is active.
 class _DuoDotPainter extends CustomPainter {
   const _DuoDotPainter({required this.landscape, required this.color});
@@ -1072,15 +1085,19 @@ class _DuoDotPainter extends CustomPainter {
   final bool landscape;
   final Color color;
 
-  static const double _radius = 4.5;
-  static const double _insetX = 26;
-  static const double _insetY = 20;
+  /// Closed outer occlusion box. The visible dot is this circle.
+  static const double _diameter = 37;
+  static const double _radius = _diameter / 2;
+
+  /// Inset of the box from the near screen edges (top, and right or left).
+  static const double _boxOrigin = 29.33;
+  static const double _centerInset = _boxOrigin + _radius;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = landscape
-        ? const Offset(_insetX, _insetY)
-        : Offset(size.width - _insetX, _insetY);
+        ? const Offset(_centerInset, _centerInset)
+        : Offset(size.width - _centerInset, _centerInset);
     canvas.drawCircle(center, _radius, Paint()..color = color);
   }
 
