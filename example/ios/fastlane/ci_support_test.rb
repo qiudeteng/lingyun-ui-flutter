@@ -137,11 +137,20 @@ check(failures, "ios directory") do
     raise "fastlane cwd" unless CiSupport.ios_directory("#{fastlane}/") == ios_abs
     raise ".fastlane cwd" unless CiSupport.ios_directory(dot_fastlane) == ios_abs
 
-    Dir.chdir(ios) do
-      raise "default ios cwd" unless CiSupport.ios_directory == ios_abs
+    # Dir.pwd (and therefore the default argument) resolves symlinks.
+    # macOS TMPDIR is /var/folders -> /private/var/folders, so a string compare
+    # against File.expand_path(mktmpdir) fails even though both name the project.
+    same_project = lambda do |found, label|
+      raise "#{label}: #{found}" unless File.realpath(found) == File.realpath(ios)
     end
-    Dir.chdir(fastlane) do
-      raise "default fastlane cwd" unless CiSupport.ios_directory == ios_abs
+    Dir.chdir(ios) { same_project.call(CiSupport.ios_directory, "default ios cwd") }
+    Dir.chdir(fastlane) { same_project.call(CiSupport.ios_directory, "default fastlane cwd") }
+
+    link_root = File.join(root, "via-link")
+    File.symlink(File.join(root, "example"), link_root)
+    Dir.chdir(File.join(link_root, "ios")) { same_project.call(CiSupport.ios_directory, "symlink ios cwd") }
+    Dir.chdir(File.join(link_root, "ios", "fastlane")) do
+      same_project.call(CiSupport.ios_directory, "symlink fastlane cwd")
     end
 
     expect_ios_directory_error = lambda do |start|
