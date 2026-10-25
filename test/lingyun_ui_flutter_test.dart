@@ -96,25 +96,33 @@ void main() {
       final darkDock = LiquidGlassTokens.darkDock;
       expect(lightDock.optics, LiquidGlassOptics.lens);
       expect(darkDock.optics, LiquidGlassOptics.lens);
-      expect(lightDock.tintColor.a, lessThan(0.50));
+      // Face must stay a frost you can see through. 0.36 still read as a
+      // milk plate. Bounds are gates, not kit tokens — 待核验 vs 真机/Sketch.
+      expect(lightDock.tintColor.a, lessThan(0.25));
+      expect(lightDock.tintColor.a, greaterThan(0.10));
       expect(
         lightDock.tintColor.a,
         lessThan(LiquidGlassTokens.lightRegularMedium.tintColor.a),
       );
-      expect(darkDock.tintColor.a, lessThan(0.70));
+      expect(darkDock.tintColor.a, lessThan(0.35));
+      expect(darkDock.tintColor.a, greaterThan(0.15));
       expect(
         darkDock.tintColor.a,
         lessThan(LiquidGlassTokens.darkRegularMedium.tintColor.a),
       );
+      expect(lightDock.overlayColor.a, lessThan(0.05));
+      expect(darkDock.overlayColor.a, lessThan(0.05));
       expect(
         lightDock.blurSigma,
         lessThan(LiquidGlassTokens.lightRegularMedium.blurSigma),
       );
-      expect(lightDock.blurSigma, greaterThan(8));
+      expect(lightDock.blurSigma, greaterThan(6));
+      expect(lightDock.blurSigma, lessThanOrEqualTo(10));
       expect(
         darkDock.blurSigma,
         lessThan(LiquidGlassTokens.darkRegularMedium.blurSigma),
       );
+      expect(darkDock.blurSigma, lessThanOrEqualTo(12));
       expect(lightDock.saturation, greaterThan(1));
       expect(darkDock.saturation, greaterThan(1));
       expect(lightDock.shadowColor.a, lessThan(0.20));

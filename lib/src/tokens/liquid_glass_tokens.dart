@@ -385,69 +385,69 @@ class LiquidGlassTokens {
 
   /// Liquid Glass **Dock** (light). Tab Bar chrome.
   ///
-  /// Cool veil, thinner than Regular Medium, so the platter does not read
-  /// as a milk plate. Not Materials Thick. [blurSigma], [saturation], the
-  /// tint alpha, the soft shadow, and the caustic band are implementation
+  /// See-through frost, not a milk plate. The face is a thin cool veil so
+  /// wallpaper stays visible; volume is the edge lip on
+  /// [LiquidGlassOptics.lens]. Not Materials Thick. [blurSigma],
+  /// [saturation], tint alpha, and the lip are implementation
   /// approximations — **待核验 vs 真机/Sketch**, not Design Tokens.
   ///
   /// Live backdrop displacement and a content-reactive shadow are not
-  /// sampled. The stand-in is this lighter tint, a slightly lower blur,
-  /// saturation above 1 so backdrop chroma can transmit, and
-  /// [LiquidGlassOptics.lens]. Not a second glass layer.
+  /// sampled. Not a second glass layer. Overlay alpha stays at 0 so a
+  /// second white fill cannot paint the face shut.
   ///
   /// Corner 28 is an implementation stand-in — **not** a measured token.
   /// [GlassTabBar] floating pills override it with stadium `100`.
   static const LiquidGlassTokens lightDock = LiquidGlassTokens(
-    blurSigma: 14,
-    saturation: 1.20,
-    tintColor: Color(0x5CF4F5F8),
-    overlayColor: Color(0x0CFFFFFF),
+    blurSigma: 8,
+    saturation: 1.28,
+    tintColor: Color(0x2EF7F8FA),
+    overlayColor: Color(0x00FFFFFF),
     overlayBlend: BlendMode.softLight,
-    edgeHighlightColor: Color(0xA6FFFFFF),
-    refractionColor: Color(0x99FFFFFF),
+    edgeHighlightColor: Color(0xF2FFFFFF),
+    refractionColor: Color(0xE6FFFFFF),
     refractionWidth: hairlineWidth,
-    borderColor: Color(0x2EFFFFFF),
+    borderColor: Color(0x33FFFFFF),
     borderWidth: hairlineWidth,
     borderRadius: BorderRadius.all(Radius.circular(28)),
     opaqueFallbackColor: Color(0xF2F5F5F7),
-    shadowColor: Color(0x1A000000),
-    shadowBlurRadius: 24,
-    shadowOffset: Offset(0, 8),
-    shadowSpread: -4,
+    shadowColor: Color(0x14000000),
+    shadowBlurRadius: 20,
+    shadowOffset: Offset(0, 6),
+    shadowSpread: -6,
     rimColor: Color(0xFFE4E4E8),
     innerShadowColor: Color(0x10282828),
-    innerShadowExtent: 16,
+    innerShadowExtent: 5,
     optics: LiquidGlassOptics.lens,
   );
 
   /// Liquid Glass **Dock** (dark). Tab Bar chrome.
   ///
-  /// Translucent charcoal so the platter stays readable on the `#000000`
-  /// gallery canvas without a solid soot plate. [blurSigma], [saturation],
-  /// tint alpha, and the caustic band are approximations — **待核验 vs
-  /// 真机/Sketch**. Corner 28 is an implementation stand-in, not a
-  /// measured token. Same lens stand-in as [lightDock]: no second glass
-  /// layer, no live backdrop displacement.
+  /// Dark frost, not a soot plate. Wallpaper shows through the face; the
+  /// edge lip carries the volume. [blurSigma], [saturation], tint alpha,
+  /// and the lip are approximations — **待核验 vs 真机/Sketch**. Corner 28
+  /// is an implementation stand-in, not a measured token. Same lens
+  /// stand-in as [lightDock]: no second glass layer, no live backdrop
+  /// displacement, no second fill on the face.
   static const LiquidGlassTokens darkDock = LiquidGlassTokens(
-    blurSigma: 16,
-    saturation: 1.16,
-    tintColor: Color(0x8C16161A),
-    overlayColor: Color(0x14FFFFFF),
+    blurSigma: 10,
+    saturation: 1.22,
+    tintColor: Color(0x471C1C22),
+    overlayColor: Color(0x00FFFFFF),
     overlayBlend: BlendMode.softLight,
-    edgeHighlightColor: Color(0x5CFFFFFF),
-    refractionColor: Color(0x6BFFFFFF),
+    edgeHighlightColor: Color(0xC4FFFFFF),
+    refractionColor: Color(0xB8FFFFFF),
     refractionWidth: hairlineWidth,
-    borderColor: Color(0x1AFFFFFF),
+    borderColor: Color(0x1FFFFFFF),
     borderWidth: hairlineWidth,
     borderRadius: BorderRadius.all(Radius.circular(28)),
     opaqueFallbackColor: Color(0xF21C1C1E),
-    shadowColor: Color(0x40000000),
-    shadowBlurRadius: 24,
-    shadowOffset: Offset(0, 8),
-    shadowSpread: -4,
+    shadowColor: Color(0x33000000),
+    shadowBlurRadius: 20,
+    shadowOffset: Offset(0, 6),
+    shadowSpread: -6,
     rimColor: Color(0x59FFFFFF),
     innerShadowColor: Color(0x28101010),
-    innerShadowExtent: 16,
+    innerShadowExtent: 5,
     optics: LiquidGlassOptics.lens,
   );
 

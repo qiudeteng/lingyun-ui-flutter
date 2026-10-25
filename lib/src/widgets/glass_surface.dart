@@ -452,11 +452,11 @@ class _GlassLightingPainter extends CustomPainter {
     }
 
     if (specular.a > 0) {
-      // Lens keeps the catch tight so it does not fog the platter.
+      // Lens keeps the catch in the corner so it does not frost the face.
       // Radius and stops are approximations — 待核验 vs 真机/Sketch.
-      final specularRadius = lens ? 0.42 : 0.72;
+      final specularRadius = lens ? 0.18 : 0.72;
       final specularStops = lens
-          ? const [0.0, 0.16, 0.40]
+          ? const [0.0, 0.10, 0.22]
           : const [0.0, 0.22, 0.55];
       canvas.drawRRect(
         rrect,
@@ -466,7 +466,7 @@ class _GlassLightingPainter extends CustomPainter {
             radius: specularRadius,
             colors: [
               specular,
-              specular.withValues(alpha: specular.a * (lens ? 0.10 : 0.22)),
+              specular.withValues(alpha: specular.a * (lens ? 0.04 : 0.22)),
               specular.withValues(alpha: 0),
             ],
             stops: specularStops,
@@ -508,56 +508,52 @@ class _GlassLightingPainter extends CustomPainter {
     canvas.restore();
   }
 
-  /// Short top transmission band and a faint bottom bounce.
+  /// Short top lip plus a rounded inner refraction stroke.
   ///
-  /// Stand-in for Dock lensing. One surface, no extra backdrop filter.
-  /// Heights and alphas are **待核验 vs 真机/Sketch**.
+  /// The face is left to the backdrop. Stroke width and alphas are
+  /// **待核验 vs 真机/Sketch**. One surface, no extra backdrop filter.
+  /// The stroke follows the rounded rim; it is not a pair of inset lines.
   void _paintLensCaustic(Canvas canvas, Size size) {
-    final sheenH = math.min(innerShadowExtent, size.height * 0.36);
-    if (sheenH > 0 && specular.a > 0) {
-      final sheen = Rect.fromLTWH(
-        size.width * 0.06,
-        0.5,
-        size.width * 0.88,
-        sheenH,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(sheen, Radius.circular(sheenH)),
+    final bounds = Offset.zero & size;
+    final rrect = borderRadius.toRRect(bounds);
+    final lipH = math.min(innerShadowExtent, math.min(6.0, size.height * 0.12));
+    if (lipH > 0 && specular.a > 0) {
+      final lip = Rect.fromLTWH(0, 0, size.width, lipH);
+      canvas.drawRect(
+        lip,
         Paint()
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              specular.withValues(alpha: (specular.a * 0.50).clamp(0.0, 0.50)),
+              specular.withValues(alpha: (specular.a * 0.42).clamp(0.0, 0.42)),
               specular.withValues(alpha: 0),
             ],
-          ).createShader(sheen)
-          ..blendMode = BlendMode.softLight,
+          ).createShader(lip),
       );
     }
 
-    final footH = math.min(sheenH * 0.45, size.height * 0.16);
-    if (footH > 0.5 && refractionColor.a > 0) {
-      final foot = Rect.fromLTWH(
-        size.width * 0.12,
-        size.height - footH - 0.4,
-        size.width * 0.76,
-        footH,
-      );
+    // Painter-local width. Token refraction stays the shared 0.5 hairline.
+    const edgeWidth = 2.25;
+    if (refractionColor.a > 0 && size.shortestSide > edgeWidth * 3) {
+      final inset = rrect.deflate(edgeWidth * 0.5 + 0.35);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(foot, Radius.circular(footH)),
+        inset,
         Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = edgeWidth
           ..shader = LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
               refractionColor.withValues(
-                alpha: (refractionColor.a * 0.22).clamp(0.0, 0.22),
+                alpha: (refractionColor.a * 0.85).clamp(0.0, 0.85),
               ),
-              refractionColor.withValues(alpha: 0),
+              refractionColor.withValues(alpha: refractionColor.a * 0.10),
+              refractionColor.withValues(alpha: refractionColor.a * 0.38),
             ],
-          ).createShader(foot)
-          ..blendMode = BlendMode.softLight,
+            stops: const [0.0, 0.58, 1.0],
+          ).createShader(bounds),
       );
     }
   }
