@@ -46,6 +46,8 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _reduceTransparency = false;
   bool _reduceMotion = false;
   bool _highContrast = false;
+  GalleryPreviewFrame _frame = GalleryPreviewFrame.window;
+  GalleryBackground _background = GalleryBackground.canvas;
   Wave1cPanel _wave1cPanel = Wave1cPanel.segmented;
   ThemesPanel _themesPanel = ThemesPanel.colors;
 
@@ -53,6 +55,15 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   void initState() {
     super.initState();
     _apply(widget.launch ?? GalleryLaunch.fromUri(Uri.base));
+  }
+
+  @override
+  void didUpdateWidget(LingyunGlassDemoApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final launch = widget.launch;
+    if (launch != null && launch != oldWidget.launch) {
+      _apply(launch);
+    }
   }
 
   void _apply(GalleryLaunch launch) {
@@ -64,6 +75,9 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       _ => ThemesPanel.colors,
     };
     _themeMode = launch.themeMode;
+    _reduceTransparency = launch.reduceTransparency;
+    _frame = launch.device;
+    _background = GalleryBackground.fromQuery(launch.background);
   }
 
   void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
@@ -172,9 +186,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         extensions: const [LiquidGlassTheme.dark],
       ),
       home: GalleryBackgroundScope(
-        mode: _launch.background == null
-            ? GalleryBackground.canvas
-            : GalleryBackground.fromQuery(_launch.background),
+        mode: _background,
         child: LingyunAdaptivity(
           reduceTransparency: _reduceTransparency,
           reduceMotion: _reduceMotion,
@@ -184,20 +196,15 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
             initialHome: _launch.home,
             initialTab: _launch.tab,
             bare: _launch.bare,
-            background: GalleryBackground.fromQuery(_launch.background),
-            onBackgroundChanged: (mode) {
-              setState(() {
-                _launch = GalleryLaunch(
-                  page: _launch.page,
-                  home: _launch.home,
-                  tab: _launch.tab,
-                  theme: _launch.theme,
-                  chrome: _launch.chrome,
-                  background: mode.query,
-                  panel: _launch.panel,
-                );
-              });
-            },
+            background: _background,
+            onBackgroundChanged: (mode) => setState(() => _background = mode),
+            themeMode: _themeMode,
+            onThemeModeChanged: _setThemeMode,
+            reduceTransparency: _reduceTransparency,
+            onReduceTransparency: (value) =>
+                setState(() => _reduceTransparency = value),
+            frame: _frame,
+            onFrameChanged: (frame) => setState(() => _frame = frame),
             pageBuilder: _page,
           ),
         ),

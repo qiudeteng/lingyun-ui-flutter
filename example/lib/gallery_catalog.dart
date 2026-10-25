@@ -380,6 +380,117 @@ GalleryGroup? resolveGalleryWorkbench(String? key) {
   return null;
 }
 
+/// Preview board for the gallery stage.
+///
+/// [logicalSize] is the point size of the clipped demo. Null is
+/// 「自适应窗口」: the stage fills the window. Public sizes:
+/// Pro class 402×874, Pro Max 440×956, iPhone Air 420×912,
+/// Duo outer 466×678, Duo inner landscape 951×669,
+/// Duo inner portrait 669×951.
+enum GalleryPreviewFrame {
+  window('window', '窗口', '自适应窗口', null, ['window', 'adaptive', 'auto', 'fit']),
+  pro('pro', 'Pro', '18 / 17 / 16 Pro 402×874', Size(402, 874), [
+    'pro',
+    '18pro',
+    '18-pro',
+    '17',
+    '17pro',
+    '17-pro',
+    '16pro',
+    '16-pro',
+    '402x874',
+  ]),
+  proMax('pro-max', 'Pro Max', 'Pro Max 440×956', Size(440, 956), [
+    'pro-max',
+    'promax',
+    '440x956',
+  ]),
+  air('air', 'Air', 'iPhone Air 420×912', Size(420, 912), [
+    'air',
+    'iphone-air',
+    'iphoneair',
+    '420x912',
+  ]),
+  duoOuter('duo-outer', 'Duo 外屏', 'Duo 外屏 466×678', Size(466, 678), [
+    'duo-outer',
+    'duo',
+    'outer',
+    '466x678',
+  ]),
+  duoInnerLandscape(
+    'duo-inner-landscape',
+    'Duo 内屏横',
+    'Duo 内屏横 951×669',
+    Size(951, 669),
+    ['duo-inner-landscape', 'duo-inner-land', 'duo-landscape', '951x669'],
+  ),
+  duoInnerPortrait(
+    'duo-inner-portrait',
+    'Duo 内屏竖',
+    'Duo 内屏竖 669×951',
+    Size(669, 951),
+    ['duo-inner-portrait', 'duo-inner-port', 'duo-portrait', '669x951'],
+  );
+
+  const GalleryPreviewFrame(
+    this.query,
+    this.shortLabel,
+    this.label,
+    this.logicalSize,
+    this.aliases,
+  );
+
+  /// Canonical `device=` / `frame=` value.
+  final String query;
+
+  /// Chip label.
+  final String shortLabel;
+
+  /// Menu label. Simplified Chinese, with the point size.
+  final String label;
+
+  /// Clipped stage size. Null fills the window.
+  final Size? logicalSize;
+
+  final List<String> aliases;
+
+  static final Map<String, GalleryPreviewFrame> _byQuery = () {
+    final map = <String, GalleryPreviewFrame>{};
+    for (final frame in GalleryPreviewFrame.values) {
+      for (final alias in [frame.query, ...frame.aliases]) {
+        final key = _normalize(alias);
+        final existing = map[key];
+        if (existing != null && existing != frame) {
+          throw StateError('Duplicate preview frame alias $key');
+        }
+        map[key] = frame;
+      }
+    }
+    return map;
+  }();
+
+  static String _normalize(String raw) {
+    return raw
+        .trim()
+        .toLowerCase()
+        .replaceAll('×', 'x')
+        .replaceAll('*', 'x')
+        .replaceAll(RegExp(r'[\s_\-]'), '');
+  }
+
+  /// Known [raw] value, or null when it is missing or not a frame id.
+  static GalleryPreviewFrame? tryParse(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    return _byQuery[_normalize(raw)];
+  }
+
+  /// `device` wins when it names a frame. Otherwise `frame`.
+  /// Unknown or missing values are [GalleryPreviewFrame.window].
+  static GalleryPreviewFrame resolve(String? device, String? frame) {
+    return tryParse(device) ?? tryParse(frame) ?? GalleryPreviewFrame.window;
+  }
+}
+
 /// Launch query and `GALLERY_*` environment values.
 ///
 /// A query parameter wins over the matching environment value.
@@ -393,6 +504,8 @@ class GalleryLaunch {
     this.chrome,
     this.background,
     this.panel,
+    this.reduceTransparency = false,
+    this.device = GalleryPreviewFrame.window,
   });
 
   final String? page;
@@ -403,10 +516,17 @@ class GalleryLaunch {
   /// Same values as [home]. A known [tab] wins over [home].
   final String? tab;
 
+  /// `theme=light|dark|system`.
   final String? theme;
   final String? chrome;
   final String? background;
   final String? panel;
+
+  /// `reduceTransparency=` or `a11y=`. Switch only, no slider.
+  final bool reduceTransparency;
+
+  /// `device=` or `frame=`. See [GalleryPreviewFrame].
+  final GalleryPreviewFrame device;
 
   /// Level-2 target. A known [page] is a leaf and is not applied here.
   GalleryGroup? get workbench =>
@@ -414,7 +534,7 @@ class GalleryLaunch {
 
   bool get bare => chrome == '0';
 
-  ThemeMode get themeMode => switch (theme) {
+  ThemeMode get themeMode => switch (theme?.toLowerCase()) {
     'dark' => ThemeMode.dark,
     'system' => ThemeMode.system,
     _ => ThemeMode.light,
@@ -428,6 +548,10 @@ class GalleryLaunch {
     const envTheme = String.fromEnvironment('GALLERY_THEME');
     const envChrome = String.fromEnvironment('GALLERY_CHROME');
     const envBg = String.fromEnvironment('GALLERY_BG');
+    const envDevice = String.fromEnvironment('GALLERY_DEVICE');
+    const envFrame = String.fromEnvironment('GALLERY_FRAME');
+    const envReduce = String.fromEnvironment('GALLERY_REDUCE_TRANSPARENCY');
+    const envA11y = String.fromEnvironment('GALLERY_A11Y');
     final query = uri.queryParameters;
     final page = _first(query['page'], envPage);
     return GalleryLaunch(
@@ -438,6 +562,15 @@ class GalleryLaunch {
       chrome: _first(query['chrome'], envChrome),
       background: _first(query['bg'], envBg),
       panel: page == 'text' ? 'text' : query['panel'],
+      reduceTransparency: _readReduceTransparency(
+        query,
+        envReduce: envReduce,
+        envA11y: envA11y,
+      ),
+      device: GalleryPreviewFrame.resolve(
+        _first(query['device'], envDevice),
+        _first(query['frame'], envFrame),
+      ),
     );
   }
 
@@ -445,5 +578,49 @@ class GalleryLaunch {
     if (query != null) return query;
     if (env.isEmpty) return null;
     return env;
+  }
+
+  /// Explicit `reduceTransparency` wins over `a11y`.
+  ///
+  /// Truthy tokens: `1`, `true`, `on`, `yes`. `a11y` also accepts
+  /// `reduceTransparency`, `reduce-transparency`, and `transparency`.
+  static bool _readReduceTransparency(
+    Map<String, String> query, {
+    required String envReduce,
+    required String envA11y,
+  }) {
+    if (query.containsKey('reduceTransparency')) {
+      return _toggleOn(query['reduceTransparency']);
+    }
+    if (query.containsKey('a11y')) {
+      return _a11yOn(query['a11y']);
+    }
+    if (envReduce.isNotEmpty) return _toggleOn(envReduce);
+    if (envA11y.isNotEmpty) return _a11yOn(envA11y);
+    return false;
+  }
+
+  static bool _toggleOn(String? raw) {
+    return switch (_token(raw)) {
+      '1' || 'true' || 'on' || 'yes' => true,
+      _ => false,
+    };
+  }
+
+  static bool _a11yOn(String? raw) {
+    return switch (_token(raw)) {
+      '1' ||
+      'true' ||
+      'on' ||
+      'yes' ||
+      'reducetransparency' ||
+      'reduce-transparency' ||
+      'transparency' => true,
+      _ => false,
+    };
+  }
+
+  static String _token(String? raw) {
+    return (raw ?? '').trim().toLowerCase().replaceAll('_', '-');
   }
 }

@@ -1,7 +1,11 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
 import 'package:example/gallery_catalog.dart';
+import 'package:example/gallery_preview.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/form_controls_page.dart';
 import 'package:example/pages/wave1c_page.dart';
@@ -204,7 +208,7 @@ void main() {
 
     await openGalleryEntry(tester, 'access');
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);
-    expect(find.text('降低透明度'), findsOneWidget);
+    expect(find.text('降低透明度'), findsNWidgets(2));
     expect(find.text('减弱动态'), findsOneWidget);
   });
 
@@ -911,10 +915,11 @@ void main() {
     expect(resolveGalleryWorkbench('tabs'), isNull);
   });
 
-  test('launch reads page, theme, chrome, and bg', () {
+  test('launch reads page, theme, chrome, bg, a11y, and device', () {
     final launch = GalleryLaunch.fromUri(
       Uri.parse(
-        'https://example.test/?page=text&theme=dark&chrome=0&bg=meadow&panel=samples',
+        'https://example.test/?page=text&theme=dark&chrome=0&bg=meadow&panel=samples'
+        '&reduceTransparency=1&device=pro',
       ),
     );
     expect(launch.page, 'text');
@@ -922,6 +927,93 @@ void main() {
     expect(launch.bare, isTrue);
     expect(launch.themeMode, ThemeMode.dark);
     expect(launch.background, 'meadow');
+    expect(launch.reduceTransparency, isTrue);
+    expect(launch.device, GalleryPreviewFrame.pro);
+    expect(launch.device.logicalSize, const Size(402, 874));
+
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?theme=light'))
+          .themeMode,
+      ThemeMode.light,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?theme=DARK'))
+          .themeMode,
+      ThemeMode.dark,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?theme=system'))
+          .themeMode,
+      ThemeMode.system,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?a11y=reduceTransparency'),
+      ).reduceTransparency,
+      isTrue,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?a11y=reduce-transparency'),
+      ).reduceTransparency,
+      isTrue,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?reduceTransparency=0&a11y=1'),
+      ).reduceTransparency,
+      isFalse,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?a11y=off'))
+          .reduceTransparency,
+      isFalse,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?frame=duo-inner-portrait'),
+      ).device,
+      GalleryPreviewFrame.duoInnerPortrait,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=air&frame=pro'),
+      ).device,
+      GalleryPreviewFrame.air,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=nope&frame=440×956'),
+      ).device,
+      GalleryPreviewFrame.proMax,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=16-pro'))
+          .device
+          .logicalSize,
+      const Size(402, 874),
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=951x669'))
+          .device,
+      GalleryPreviewFrame.duoInnerLandscape,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=window'))
+          .device
+          .logicalSize,
+      isNull,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=466x678'))
+          .device,
+      GalleryPreviewFrame.duoOuter,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=420x912'))
+          .device,
+      GalleryPreviewFrame.air,
+    );
 
     final home = GalleryLaunch.fromUri(
       Uri.parse('https://example.test/?home=controls'),
@@ -1173,5 +1265,354 @@ void main() {
     expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
     await openGalleryEntry(tester, 'native');
     expect(find.byKey(const Key('native-page-title')), findsOneWidget);
+  });
+
+  testWidgets('preview chrome toggles theme and reduce transparency', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    final title = find.byKey(const Key('gallery-workbench-title'));
+    expect(find.byKey(const Key('gallery-preview-cluster')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-theme-light-on')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-theme-dark-on')), findsNothing);
+    expect(find.byKey(const Key('gallery-bg-control')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-control')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.byType(BackdropFilter),
+      ),
+      findsOneWidget,
+    );
+    expect(Theme.of(tester.element(title)).brightness, Brightness.light);
+    expect(
+      LingyunAdaptivity.of(tester.element(title)).reduceTransparency,
+      isFalse,
+    );
+
+    await tester.tap(find.byKey(const Key('gallery-theme-dark')));
+    await tester.pumpAndSettle();
+    expect(Theme.of(tester.element(title)).brightness, Brightness.dark);
+    expect(find.byKey(const Key('gallery-theme-dark-on')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-theme-light')));
+    await tester.pumpAndSettle();
+    expect(Theme.of(tester.element(title)).brightness, Brightness.light);
+
+    await tester.tap(find.byKey(const Key('gallery-reduce-transparency')));
+    await tester.pumpAndSettle();
+    expect(
+      LingyunAdaptivity.of(tester.element(title)).reduceTransparency,
+      isTrue,
+    );
+
+    await openGalleryEntry(tester, 'access');
+    expect(
+      tester
+          .widget<Switch>(find.byKey(const Key('gallery-reduce-transparency')))
+          .value,
+      isTrue,
+    );
+    expect(
+      tester
+          .widget<SwitchListTile>(find.widgetWithText(SwitchListTile, '降低透明度'))
+          .value,
+      isTrue,
+    );
+    expect(
+      LingyunAdaptivity.of(tester.element(find.byKey(const Key('a11y-title'))))
+          .reduceTransparency,
+      isTrue,
+    );
+  });
+
+  testWidgets('device frame clips the stage and keeps chrome outside', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1600, 1600);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      LingyunGlassDemoApp(
+        launch: GalleryLaunch.fromUri(
+          Uri.parse(
+            'https://example.test/?theme=dark&a11y=1&frame=402x874&bg=meadow',
+          ),
+        ),
+      ),
+    );
+
+    final title = find.byKey(const Key('gallery-workbench-title'));
+    expect(Theme.of(tester.element(title)).brightness, Brightness.dark);
+    expect(
+      LingyunAdaptivity.of(tester.element(title)).reduceTransparency,
+      isTrue,
+    );
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(402, 874));
+    expect(find.byKey(const Key('gallery-preview-chrome')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-meadow')), findsOneWidget);
+    final innerMeadow = tester.getRect(
+      find.byKey(const Key('gallery-device-bg-meadow')),
+    );
+
+    final frameRect = tester.getRect(
+      find.byKey(const Key('gallery-device-frame')),
+    );
+    final clusterRect = tester.getRect(
+      find.byKey(const Key('gallery-preview-cluster')),
+    );
+    expect(frameRect.size, const Size(402, 874));
+    expect(frameRect.center.dx, closeTo(800, 1));
+    expect(innerMeadow.width, closeTo(frameRect.width, 1));
+    expect(innerMeadow.height, closeTo(frameRect.height, 1));
+    expect(clusterRect.bottom, lessThanOrEqualTo(frameRect.top));
+    final wall = tester.getRect(find.byKey(const Key('gallery-bg-meadow')));
+    expect(wall.width, greaterThan(frameRect.width));
+    expect(wall.height, greaterThan(frameRect.height));
+
+    await tester.tap(find.byKey(const Key('gallery-bg-control')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gallery-bg-option-canvas')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-canvas')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-meadow')), findsNothing);
+    expect(find.byKey(const Key('gallery-device-frame')), findsOneWidget);
+
+    await openGalleryEntry(tester, 'materials');
+    expect(find.byKey(const Key('materials-title')), findsOneWidget);
+    expect(
+      MediaQuery.sizeOf(
+        tester.element(find.byKey(const Key('materials-title'))),
+      ),
+      const Size(402, 874),
+    );
+    final back = tester.getRect(find.byKey(const Key('gallery-back')));
+    final framed = tester.getRect(
+      find.byKey(const Key('gallery-device-frame')),
+    );
+    expect(back.bottom, lessThanOrEqualTo(framed.top));
+
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('gallery-workbench-title')), findsOneWidget);
+
+    const frames = <GalleryPreviewFrame, Size>{
+      GalleryPreviewFrame.proMax: Size(440, 956),
+      GalleryPreviewFrame.air: Size(420, 912),
+      GalleryPreviewFrame.duoOuter: Size(466, 678),
+      GalleryPreviewFrame.duoInnerLandscape: Size(951, 669),
+      GalleryPreviewFrame.duoInnerPortrait: Size(669, 951),
+      GalleryPreviewFrame.window: Size(1600, 1600),
+    };
+    for (final entry in frames.entries) {
+      await tester.tap(find.byKey(const Key('gallery-device-control')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(Key('gallery-device-option-${entry.key.query}')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        MediaQuery.sizeOf(
+          tester.element(find.byKey(const Key('gallery-workbench-title'))),
+        ),
+        entry.value,
+      );
+      if (entry.key == GalleryPreviewFrame.window) {
+        expect(find.byKey(const Key('gallery-device-frame')), findsNothing);
+        expect(find.byKey(const Key('gallery-preview-chrome')), findsNothing);
+        expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
+        expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
+      } else {
+        expect(
+          tester.getSize(find.byKey(const Key('gallery-device-frame'))),
+          entry.value,
+        );
+        expect(
+          tester
+              .getRect(find.byKey(const Key('gallery-preview-cluster')))
+              .bottom,
+          lessThanOrEqualTo(
+            tester.getRect(find.byKey(const Key('gallery-device-frame'))).top,
+          ),
+        );
+        expect(
+          find.byKey(const Key('gallery-device-bg-canvas')),
+          findsOneWidget,
+        );
+        final board = tester.getRect(
+          find.byKey(const Key('gallery-device-bg-canvas')),
+        );
+        final chrome = tester.getRect(
+          find.byKey(const Key('gallery-device-frame')),
+        );
+        expect(board.width, closeTo(chrome.width, 1));
+        expect(board.height, closeTo(chrome.height, 1));
+      }
+    }
+  });
+
+  testWidgets('a narrow window scales the frame and keeps logical points', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(300, 400);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(device: GalleryPreviewFrame.pro),
+      ),
+    );
+    final title = find.byKey(const Key('gallery-workbench-title'));
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(402, 874));
+    final rect = tester.getRect(find.byKey(const Key('gallery-device-frame')));
+    expect(rect.width, lessThan(402));
+    expect(rect.width / rect.height, closeTo(402 / 874, 0.02));
+    expect(find.byKey(const Key('gallery-preview-cluster')), findsOneWidget);
+    expect(
+      tester.getRect(find.byKey(const Key('gallery-preview-cluster'))).bottom,
+      lessThanOrEqualTo(rect.top),
+    );
+  });
+
+  testWidgets('bare chrome still applies theme, a11y, frame, and bg', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1600, 1600);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      LingyunGlassDemoApp(
+        launch: GalleryLaunch.fromUri(
+          Uri.parse(
+            'https://example.test/?page=glass&chrome=0&theme=light'
+            '&reduceTransparency=on&device=air&bg=wash',
+          ),
+        ),
+      ),
+    );
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-preview-cluster')), findsNothing);
+    expect(find.byKey(const Key('gallery-bg-control')), findsNothing);
+    expect(find.byKey(const Key('gallery-back')), findsNothing);
+    expect(find.byKey(const Key('gallery-bg-wash')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-wash')), findsOneWidget);
+    expect(
+      MediaQuery.sizeOf(tester.element(find.byKey(const Key('glass-title')))),
+      const Size(420, 912),
+    );
+    expect(
+      Theme.of(tester.element(find.byKey(const Key('glass-title')))).brightness,
+      Brightness.light,
+    );
+    expect(
+      LingyunAdaptivity.of(tester.element(find.byKey(const Key('glass-title'))))
+          .reduceTransparency,
+      isTrue,
+    );
+  });
+
+  testWidgets('fixed board dock frosts the wallpaper inside the clip', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 1200);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    Future<void> pumpBoard(Brightness brightness) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            brightness: brightness,
+            extensions: [
+              brightness == Brightness.dark
+                  ? LiquidGlassTheme.dark
+                  : LiquidGlassTheme.light,
+            ],
+          ),
+          home: RepaintBoundary(
+            key: const Key('dock-probe'),
+            child: GalleryDeviceStage(
+              frame: GalleryPreviewFrame.pro,
+              backdrop: const Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: ColoredBox(color: Color(0xFF101010))),
+                  Expanded(child: ColoredBox(color: Color(0xFFF4F4F6))),
+                ],
+              ),
+              child: const Align(
+                alignment: Alignment.bottomCenter,
+                child: GlassSurface(
+                  style: LiquidGlassStyle.dock,
+                  borderRadius: BorderRadius.all(Radius.circular(100)),
+                  width: 320,
+                  height: 54,
+                  child: SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    Future<int> redAt(Offset global) async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const Key('dock-probe')),
+      );
+      final local = boundary.globalToLocal(global);
+      final width = boundary.size.width.round();
+      final height = boundary.size.height.round();
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        return data!.buffer.asUint8List();
+      });
+      final x = local.dx.round().clamp(0, width - 1).toInt();
+      final y = local.dy.round().clamp(0, height - 1).toInt();
+      return bytes![(y * width + x) * 4];
+    }
+
+    for (final brightness in [Brightness.light, Brightness.dark]) {
+      await pumpBoard(brightness);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      final glass = tester.getRect(find.byType(GlassSurface));
+      final insideLeft = await redAt(
+        Offset(glass.left + glass.width * 0.2, glass.center.dy),
+      );
+      final insideRight = await redAt(
+        Offset(glass.right - glass.width * 0.2, glass.center.dy),
+      );
+      final outsideLeft = await redAt(Offset(glass.left - 10, glass.center.dy));
+      final outsideRight = await redAt(
+        Offset(glass.right + 10, glass.center.dy),
+      );
+      expect(
+        (insideLeft - insideRight).abs(),
+        greaterThan(20),
+        reason: 'Dock glass must sample the split wallpaper, not a flat fill',
+      );
+      expect(
+        (outsideLeft - outsideRight).abs(),
+        greaterThan(20),
+        reason: 'The slot beside the capsule stays transparent',
+      );
+    }
   });
 }
