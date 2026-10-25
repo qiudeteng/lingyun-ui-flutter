@@ -93,6 +93,70 @@ Future<void> openGalleryEntry(
   }
 }
 
+/// Every workbench section list is inset Materials Regular.
+///
+/// The four group tabs share [GalleryWorkbench]. [backgroundArgb] is the
+/// system grouped background for the current brightness.
+Future<void> _expectWorkbenchLists(
+  WidgetTester tester,
+  int backgroundArgb,
+) async {
+  for (final group in galleryGroups) {
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.text(group.label),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      group.workbenchTitle,
+    );
+    expect(
+      tester
+          .widget<ColoredBox>(
+            find.byKey(const Key('gallery-workbench-background')),
+          )
+          .color
+          .toARGB32(),
+      backgroundArgb,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('gallery-workbench')),
+        matching: find.byType(GlassCard),
+      ),
+      findsNothing,
+    );
+    for (final section in group.sections) {
+      expect(find.byKey(Key('gallery-section-${section.id}')), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(Key('gallery-card-label-${section.id}')))
+            .data,
+        group.workbenchTitle,
+      );
+      final list = tester.widget<GlassList>(
+        find.byKey(Key('gallery-card-${section.id}')),
+      );
+      expect(list.style, GlassListStyle.inset);
+      final surfaces = tester.widgetList<GlassSurface>(
+        find.descendant(
+          of: find.byKey(Key('gallery-card-${section.id}')),
+          matching: find.byType(GlassSurface),
+        ),
+      );
+      expect(surfaces, hasLength(1));
+      expect(surfaces.single.material, MaterialTier.regular);
+      expect(surfaces.single.style, isNull);
+      expect(surfaces.single.tokens, isNull);
+    }
+  }
+}
+
 void main() {
   testWidgets('gallery boots on the basics workbench', (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -157,6 +221,27 @@ void main() {
     expect(find.byKey(const Key('radius-small')), findsOneWidget);
     expect(find.byKey(const Key('radius-medium')), findsOneWidget);
     expect(find.byKey(const Key('radius-large')), findsOneWidget);
+  });
+
+  testWidgets('workbench lists use materials regular, not liquid glass', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 2200);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await _expectWorkbenchLists(tester, 0xFFF2F2F7);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 2200);
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(theme: 'dark')),
+    );
+    await tester.pumpAndSettle();
+    await _expectWorkbenchLists(tester, 0xFF000000);
   });
 
   testWidgets('gallery can open Glass, Layout and Accessibility', (

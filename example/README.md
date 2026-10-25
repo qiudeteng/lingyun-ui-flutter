@@ -4,8 +4,9 @@ Root chrome is `LingyunPage` with Dock tabs (Liquid Glass, not a Material
 rail or bar, and not the sidebar rail) for four groups: **基础**, **控件**,
 **浮层**, **导航壳**. A tab opens that group's workbench page
 (**基础工作台**, **控件工作台**, **浮层工作台**, **导航壳工作台**).
-Each workbench has several sections. Every section is one Regular Medium
-card labeled with the workbench name; the card holds a list of demos.
+Each workbench has several sections. Every section is an inset grouped
+list (Materials Regular, not Liquid Glass) labeled with the workbench
+name. The page sits on the system grouped background.
 A row pushes the demo; **返回** goes back to the workbench. These tabs are
 not the **标签栏** component demo (`?page=tabs`).
 
