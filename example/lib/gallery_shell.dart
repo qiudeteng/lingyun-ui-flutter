@@ -3,6 +3,7 @@ import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'gallery_catalog.dart';
+import 'gallery_preview.dart';
 import 'wallpaper.dart';
 
 /// Root gallery chrome.
@@ -26,13 +27,25 @@ import 'wallpaper.dart';
 /// (`foundation`, `controls`, `overlays`, `chrome`) opens that workbench.
 /// [tab] wins when both name a workbench. Missing or unknown values open
 /// the 基础 workbench. [bare] hides the tabs, the back bar, and the
-/// background chip (`chrome=0`).
+/// preview cluster (`chrome=0`).
+///
+/// The cluster (浅色 / 暗黑, 降低透明度, 画板, 画布) sits in the top-right
+/// of the workbench and of a pushed demo. A fixed [frame] hoists that
+/// cluster above the board. The demo, including the Dock, is clipped
+/// and centered on the board. The backdrop outside the board is the
+/// same wallpaper.
 class GalleryShell extends StatefulWidget {
   const GalleryShell({
     super.key,
     required this.pageBuilder,
     required this.background,
     required this.onBackgroundChanged,
+    required this.themeMode,
+    required this.onThemeModeChanged,
+    required this.reduceTransparency,
+    required this.onReduceTransparency,
+    required this.frame,
+    required this.onFrameChanged,
     this.initialPage,
     this.initialHome,
     this.initialTab,
@@ -45,6 +58,12 @@ class GalleryShell extends StatefulWidget {
   final bool bare;
   final GalleryBackground background;
   final ValueChanged<GalleryBackground> onBackgroundChanged;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeChanged;
+  final bool reduceTransparency;
+  final ValueChanged<bool> onReduceTransparency;
+  final GalleryPreviewFrame frame;
+  final ValueChanged<GalleryPreviewFrame> onFrameChanged;
   final Widget Function(BuildContext context, String entryId) pageBuilder;
 
   @override
@@ -101,9 +120,37 @@ class _GalleryShellState extends State<GalleryShell> {
     });
   }
 
+  Widget _cluster() {
+    return GalleryPreviewCluster(
+      themeMode: widget.themeMode,
+      onThemeModeChanged: widget.onThemeModeChanged,
+      reduceTransparency: widget.reduceTransparency,
+      onReduceTransparency: widget.onReduceTransparency,
+      frame: widget.frame,
+      onFrameChanged: widget.onFrameChanged,
+      background: widget.background,
+      onBackgroundChanged: widget.onBackgroundChanged,
+    );
+  }
+
+  Widget _backButton(Color label) {
+    return CupertinoButton(
+      key: const Key('gallery-back'),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      minimumSize: Size.zero,
+      onPressed: _back,
+      child: Text(
+        '返回${_group.workbenchTitle}',
+        style: LingyunTextStyles.body(color: label),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pushed = _pushedId;
+    final framed = widget.frame.logicalSize != null;
+    final showTools = !widget.bare && !framed;
     final stage = ClipRect(
       child: AnimatedSwitcher(
         duration: LiquidGlassMotion.durationOf(
@@ -133,40 +180,23 @@ class _GalleryShellState extends State<GalleryShell> {
             ? GalleryWorkbench(
                 key: ValueKey('workbench-${_group.id}'),
                 group: _group,
-                showBackgroundControl: !widget.bare,
-                background: widget.background,
-                onBackgroundChanged: widget.onBackgroundChanged,
+                preview: showTools ? _cluster() : null,
                 onOpen: _open,
               )
             : _DemoLayer(
                 key: ValueKey('demo-$pushed'),
                 groupLabel: _group.workbenchTitle,
-                showChrome: !widget.bare,
-                background: widget.background,
-                onBackgroundChanged: widget.onBackgroundChanged,
+                showChrome: showTools,
+                preview: showTools ? _cluster() : null,
                 onBack: _back,
                 child: widget.pageBuilder(context, pushed),
               ),
       ),
     );
 
-    if (widget.bare) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [const SystemWallpaper(), stage],
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          const SystemWallpaper(),
-          LingyunPage(
+    final page = widget.bare
+        ? stage
+        : LingyunPage(
             spec: LingyunPageSpec(
               chrome: LingyunPageChrome.tab,
               navigation: LingyunPageNavigation.stack,
@@ -184,8 +214,38 @@ class _GalleryShellState extends State<GalleryShell> {
             currentIndex: _groupIndex,
             onDestinationSelected: _selectGroup,
             primary: stage,
-          ),
-        ],
+          );
+
+    final board = framed
+        ? GalleryDeviceStage(frame: widget.frame, child: page)
+        : page;
+
+    final body = framed && !widget.bare
+        ? Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+                  child: GalleryPreviewBar(
+                    key: const Key('gallery-preview-chrome'),
+                    leading: pushed == null
+                        ? null
+                        : _backButton(LiquidGlassLabels.primaryOf(context)),
+                    cluster: _cluster(),
+                  ),
+                ),
+              ),
+              Expanded(child: board),
+            ],
+          )
+        : board;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [const SystemWallpaper(), body],
       ),
     );
   }
@@ -206,16 +266,15 @@ class GalleryWorkbench extends StatelessWidget {
   const GalleryWorkbench({
     super.key,
     required this.group,
-    required this.showBackgroundControl,
-    required this.background,
-    required this.onBackgroundChanged,
     required this.onOpen,
+    this.preview,
   });
 
   final GalleryGroup group;
-  final bool showBackgroundControl;
-  final GalleryBackground background;
-  final ValueChanged<GalleryBackground> onBackgroundChanged;
+
+  /// Top-right cluster. Null when the shell hoists it above a device frame,
+  /// and when `chrome=0`.
+  final Widget? preview;
   final ValueChanged<String> onOpen;
 
   @override
@@ -223,6 +282,22 @@ class GalleryWorkbench extends StatelessWidget {
     final colors = LingyunColors.forBrightness(Theme.brightnessOf(context));
     final label = colors.liquidGlassLabels.primary;
     final secondary = colors.liquidGlassLabels.secondary;
+    final title = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          group.workbenchTitle,
+          key: const Key('gallery-workbench-title'),
+          style: LingyunTextStyles.largeTitle(emphasized: true, color: label),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '点一行打开示例。',
+          key: const Key('gallery-workbench-subtitle'),
+          style: LingyunTextStyles.subheadline(color: secondary),
+        ),
+      ],
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -230,36 +305,29 @@ class GalleryWorkbench extends StatelessWidget {
           bottom: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 12, 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final tools = preview;
+                if (tools == null) return title;
+                if (constraints.maxWidth < 820) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        group.workbenchTitle,
-                        key: const Key('gallery-workbench-title'),
-                        style: LingyunTextStyles.largeTitle(
-                          emphasized: true,
-                          color: label,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '点一行打开示例。',
-                        key: const Key('gallery-workbench-subtitle'),
-                        style: LingyunTextStyles.subheadline(color: secondary),
-                      ),
+                      title,
+                      const SizedBox(height: 8),
+                      Align(alignment: Alignment.centerRight, child: tools),
                     ],
-                  ),
-                ),
-                if (showBackgroundControl)
-                  GalleryBackgroundButton(
-                    mode: background,
-                    onChanged: onBackgroundChanged,
-                  ),
-              ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: title),
+                    const SizedBox(width: 12),
+                    tools,
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -364,16 +432,14 @@ class _DemoLayer extends StatelessWidget {
     super.key,
     required this.groupLabel,
     required this.showChrome,
-    required this.background,
-    required this.onBackgroundChanged,
+    required this.preview,
     required this.onBack,
     required this.child,
   });
 
   final String groupLabel;
   final bool showChrome;
-  final GalleryBackground background;
-  final ValueChanged<GalleryBackground> onBackgroundChanged;
+  final Widget? preview;
   final VoidCallback onBack;
   final Widget child;
 
@@ -396,29 +462,20 @@ class _DemoLayer extends StatelessWidget {
       children: [
         SafeArea(
           bottom: false,
-          child: SizedBox(
-            height: 44,
-            child: Row(
-              children: [
-                CupertinoButton(
-                  key: const Key('gallery-back'),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  minimumSize: Size.zero,
-                  onPressed: onBack,
-                  child: Text(
-                    '返回$groupLabel',
-                    style: LingyunTextStyles.body(color: label),
-                  ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 8, 0),
+            child: GalleryPreviewBar(
+              leading: CupertinoButton(
+                key: const Key('gallery-back'),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: Size.zero,
+                onPressed: onBack,
+                child: Text(
+                  '返回$groupLabel',
+                  style: LingyunTextStyles.body(color: label),
                 ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GalleryBackgroundButton(
-                    mode: background,
-                    onChanged: onBackgroundChanged,
-                  ),
-                ),
-              ],
+              ),
+              cluster: preview!,
             ),
           ),
         ),

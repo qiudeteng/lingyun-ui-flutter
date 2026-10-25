@@ -13,7 +13,7 @@ No `?page=` opens the 基础 workbench. `?home=` or `?tab=`
 (`foundation`, `controls`, `overlays`, `chrome`) opens that workbench
 without a demo; a known `tab` wins over `home`. A known `?page=` /
 `GALLERY_PAGE` still opens that demo and wins over `home` / `tab`.
-`theme`, `chrome=0`, and `bg` are unchanged.
+`theme=light|dark|system`, `chrome=0`, and `bg` still apply. The top-right cluster also sets them: 浅色 / 暗黑, 降低透明度 (`reduceTransparency=1|0` or `a11y=reduceTransparency`), and 画板尺寸 (`device=` or `frame=`). Boards: `window` (自适应窗口), `pro` (402×874), `pro-max` (440×956), `air` (420×912), `duo-outer` (466×678), `duo-inner-landscape` (951×669), `duo-inner-portrait` (669×951). A fixed board clips and centers the demo; the cluster and the backdrop outside the board follow the same settings.
 
 Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
 (Clear / Regular S·M·L / Dock / Widget Glass swatches), **Buttons**
@@ -55,9 +55,12 @@ Simplified Chinese. **分段与页控** still shares one page.
 **列表** / **文本框** / **进度**（`?page=lists|fields|progress`）的标题、按钮、标签、占位符和辅助说明是简体中文。代码标识保持英文。
 
 Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
-The **画布** chip on every page also selects muted wash, nature,
-abstract color, and a busy UI pattern. Query: `?bg=canvas|wash|meadow|abstract|busy`
-(with `page`, `theme`, `chrome=0`).
+The top-right cluster is on every page (hidden when `chrome=0`): **浅色 / 暗黑**,
+**降低透明度**, **画板**, and **画布**. 画布 selects muted wash, nature,
+abstract color, and a busy UI pattern. Queries: `?bg=canvas|wash|meadow|abstract|busy`,
+`theme=light|dark`, `reduceTransparency=1` or `a11y=1`,
+`device=` / `frame=` (`window`, `pro`, `pro-max`, `air`, `duo-outer`,
+`duo-inner-landscape`, `duo-inner-portrait`).
 
 ```bash
 flutter run -d chrome
