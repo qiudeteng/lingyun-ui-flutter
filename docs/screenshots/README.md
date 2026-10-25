@@ -128,14 +128,14 @@ flutter test tool/capture_alert_screenshots.dart
 
 The color around **Clear** on `glass_button_light.png` / `glass_button_dark.png` is the gallery rich-media plate behind `LiquidGlassStyle.clear`. It is not a selection or focus ring, and it is not the button rim. Sketch Clear keeps the shared ~0.5px hairline; the plate is only there so the translucent style stays visible. It is a muted wash, not a saturated rainbow stroke. The page behind that plate is the design canvas.
 
-Regenerate the GlassButton captures from the example gallery (1280×800, Glass page, chrome hidden, light then dark):
+Regenerate the GlassButton captures from the example gallery (1280×800, 玻璃按钮 page, chrome hidden, light then dark):
 
 ```bash
 cd example
 flutter run -d chrome
 ```
 
-Open `http://localhost:<port>/?page=glass&chrome=0` and `?page=glass&theme=dark&chrome=0`, then save the viewport. The Pressed chips are pinned with `forcePressed`. Prominent Disabled is the accent fill at about 50% opacity. Blur strength in the capture is an implementation approximation, not a kit token. Control heights 28 / 34 / 50 are the Figma Text export; they are not blur sigmas.
+Open `http://localhost:<port>/?page=buttons&chrome=0` and `?page=buttons&theme=dark&chrome=0` (`button` is the same leaf). The glass style swatches stay on `?page=glass`. Then save the viewport. The Pressed chips are pinned with `forcePressed`. Prominent Disabled is the accent fill at about 50% opacity. Blur strength in the capture is an implementation approximation, not a kit token. Control heights 28 / 34 / 50 are the Figma Text export; they are not blur sigmas.
 
 - `page_compact_light.png` / `page_compact_dark.png` — compact portrait stage 390×844, bottom Liquid Glass Dock. Image includes a 24px design-canvas margin (`#D1D1D6` / `#000000`).
 - `page_regular_light.png` / `page_regular_dark.png` — regular landscape stage 1024×768, glass rail + primary. No bottom Dock.
@@ -193,7 +193,7 @@ flutter test tool/capture_control_screenshots.dart
 
 导航里点「旋钮」。地址 `?page=knob&theme=light&chrome=0`，深色把 `theme` 换成 `dark`。`page=track` 和 `page=controls` 打开同一页。
 
-开关、滑杆、步进器（导航「开关」，文案为简体中文）：
+开关、滑杆、步进器是三张独立叶子（文案为简体中文）：
 
 - `form_controls_toggles_light.png` / `form_controls_toggles_dark.png` — 开关：关/开、静止/按下/禁用，可点按。浅色画布 `#D1D1D6`，深色 `#000000`，1280×1500。
 - `form_controls_sliders_light.png` / `form_controls_sliders_dark.png` — 滑杆中部静止、按下、禁用，可拖动。
@@ -213,9 +213,9 @@ flutter test tool/capture_form_control_screenshots.dart
 flutter test tool/capture_form_control_screenshots.dart
 ```
 
-地址 `?page=toggles&theme=light&chrome=0`。滑杆把 `page` 换成 `sliders`，步进器换成 `steppers`。深色把 `theme` 换成 `dark`。页上的分段也能切。
+地址 `?page=toggles&theme=light&chrome=0`。滑杆把 `page` 换成 `sliders`，步进器换成 `steppers`。`toggle` / `slider` / `stepper` 仍打开同一页。深色把 `theme` 换成 `dark`。
 
-分段控件与页面控件（导航「分段」，文案为简体中文）：
+分段控件与页面控件（控件工作台里的「分段与页控」行，文案为简体中文）：
 
 - `segmented_controls_light.png` — 分段：小尺寸、按下、五段、大尺寸、禁用、着色、实时。选中透镜是液态玻璃常规小，轨道是三级填充，不是厚材质。浅色画布 `#D1D1D6`，1280×1040。
 - `segmented_controls_dark.png` — 同一页，深色，设计画布 `#000000`，1280×1040。

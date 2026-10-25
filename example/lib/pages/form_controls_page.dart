@@ -1,10 +1,11 @@
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Which Wave 1b control the gallery is showing.
+/// Which form-control leaf the gallery is showing.
 ///
 /// `?page=toggles` (also `toggle`), `?page=sliders` (`slider`), and
-/// `?page=steppers` (`stepper`) all open this page on that segment.
+/// `?page=steppers` (`stepper`) each open that leaf. There is no in-page
+/// segment between them.
 enum FormControlPanel {
   toggles,
   sliders,
@@ -21,7 +22,7 @@ enum FormControlPanel {
   }
 }
 
-/// Toggle, slider, and stepper gallery.
+/// One form-control leaf: toggles, sliders, or steppers.
 ///
 /// Plates are [LingyunToggle], [LingyunSlider], and [LingyunStepper].
 /// Fills come from [ControlLayerCatalog]. Sizes are [ControlMetrics].
@@ -44,21 +45,13 @@ class FormControlsPage extends StatefulWidget {
 }
 
 class _FormControlsPageState extends State<FormControlsPage> {
-  late FormControlPanel _panel = widget.initialPanel;
   bool _toggle = true;
   double _slider = 0.5;
   int _step = 3;
 
   @override
-  void didUpdateWidget(FormControlsPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialPanel != widget.initialPanel) {
-      _panel = widget.initialPanel;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final panel = widget.initialPanel;
     final brightness = Theme.of(context).brightness;
     final colors = LingyunColors.forBrightness(brightness);
     final label = colors.labels.primary;
@@ -66,37 +59,22 @@ class _FormControlsPageState extends State<FormControlsPage> {
     final catalog = ControlLayerCatalog.forBrightness(brightness);
     final tone = brightness == Brightness.dark ? '深色' : '浅色';
     final hasIdleKnob = catalog.knobIdle != null;
+    final title = switch (panel) {
+      FormControlPanel.toggles => '开关',
+      FormControlPanel.sliders => '滑杆',
+      FormControlPanel.steppers => '步进器',
+    };
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
       children: [
         Text(
-          '开关、滑杆与步进器',
+          title,
           key: const Key('form-controls-title'),
           style: LingyunTextStyles.largeTitle(emphasized: true, color: label),
         ),
         const SizedBox(height: 8),
-        Text(
-          '开关和滑杆把直径 24 的圆旋钮叠在轨道上。'
-          '颜色来自已验收的 Controls 层样式，这里不另写色值。'
-          '开关轨道 64×28，滑杆轨道高 6。'
-          '深色没有静止旋钮，不补白色。'
-          '着色轨道没有禁用样式，禁用时整条用未着色禁用。'
-          '步进器没有独立旋钮或轨道，板面复用未着色轨道。'
-          '不是材质四档，也不是液态玻璃。',
-          style: LingyunTextStyles.body(color: label),
-        ),
-        const SizedBox(height: 12),
-        SegmentedButton<FormControlPanel>(
-          key: const Key('form-controls-panel'),
-          segments: const [
-            ButtonSegment(value: FormControlPanel.toggles, label: Text('开关')),
-            ButtonSegment(value: FormControlPanel.sliders, label: Text('滑杆')),
-            ButtonSegment(value: FormControlPanel.steppers, label: Text('步进器')),
-          ],
-          selected: {_panel},
-          onSelectionChanged: (set) => setState(() => _panel = set.first),
-        ),
+        Text(_lede(panel), style: LingyunTextStyles.body(color: label)),
         const SizedBox(height: 12),
         SegmentedButton<ThemeMode>(
           key: const Key('form-controls-brightness'),
@@ -109,7 +87,7 @@ class _FormControlsPageState extends State<FormControlsPage> {
           onSelectionChanged: (set) => widget.onThemeModeChanged(set.first),
         ),
         const SizedBox(height: 24),
-        if (_panel == FormControlPanel.toggles) ...[
+        if (panel == FormControlPanel.toggles) ...[
           Text('开关 · $tone', style: LingyunTextStyles.headline(color: label)),
           const SizedBox(height: 8),
           _Row(
@@ -212,7 +190,7 @@ class _FormControlsPageState extends State<FormControlsPage> {
             ),
           ),
         ],
-        if (_panel == FormControlPanel.sliders) ...[
+        if (panel == FormControlPanel.sliders) ...[
           Text('滑杆 · $tone', style: LingyunTextStyles.headline(color: label)),
           const SizedBox(height: 8),
           _Row(
@@ -270,7 +248,7 @@ class _FormControlsPageState extends State<FormControlsPage> {
             ),
           ),
         ],
-        if (_panel == FormControlPanel.steppers) ...[
+        if (panel == FormControlPanel.steppers) ...[
           Text('步进器 · $tone', style: LingyunTextStyles.headline(color: label)),
           const SizedBox(height: 8),
           _Row(
@@ -358,6 +336,19 @@ class _FormControlsPageState extends State<FormControlsPage> {
       ],
     );
   }
+}
+
+String _lede(FormControlPanel panel) {
+  final specific = switch (panel) {
+    FormControlPanel.toggles => '开关把直径 24 的圆旋钮叠在 64×28 的轨道上。',
+    FormControlPanel.sliders => '滑杆把直径 24 的圆旋钮叠在高 6 的轨道上。',
+    FormControlPanel.steppers => '步进器没有独立旋钮或轨道，板面复用未着色轨道。',
+  };
+  return '$specific'
+      '颜色来自已验收的 Controls 层样式，这里不另写色值。'
+      '深色没有静止旋钮，不补白色。'
+      '着色轨道没有禁用样式，禁用时整条用未着色禁用。'
+      '不是材质四档，也不是液态玻璃。';
 }
 
 void _keepBool(bool _) {}
