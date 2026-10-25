@@ -26,15 +26,15 @@ class _TabBarPageState extends State<TabBarPage> {
     GlassTabBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home_rounded,
-      label: 'Home',
+      label: '首页',
     ),
-    GlassTabBarItem(icon: Icons.search, label: 'Search', badge: '2'),
-    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Library'),
-    GlassTabBarItem(icon: Icons.lock_outline, label: 'Locked', enabled: false),
+    GlassTabBarItem(icon: Icons.search, label: '搜索', badge: '2'),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: '资料库'),
+    GlassTabBarItem(icon: Icons.lock_outline, label: '已锁定', enabled: false),
     GlassTabBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
-      label: 'Profile',
+      label: '我的',
     ),
   ];
 
@@ -42,15 +42,15 @@ class _TabBarPageState extends State<TabBarPage> {
     GlassTabBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home_rounded,
-      label: 'Home',
+      label: '首页',
     ),
-    GlassTabBarItem(icon: Icons.search, label: 'Search', badge: '3'),
-    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Library'),
-    GlassTabBarItem(icon: Icons.play_circle_outline, label: 'Play'),
+    GlassTabBarItem(icon: Icons.search, label: '搜索', badge: '3'),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: '资料库'),
+    GlassTabBarItem(icon: Icons.play_circle_outline, label: '播放'),
     GlassTabBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
-      label: 'Profile',
+      label: '我的',
     ),
   ];
 
@@ -58,14 +58,14 @@ class _TabBarPageState extends State<TabBarPage> {
     GlassTabBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home_rounded,
-      label: 'Home',
+      label: '首页',
     ),
-    GlassTabBarItem(icon: Icons.search, label: 'Search', badge: '1'),
-    GlassTabBarItem(icon: Icons.grid_view_rounded, label: 'Library'),
+    GlassTabBarItem(icon: Icons.search, label: '搜索', badge: '1'),
+    GlassTabBarItem(icon: Icons.grid_view_rounded, label: '资料库'),
     GlassTabBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
-      label: 'Profile',
+      label: '我的',
     ),
   ];
 
@@ -73,13 +73,13 @@ class _TabBarPageState extends State<TabBarPage> {
     GlassTabBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home_rounded,
-      label: 'Home',
+      label: '首页',
     ),
-    GlassTabBarItem(icon: Icons.search, label: 'Search'),
+    GlassTabBarItem(icon: Icons.search, label: '搜索'),
     GlassTabBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
-      label: 'Profile',
+      label: '我的',
     ),
   ];
 
@@ -97,7 +97,7 @@ class _TabBarPageState extends State<TabBarPage> {
           padding: LingyunLayout.layoutMarginOf(context),
           children: [
             Text(
-              'Tab Bars',
+              '标签栏',
               key: const Key('tab-bar-title'),
               style: text.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
@@ -106,14 +106,11 @@ class _TabBarPageState extends State<TabBarPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Liquid Glass Dock platter — not Materials Thick, and not a '
-              'toolbar material. Icon + Caption. Unselected labels use '
-              'Liquid Glass Primary (#1A1A1A / #EDEDED), softened. Selected '
-              'icon and caption are System Blue. The floating pill is a '
-              'stadium capsule; 18 / 26 / 34 are not its radius. '
-              'LingyunPage places GlassTabBarStyle.sidebar as a glass rail on '
-              'regular and wide widths. That rail is not iOS 27.1 vertical '
-              'system chrome.',
+              '液态玻璃程序坞托盘，不是材质厚，也不是工具栏材质。'
+              '图标加说明文字。未选中的字用液态玻璃主色（#1A1A1A / #EDEDED），并降低透明度。'
+              '选中的图标和说明是系统蓝。悬浮胶囊是跑道形，圆角不是 18 / 26 / 34。'
+              'LingyunPage 在常规和宽屏上把 GlassTabBarStyle.sidebar 画成玻璃侧栏。'
+              '那条侧栏不是 iOS 27.1 的竖向系统饰条。',
               style: text.bodyMedium?.copyWith(color: label),
             ),
             const SizedBox(height: 20),
@@ -123,7 +120,7 @@ class _TabBarPageState extends State<TabBarPage> {
               children: [
                 _LabeledStage(
                   width: stageWidth,
-                  kicker: 'Standard · edge to bottom',
+                  kicker: '标准 · 贴底',
                   stageKey: const Key('tab-stage-standard'),
                   child: GlassTabBar(
                     key: const Key('tab-bar-standard'),
@@ -136,7 +133,7 @@ class _TabBarPageState extends State<TabBarPage> {
                 ),
                 _LabeledStage(
                   width: stageWidth,
-                  kicker: 'Floating pill · 3',
+                  kicker: '悬浮胶囊 · 3',
                   stageKey: const Key('tab-stage-floating-3'),
                   child: GlassTabBar(
                     key: const Key('tab-bar-floating-3'),
@@ -149,7 +146,7 @@ class _TabBarPageState extends State<TabBarPage> {
                 ),
                 _LabeledStage(
                   width: stageWidth,
-                  kicker: 'Floating pill · 4',
+                  kicker: '悬浮胶囊 · 4',
                   stageKey: const Key('tab-stage-floating-4'),
                   child: GlassTabBar(
                     key: const Key('tab-bar-floating-4'),
@@ -162,7 +159,7 @@ class _TabBarPageState extends State<TabBarPage> {
                 ),
                 _LabeledStage(
                   width: stageWidth,
-                  kicker: 'Floating pill · 5',
+                  kicker: '悬浮胶囊 · 5',
                   stageKey: const Key('tab-stage-floating-5'),
                   child: GlassTabBar(
                     key: const Key('tab-bar-floating-5'),
@@ -175,7 +172,7 @@ class _TabBarPageState extends State<TabBarPage> {
                 ),
                 _LabeledStage(
                   width: stageWidth,
-                  kicker: 'Tinted bar · System Blue',
+                  kicker: '整条着色 · 系统蓝',
                   stageKey: const Key('tab-stage-tinted'),
                   child: GlassTabBar(
                     key: const Key('tab-bar-tinted'),
@@ -267,7 +264,7 @@ class _PhoneStage extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      'Library',
+                      '资料库',
                       style: TextStyle(
                         color: label,
                         fontSize: 28,
