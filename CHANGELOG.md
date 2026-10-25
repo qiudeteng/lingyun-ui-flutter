@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Example gallery chrome for sidebar, Glass, Tabs, Layout, Native, and Access (titles, buttons, labels, help) is Simplified Chinese. Committed page screenshots still show the previous English copy until a Mac re-shoot.
 - Formal sidebars. `LingyunSidebar` / `LingyunSidebarLayout` use the same Materials Thick platter as sheets (stripes underneath, no style or token override). Title, sections, selection. Not the Dock rail (`GlassTabBarStyle.sidebar`, 96px, 待核验) and not the native vertical toolbar. Expand/collapse follows the system page curve; selection and row press use `LiquidGlassMotion.quick` and `CupertinoListTile`. No new spring token. Gallery **侧栏** (`?page=sidebars`) is Simplified Chinese. See `docs/SIDEBARS.md`.
 - Flutter toolbars. `LingyunToolbar` floats Liquid Glass groups at Regular Medium (leading / title / trailing). Not Dock, not Materials Thick, not the iOS 27.1 vertical system toolbar. Press uses the existing 0.97 scale. Show/hide uses `LiquidGlassMotion.standard`. Gallery **工具栏** (`?page=toolbars`) is Simplified Chinese. See `docs/TOOLBARS.md`.
+- Wave 2 Menus. `showLingyunMenu` / `LingyunMenu` are a Liquid Glass bubble (Regular Large hypothesis). The button morphs into the menu and back; rows flex on press; Reduce Motion snaps and skips the flex. Not Materials Thick, not an action sheet, not a popover. No new spring token. Gallery copy is Simplified Chinese (`?page=menus`). See `docs/MENUS.md`.
 
 ### Notes
 

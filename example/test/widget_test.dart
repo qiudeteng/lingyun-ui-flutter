@@ -388,6 +388,43 @@ void main() {
     expect(find.textContaining('上次结果：已关闭'), findsOneWidget);
   });
 
+  testWidgets('menus page is Chinese and can open a glass menu', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    final railScroll = find.descendant(
+      of: find.byKey(const Key('gallery-rail')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('菜单'),
+      80,
+      scrollable: railScroll.first,
+    );
+    await tester.tap(find.text('菜单').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('menu-title')), findsOneWidget);
+    expect(find.byKey(const Key('menu-scope')), findsOneWidget);
+    expect(find.textContaining('Regular Large'), findsOneWidget);
+    expect(find.text('浅色'), findsWidgets);
+    expect(find.text('深色'), findsWidgets);
+    expect(find.byKey(const Key('menu-stage-grouped')), findsOneWidget);
+    expect(find.byKey(const Key('menu-stage-pressed')), findsOneWidget);
+    expect(find.textContaining('尚未弹出'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('menu-open')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('lingyun-menu-action-0')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('lingyun-menu-action-2')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('上次结果：删除'), findsOneWidget);
+  });
+
   testWidgets('foundation gallery shows colors and text styles', (
     tester,
   ) async {

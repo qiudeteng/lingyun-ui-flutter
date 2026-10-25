@@ -85,6 +85,24 @@ flutter test tool/capture_popover_screenshots.dart
 flutter test tool/capture_popover_screenshots.dart
 ```
 
+- `menus_light.png` — 菜单：分组与破坏性、选中、禁用、按下、子菜单、锚点。Chrome 是 **Liquid Glass Regular Large**（假设，待核验）。文案简体中文。设计画布 `#D1D1D6`，1440×1180。
+- `menus_dark.png` — 同一版面，深色，设计画布 `#000000`，1440×1180。
+
+在 `example/` 重拍（bash、PowerShell、cmd 相同）：
+
+```bash
+flutter test tool/capture_menu_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_menu_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_menu_screenshots.dart
+```
+
+地址 `?page=menus&theme=light&chrome=0`。深色把 `theme` 换成 `dark`。页上的分段也能切。弹出、收起和按压要在运行中的画廊里点「打开菜单」，截图是静止盘子。
 Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. Confirm and cancel are the kit system blue. The typeface on these boards is the ambient desktop family (Roboto on this Linux host, plus a CJK UI fallback when a glyph is missing), not SF Pro on device. Regenerate from `example/` (bash, PowerShell, or cmd):
 
 ```bash
