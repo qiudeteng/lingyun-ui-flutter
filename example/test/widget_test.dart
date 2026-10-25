@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
+import 'package:example/gallery_catalog.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/form_controls_page.dart';
 import 'package:example/pages/wave1c_page.dart';
@@ -8,7 +9,7 @@ import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
-/// Page scroller inside the gallery body. The rail is also scrollable.
+/// Page scroller inside the pushed demo, not the workbench list.
 Finder galleryContentScrollable() {
   return find
       .descendant(
@@ -18,13 +19,123 @@ Finder galleryContentScrollable() {
       .first;
 }
 
+/// Scrolls [finder] into the band above the Dock.
+///
+/// The floating tab bar's top padding does not hit-test, and a control
+/// whose center sits in that band is laid out but cannot be tapped.
+/// [Scrollable.ensureVisible] treats a barely revealed sliver as done.
+Future<void> revealGalleryTarget(WidgetTester tester, Finder finder) async {
+  final state = tester.state<ScrollableState>(galleryContentScrollable());
+  final screen = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+  const topInset = 72.0;
+  const bottomInset = 120.0;
+  for (var i = 0; i < 24; i++) {
+    await tester.pump();
+    if (finder.evaluate().isNotEmpty) {
+      final rect = tester.getRect(finder);
+      if (rect.top >= topInset &&
+          rect.bottom <= screen - bottomInset &&
+          rect.height > 0) {
+        return;
+      }
+      final down = rect.top < topInset;
+      final current = state.position.pixels;
+      final delta = down ? -160.0 : 160.0;
+      final target = (current + delta).clamp(
+        state.position.minScrollExtent,
+        state.position.maxScrollExtent,
+      );
+      if (target == current) return;
+      state.position.jumpTo(target);
+      continue;
+    }
+    final current = state.position.pixels;
+    final target = (current + 320).clamp(
+      state.position.minScrollExtent,
+      state.position.maxScrollExtent,
+    );
+    if (target == current) break;
+    state.position.jumpTo(target);
+  }
+  expect(finder, findsOneWidget);
+}
+
+/// Opens a demo from its group tab and workbench list row.
+///
+/// [settle] stays false for the progress page, whose indeterminate
+/// indicator never goes idle.
+Future<void> openGalleryEntry(
+  WidgetTester tester,
+  String entryId, {
+  bool settle = true,
+}) async {
+  final selection = resolveGallerySelection(entryId);
+  expect(selection, isNotNull);
+  await tester.tap(
+    find.descendant(
+      of: find.byKey(const Key('lingyun-page-tab-bar')),
+      matching: find.text(selection!.group.label),
+    ),
+  );
+  await tester.pumpAndSettle();
+  final card = find.byKey(Key('gallery-entry-$entryId'));
+  await tester.ensureVisible(card);
+  await tester.tap(card);
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
+}
+
 void main() {
-  testWidgets('gallery boots on Materials', (tester) async {
+  testWidgets('gallery boots on the basics workbench', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1280, 900);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byKey(const Key('lingyun-page-sidebar')), findsNothing);
+    expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
+    final tabs = tester.widget<GlassTabBar>(
+      find.byKey(const Key('lingyun-page-tab-bar')),
+    );
+    expect(tabs.style, GlassTabBarStyle.floatingPill);
+    expect(tabs.glassStyle, LiquidGlassStyle.dock);
+    expect(tabs.items.map((item) => item.label).toList(), [
+      '基础',
+      '控件',
+      '浮层',
+      '导航壳',
+    ]);
+    expect(find.text('标签栏'), findsNothing);
+    expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
+    expect(find.byType(GridView), findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '基础工作台',
+    );
+    expect(find.text('点一行打开示例。'), findsOneWidget);
+    expect(find.byKey(const Key('gallery-section-surface')), findsOneWidget);
+    expect(
+      find.byKey(const Key('gallery-section-presentation')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-card-label-surface')))
+          .data,
+      '基础工作台',
+    );
+    expect(find.text('液态玻璃'), findsWidgets);
+    expect(find.text('玻璃按钮'), findsWidgets);
+    expect(find.byKey(const Key('materials-title')), findsNothing);
+
+    await openGalleryEntry(tester, 'materials');
     expect(find.text('材质'), findsWidgets);
     expect(find.text('超薄'), findsWidgets);
     expect(find.text('厚'), findsWidgets);
@@ -51,35 +162,15 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('玻璃').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'glass');
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-pressed')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-disabled')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-clear')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-destructive')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-prominent')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-medium')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-large')), findsOneWidget);
-    expect(find.byKey(const Key('glass-button-symbol')), findsOneWidget);
-    expect(
-      find.byKey(const Key('glass-button-prominent-disabled')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('glass-clear')), findsOneWidget);
+    expect(find.byKey(const Key('glass-regularSmall')), findsOneWidget);
+    expect(find.byKey(const Key('glass-dock')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-default')), findsNothing);
     expect(find.text('常规小'), findsWidgets);
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('glass-button-live')),
-      200,
-      scrollable: galleryContentScrollable(),
-    );
-    await tester.tap(find.byKey(const Key('glass-button-live')));
-    await tester.pumpAndSettle();
-    expect(find.text('已点 1'), findsOneWidget);
-
-    await tester.tap(find.text('布局').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'layout');
     expect(find.byKey(const Key('layout-title')), findsOneWidget);
     expect(find.byKey(const Key('preset-regular')), findsOneWidget);
     expect(find.byKey(const Key('layout-class-label')), findsOneWidget);
@@ -93,9 +184,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('宽屏 · 侧栏'), findsOneWidget);
 
-    await tester.tap(find.text('标签栏').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'tabs');
     expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
+    final rootTabs = tester.widget<GlassTabBar>(
+      find.byKey(const Key('lingyun-page-tab-bar')),
+    );
+    expect(rootTabs.items.map((item) => item.label), isNot(contains('标签栏')));
     await tester.scrollUntilVisible(
       find.byKey(const Key('tab-stage-tinted')),
       300,
@@ -108,8 +202,7 @@ void main() {
     expect(find.byKey(const Key('tab-stage-tinted')), findsOneWidget);
     expect(find.textContaining('系统蓝'), findsWidgets);
 
-    await tester.tap(find.text('辅助功能').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'access');
     expect(find.byKey(const Key('a11y-title')), findsOneWidget);
     expect(find.text('降低透明度'), findsOneWidget);
     expect(find.text('减弱动态'), findsOneWidget);
@@ -169,13 +262,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
 
-    await tester.tap(find.text('玻璃').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'glass');
     expect(find.byKey(const Key('glass-title')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
 
-    await tester.tap(find.text('标签栏').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'tabs');
     expect(find.byKey(const Key('tab-bar-title')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsWidgets);
   });
@@ -186,8 +277,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('提示').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'alerts');
 
     expect(find.byKey(const Key('alert-title')), findsOneWidget);
     expect(find.text('提示'), findsWidgets);
@@ -203,6 +293,10 @@ void main() {
     expect(tester.getRect(cancel).left, lessThan(tester.getRect(confirm).left));
 
     expect(find.textContaining('尚未弹出'), findsOneWidget);
+    await revealGalleryTarget(
+      tester,
+      find.byKey(const Key('alert-live-single')),
+    );
     await tester.tap(find.byKey(const Key('alert-live-single')));
     await tester.pumpAndSettle();
     expect(find.text('已保存'), findsWidgets);
@@ -219,8 +313,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('工作表').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'sheets');
 
     expect(find.byKey(const Key('sheet-title')), findsOneWidget);
     expect(find.byKey(const Key('sheet-thick-note')), findsOneWidget);
@@ -240,31 +333,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('尚未弹出'), findsOneWidget);
-    await tester.scrollUntilVisible(
+    await revealGalleryTarget(
+      tester,
       find.byKey(const Key('sheet-open-window')),
-      400,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const Key('sheet-gallery-scroll')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
     );
     await tester.tap(find.byKey(const Key('sheet-open-window')));
     await tester.pumpAndSettle();
     expect(find.text('编辑项目'), findsWidgets);
     await tester.tap(find.text('完成').last);
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('sheet-result')),
-      -400,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const Key('sheet-gallery-scroll')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
+    tester
+        .state<ScrollableState>(galleryContentScrollable())
+        .position
+        .jumpTo(0);
+    await tester.pump();
     expect(find.textContaining('上次结果：完成'), findsOneWidget);
   });
 
@@ -276,17 +358,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    final railScroll = find.descendant(
-      of: find.byKey(const Key('gallery-rail')),
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(
-      find.text('操作表').last,
-      200,
-      scrollable: railScroll.first,
-    );
-    await tester.tap(find.text('操作表').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'actions');
 
     expect(find.byKey(const Key('action-sheet-title')), findsOneWidget);
     expect(find.byKey(const Key('action-sheet-scope')), findsOneWidget);
@@ -337,20 +409,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.pumpAndSettle();
-    final railScroll = find.descendant(
-      of: find.byKey(const Key('gallery-rail')),
-      matching: find.byType(Scrollable),
-    );
-    if (railScroll.evaluate().isNotEmpty) {
-      await tester.scrollUntilVisible(
-        find.text('弹出框'),
-        200,
-        scrollable: railScroll.first,
-      );
-    }
-    await tester.tap(find.text('弹出框').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'popovers');
 
     expect(find.byKey(const Key('popover-title')), findsOneWidget);
     expect(find.byKey(const Key('popover-motion-note')), findsOneWidget);
@@ -396,17 +455,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    final railScroll = find.descendant(
-      of: find.byKey(const Key('gallery-rail')),
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(
-      find.text('菜单'),
-      80,
-      scrollable: railScroll.first,
-    );
-    await tester.tap(find.text('菜单').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'menus');
 
     expect(find.byKey(const Key('menu-title')), findsOneWidget);
     expect(find.byKey(const Key('menu-scope')), findsOneWidget);
@@ -465,14 +514,23 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('主题').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'themes');
 
     expect(find.byKey(const Key('themes-title')), findsOneWidget);
     expect(find.byKey(const Key('colors-title')), findsOneWidget);
     expect(find.text('系统颜色'), findsOneWidget);
-    expect(find.text('液态玻璃标签'), findsOneWidget);
     expect(find.text('#0088FF'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('液态玻璃标签'),
+      400,
+      scrollable: galleryContentScrollable(),
+    );
+    expect(find.text('液态玻璃标签'), findsOneWidget);
+    tester
+        .state<ScrollableState>(galleryContentScrollable())
+        .position
+        .jumpTo(0);
+    await tester.pump();
     expect(find.text('Themes'), findsNothing);
     expect(find.text('Dark mode'), findsNothing);
     expect(find.text('Materials Thin'), findsNothing);
@@ -494,8 +552,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('旋钮').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'knob');
 
     expect(find.byKey(const Key('controls-title')), findsOneWidget);
     expect(find.byKey(const Key('track-filled-idle')), findsOneWidget);
@@ -538,21 +595,19 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
 
-    await tester.tap(find.text('列表').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'lists');
     expect(find.byKey(const Key('lists-title')), findsOneWidget);
     expect(find.text('无线局域网'), findsOneWidget);
     expect(find.text('设计评审'), findsOneWidget);
     expect(find.text('Lists'), findsNothing);
 
-    await tester.tap(find.text('文本框').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'fields');
     expect(find.byKey(const Key('fields-title')), findsOneWidget);
     expect(find.text('显示名称'), findsOneWidget);
     expect(find.text('请输入有效的电子邮件'), findsOneWidget);
     expect(find.text('Text Fields'), findsNothing);
 
-    await tester.tap(find.text('进度').last);
+    await openGalleryEntry(tester, 'progress', settle: false);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byKey(const Key('progress-title')), findsOneWidget);
@@ -583,17 +638,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('开关').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'toggles');
 
     expect(find.byKey(const Key('form-controls-title')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('form-controls-title'))).data,
+      '开关',
+    );
     expect(find.byKey(const Key('toggle-off-idle')), findsOneWidget);
     expect(find.byKey(const Key('toggle-on-idle')), findsOneWidget);
     expect(find.byKey(const Key('toggle-off-pressed')), findsOneWidget);
     expect(find.byKey(const Key('toggle-on-pressed')), findsOneWidget);
     expect(find.byKey(const Key('toggle-off-disabled')), findsOneWidget);
     expect(find.byKey(const Key('toggle-on-disabled')), findsOneWidget);
-    expect(find.text('开关、滑杆与步进器'), findsOneWidget);
     expect(find.textContaining('不是材质四档'), findsOneWidget);
     expect(find.textContaining('#0088FF'), findsWidgets);
 
@@ -631,13 +688,7 @@ void main() {
     expect(offPressed, findsOneWidget);
     expect(find.textContaining('#0091FF'), findsWidgets);
 
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('form-controls-panel')),
-        matching: find.text('滑杆'),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'sliders');
     expect(find.byKey(const Key('slider-mid-idle')), findsOneWidget);
     expect(find.byKey(const Key('slider-mid-pressed')), findsOneWidget);
     expect(
@@ -658,13 +709,7 @@ void main() {
     expect(find.byKey(const Key('toggle-off-idle')), findsNothing);
     expect(find.text('实时：50%'), findsOneWidget);
 
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('form-controls-panel')),
-        matching: find.text('步进器'),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'steppers');
     expect(find.byKey(const Key('stepper-idle')), findsOneWidget);
     expect(find.byKey(const Key('stepper-decrement-pressed')), findsOneWidget);
     expect(find.byKey(const Key('stepper-increment-pressed')), findsOneWidget);
@@ -702,8 +747,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-    await tester.tap(find.text('分段').last);
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'segmented');
 
     expect(find.byKey(const Key('wave1c-title')), findsOneWidget);
     expect(find.text('分段与页面控件'), findsOneWidget);
@@ -750,14 +794,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(const LingyunGlassDemoApp());
-
-    final rail = find.descendant(
-      of: find.byKey(const Key('gallery-rail')),
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(find.text('侧栏'), 120, scrollable: rail);
-    await tester.tap(find.text('侧栏'));
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'sidebars');
     expect(find.byKey(const Key('sidebar-title')), findsOneWidget);
     expect(find.byKey(const Key('sidebar-thick-note')), findsOneWidget);
     expect(find.textContaining('Materials Thick'), findsWidgets);
@@ -766,16 +803,17 @@ void main() {
     expect(find.text('浅色'), findsWidgets);
     expect(find.text('深色'), findsWidgets);
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('sidebar-live')),
-      240,
-      scrollable: galleryContentScrollable(),
-    );
+    await revealGalleryTarget(tester, find.byKey(const Key('sidebar-live')));
     await tester.tap(find.byKey(const Key('sidebar-live-inbox')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('sidebar-live-selection')), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.menu));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('sidebar-live')),
+        matching: find.byIcon(Icons.menu),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
     final mid = tester
@@ -789,10 +827,9 @@ void main() {
       0,
     );
 
-    await tester.scrollUntilVisible(
+    await revealGalleryTarget(
+      tester,
       find.byKey(const Key('sidebar-rail-toggle')),
-      200,
-      scrollable: galleryContentScrollable(),
     );
     final bar = tester.widget<GlassTabBar>(
       find.byKey(const Key('sidebar-rail-bar')),
@@ -814,22 +851,327 @@ void main() {
       LiquidGlassStyle.dock,
     );
 
-    await tester.scrollUntilVisible(find.text('工具栏'), 120, scrollable: rail);
-    await tester.tap(find.text('工具栏'));
-    await tester.pumpAndSettle();
+    await openGalleryEntry(tester, 'toolbars');
     expect(find.byKey(const Key('toolbar-title')), findsOneWidget);
     expect(find.byKey(const Key('toolbar-glass-note')), findsOneWidget);
     expect(find.textContaining('Regular Medium'), findsOneWidget);
     expect(find.byKey(const Key('toolbar-stage-light')), findsOneWidget);
     expect(find.byKey(const Key('toolbar-stage-dark')), findsOneWidget);
-    await tester.scrollUntilVisible(
+    await revealGalleryTarget(
+      tester,
       find.byKey(const Key('toolbar-live-share')),
-      200,
-      scrollable: galleryContentScrollable(),
     );
     expect(find.text('已分享 0 次'), findsOneWidget);
     await tester.tap(find.byKey(const Key('toolbar-live-share')));
     await tester.pumpAndSettle();
     expect(find.text('已分享 1 次'), findsOneWidget);
+  });
+
+  test('gallery page ids stay unique and grouped', () {
+    final seen = <String>{};
+    expect(galleryGroups.map((group) => group.label).toList(), [
+      '基础',
+      '控件',
+      '浮层',
+      '导航壳',
+    ]);
+    expect(galleryGroups.map((group) => group.homeKey).toList(), [
+      'foundation',
+      'controls',
+      'overlays',
+      'chrome',
+    ]);
+    for (final group in galleryGroups) {
+      expect(group.sections.length, greaterThanOrEqualTo(2));
+      expect(group.workbenchTitle, '${group.label}工作台');
+      for (final entry in group.entries) {
+        expect(entry.queries, contains(entry.id));
+        for (final query in entry.queries) {
+          expect(seen.add(query), isTrue, reason: query);
+          expect(resolveGallerySelection(query)?.entry.id, entry.id);
+        }
+      }
+    }
+    expect(resolveGallerySelection(null), isNull);
+    expect(resolveGallerySelection('nope'), isNull);
+    expect(resolveGallerySelection('button')?.entry.id, 'buttons');
+    expect(resolveGallerySelection('buttons')?.group.id, 'basics');
+    expect(resolveGallerySelection('buttons')?.entry.label, '玻璃按钮');
+    expect(resolveGallerySelection('glass')?.entry.label, '液态玻璃');
+    expect(resolveGallerySelection('knob')?.entry.label, '旋钮与轨道');
+    expect(resolveGallerySelection('segmented')?.entry.label, '分段与页控');
+    expect(resolveGallerySelection('toggle')?.entry.id, 'toggles');
+    expect(resolveGallerySelection('slider')?.entry.id, 'sliders');
+    expect(resolveGallerySelection('stepper')?.entry.id, 'steppers');
+    expect(resolveGallerySelection('pages')?.entry.id, 'segmented');
+    expect(resolveGallerySelection('controls')?.entry.id, 'knob');
+    expect(resolveGalleryWorkbench('controls')?.id, 'controls');
+    expect(resolveGalleryWorkbench('foundation')?.label, '基础');
+    expect(resolveGalleryWorkbench('chrome')?.label, '导航壳');
+    expect(resolveGalleryWorkbench('tabs'), isNull);
+  });
+
+  test('launch reads page, theme, chrome, and bg', () {
+    final launch = GalleryLaunch.fromUri(
+      Uri.parse(
+        'https://example.test/?page=text&theme=dark&chrome=0&bg=meadow&panel=samples',
+      ),
+    );
+    expect(launch.page, 'text');
+    expect(launch.themesPanel, 'text');
+    expect(launch.bare, isTrue);
+    expect(launch.themeMode, ThemeMode.dark);
+    expect(launch.background, 'meadow');
+
+    final home = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?home=controls'),
+    );
+    expect(home.page, isNull);
+    expect(home.workbench?.id, 'controls');
+
+    final tab = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?tab=chrome'),
+    );
+    expect(tab.workbench?.homeKey, 'chrome');
+
+    final tabWins = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?home=foundation&tab=overlays'),
+    );
+    expect(tabWins.workbench?.id, 'overlays');
+
+    final pageWins = GalleryLaunch.fromUri(
+      Uri.parse('https://example.test/?page=menus&home=foundation'),
+    );
+    expect(pageWins.page, 'menus');
+    expect(resolveGallerySelection(pageWins.page)?.entry.id, 'menus');
+
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?home=nope'))
+          .workbench,
+      isNull,
+    );
+  });
+
+  testWidgets('home and tab queries open that workbench', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(home: 'overlays')),
+    );
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '浮层工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-alerts')), findsOneWidget);
+    expect(find.byKey(const Key('alert-title')), findsNothing);
+    final tabs = tester.widget<GlassTabBar>(
+      find.byKey(const Key('lingyun-page-tab-bar')),
+    );
+    expect(tabs.currentIndex, 2);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(tab: 'chrome')),
+    );
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '导航壳工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-tabs')), findsOneWidget);
+    expect(find.byKey(const Key('tab-bar-title')), findsNothing);
+    expect(
+      tester
+          .widget<GlassTabBar>(find.byKey(const Key('lingyun-page-tab-bar')))
+          .items
+          .map((item) => item.label),
+      isNot(contains('标签栏')),
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'glass', home: 'controls'),
+      ),
+    );
+    expect(find.byKey(const Key('glass-title')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '基础工作台',
+    );
+  });
+
+  testWidgets('deep link opens the demo and back returns to its workbench', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(launch: GalleryLaunch(page: 'menus')),
+    );
+    expect(find.byKey(const Key('menu-title')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-workbench')), findsNothing);
+    expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
+    expect(find.byKey(const Key('lingyun-page-sidebar')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('menu-title')), findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '浮层工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-menus')), findsOneWidget);
+  });
+
+  testWidgets('chrome theme and bg still hide the shell', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(
+          page: 'button',
+          theme: 'dark',
+          chrome: '0',
+          background: 'meadow',
+        ),
+      ),
+    );
+    expect(find.byKey(const Key('buttons-title')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
+    expect(find.byKey(const Key('lingyun-page-tab-bar')), findsNothing);
+    expect(find.byKey(const Key('gallery-back')), findsNothing);
+    expect(find.byKey(const Key('gallery-bg-control')), findsNothing);
+    expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
+    expect(
+      Theme.of(tester.element(find.byKey(const Key('buttons-title'))))
+          .brightness,
+      Brightness.dark,
+    );
+  });
+
+  testWidgets('legacy form and page queries open the right leaf', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'slider', chrome: '0'),
+      ),
+    );
+    expect(find.byKey(const Key('slider-mid-idle')), findsOneWidget);
+    expect(find.byKey(const Key('toggle-off-idle')), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'stepper', chrome: '0'),
+      ),
+    );
+    expect(find.byKey(const Key('stepper-idle')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'toggle', chrome: '0'),
+      ),
+    );
+    expect(find.byKey(const Key('toggle-off-idle')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'pagecontrol', chrome: '0'),
+      ),
+    );
+    expect(find.byKey(const Key('page-five')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'text', chrome: '0'),
+      ),
+    );
+    expect(find.byKey(const Key('text-styles-title')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('glass buttons are their own leaf', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await openGalleryEntry(tester, 'buttons');
+    expect(find.byKey(const Key('buttons-title')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-default')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-pressed')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-disabled')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-clear')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-destructive')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-prominent')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-medium')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-large')), findsOneWidget);
+    expect(find.byKey(const Key('glass-button-symbol')), findsOneWidget);
+    expect(
+      find.byKey(const Key('glass-button-prominent-disabled')),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('glass-button-live')),
+      200,
+      scrollable: galleryContentScrollable(),
+    );
+    await tester.tap(find.byKey(const Key('glass-button-live')));
+    await tester.pumpAndSettle();
+    expect(find.text('已点 1'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('buttons-title')), findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '基础工作台',
+    );
+  });
+
+  testWidgets('compact width still uses dock tabs, not a sidebar', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
+    expect(find.byKey(const Key('lingyun-page-sidebar')), findsNothing);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
+    await openGalleryEntry(tester, 'native');
+    expect(find.byKey(const Key('native-page-title')), findsOneWidget);
   });
 }

@@ -1,9 +1,12 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
+import 'gallery_catalog.dart';
+import 'gallery_shell.dart';
 import 'pages/accessibility_page.dart';
 import 'pages/action_sheets_page.dart';
 import 'pages/alerts_page.dart';
+import 'pages/buttons_page.dart';
 import 'pages/controls_page.dart';
 import 'pages/form_controls_page.dart';
 import 'pages/glass_page.dart';
@@ -28,81 +31,125 @@ void main() {
 }
 
 class LingyunGlassDemoApp extends StatefulWidget {
-  const LingyunGlassDemoApp({super.key});
+  const LingyunGlassDemoApp({super.key, this.launch});
+
+  /// Test hook. Null reads [Uri.base] and the `GALLERY_*` environment keys.
+  final GalleryLaunch? launch;
 
   @override
   State<LingyunGlassDemoApp> createState() => _LingyunGlassDemoAppState();
 }
 
 class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
+  late GalleryLaunch _launch;
   ThemeMode _themeMode = ThemeMode.light;
   bool _reduceTransparency = false;
   bool _reduceMotion = false;
   bool _highContrast = false;
-  int _index = 0;
-  FormControlPanel _formPanel = FormControlPanel.toggles;
   Wave1cPanel _wave1cPanel = Wave1cPanel.segmented;
   ThemesPanel _themesPanel = ThemesPanel.colors;
-  bool _bare = false;
-  GalleryBackground _background = GalleryBackground.canvas;
 
   @override
   void initState() {
     super.initState();
-    final query = Uri.base.queryParameters;
-    const envPage = String.fromEnvironment('GALLERY_PAGE');
-    const envTheme = String.fromEnvironment('GALLERY_THEME');
-    const envChrome = String.fromEnvironment('GALLERY_CHROME');
-    const envBg = String.fromEnvironment('GALLERY_BG');
-    final page = query['page'] ?? (envPage.isEmpty ? null : envPage);
-    final theme = query['theme'] ?? (envTheme.isEmpty ? null : envTheme);
-    final chrome = query['chrome'] ?? (envChrome.isEmpty ? null : envChrome);
-    final bg = query['bg'] ?? (envBg.isEmpty ? null : envBg);
-    _bare = chrome == '0';
-    _background = GalleryBackground.fromQuery(bg);
-    _formPanel = FormControlPanel.fromQuery(page) ?? FormControlPanel.toggles;
-    _wave1cPanel = Wave1cPanel.fromQuery(page) ?? Wave1cPanel.segmented;
-    _index = switch (page) {
-      'glass' => 1,
-      'tabs' => 2,
-      'themes' || 'colors' || 'text' => 3,
-      'layout' => 4,
-      'access' => 5,
-      'native' => 6,
-      'alerts' => 7,
-      'knob' || 'track' || 'controls' => 8,
-      'lists' => 9,
-      'fields' => 10,
-      'progress' => 11,
-      'toggles' ||
-      'toggle' ||
-      'sliders' ||
-      'slider' ||
-      'steppers' ||
-      'stepper' => 12,
-      'sheets' => 13,
-      'actions' || 'action-sheets' => 14,
-      'segmented' ||
-      'segments' ||
-      'pages' ||
-      'page-controls' ||
-      'pagecontrol' => 15,
-      'sidebars' || 'sidebar' => 16,
-      'toolbars' || 'toolbar' => 17,
-      'popovers' || 'popover' => 18,
-      'menus' => 19,
-      _ => 0,
-    };
-    final panel = page == 'text' ? 'text' : query['panel'];
-    _themesPanel = switch (panel) {
+    _apply(widget.launch ?? GalleryLaunch.fromUri(Uri.base));
+  }
+
+  void _apply(GalleryLaunch launch) {
+    _launch = launch;
+    _wave1cPanel = Wave1cPanel.fromQuery(launch.page) ?? Wave1cPanel.segmented;
+    _themesPanel = switch (launch.themesPanel) {
       'text' => ThemesPanel.text,
       'samples' => ThemesPanel.samples,
       _ => ThemesPanel.colors,
     };
-    _themeMode = switch (theme) {
-      'dark' => ThemeMode.dark,
-      'system' => ThemeMode.system,
-      _ => ThemeMode.light,
+    _themeMode = launch.themeMode;
+  }
+
+  void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
+
+  void _setBrightness(Brightness brightness) {
+    _setThemeMode(
+      brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+    );
+  }
+
+  Widget _page(BuildContext context, String entryId) {
+    final brightness = Theme.of(context).brightness;
+    return switch (entryId) {
+      'materials' => const MaterialsPage(),
+      'glass' => const GlassPage(),
+      'themes' => ThemesPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+        initialPanel: _themesPanel,
+      ),
+      'layout' => const LayoutPage(),
+      'access' => AccessibilityPage(
+        reduceTransparency: _reduceTransparency,
+        reduceMotion: _reduceMotion,
+        highContrast: _highContrast,
+        onReduceTransparency: (value) =>
+            setState(() => _reduceTransparency = value),
+        onReduceMotion: (value) => setState(() => _reduceMotion = value),
+        onHighContrast: (value) => setState(() => _highContrast = value),
+      ),
+      'native' => const NativePage(),
+      'knob' => ControlsPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+      ),
+      'lists' => const ListsPage(),
+      'fields' => const TextFieldsPage(),
+      'progress' => const ProgressPage(),
+      'buttons' => const ButtonsPage(),
+      'toggles' => FormControlsPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+        initialPanel: FormControlPanel.toggles,
+      ),
+      'sliders' => FormControlsPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+        initialPanel: FormControlPanel.sliders,
+      ),
+      'steppers' => FormControlsPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+        initialPanel: FormControlPanel.steppers,
+      ),
+      'segmented' => Wave1cPage(
+        themeMode: _themeMode,
+        onThemeModeChanged: _setThemeMode,
+        initialPanel: _wave1cPanel,
+      ),
+      'alerts' => AlertsPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      'sheets' => SheetsPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      'actions' => ActionSheetsPage(brightness: brightness),
+      'popovers' => PopoversPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      'menus' => MenusPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      'tabs' => const TabBarPage(),
+      'sidebars' => SidebarsPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      'toolbars' => ToolbarsPage(
+        brightness: brightness,
+        onBrightnessChanged: _setBrightness,
+      ),
+      _ => throw StateError('Unknown gallery entry $entryId'),
     };
   }
 
@@ -125,324 +172,35 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         extensions: const [LiquidGlassTheme.dark],
       ),
       home: GalleryBackgroundScope(
-        mode: _background,
+        mode: _launch.background == null
+            ? GalleryBackground.canvas
+            : GalleryBackground.fromQuery(_launch.background),
         child: LingyunAdaptivity(
           reduceTransparency: _reduceTransparency,
           reduceMotion: _reduceMotion,
           highContrast: _highContrast,
-          child: DemoHome(
-            index: _index,
-            formPanel: _formPanel,
-            themesPanel: _themesPanel,
-            bare: _bare,
-            background: _background,
-            themeMode: _themeMode,
-            reduceTransparency: _reduceTransparency,
-            reduceMotion: _reduceMotion,
-            highContrast: _highContrast,
-            wave1cPanel: _wave1cPanel,
-            onIndexChanged: (i) => setState(() => _index = i),
-            onBackgroundChanged: (mode) => setState(() => _background = mode),
-            onThemeModeChanged: (mode) => setState(() => _themeMode = mode),
-            onReduceTransparency: (v) =>
-                setState(() => _reduceTransparency = v),
-            onReduceMotion: (v) => setState(() => _reduceMotion = v),
-            onHighContrast: (v) => setState(() => _highContrast = v),
+          child: GalleryShell(
+            initialPage: _launch.page,
+            initialHome: _launch.home,
+            initialTab: _launch.tab,
+            bare: _launch.bare,
+            background: GalleryBackground.fromQuery(_launch.background),
+            onBackgroundChanged: (mode) {
+              setState(() {
+                _launch = GalleryLaunch(
+                  page: _launch.page,
+                  home: _launch.home,
+                  tab: _launch.tab,
+                  theme: _launch.theme,
+                  chrome: _launch.chrome,
+                  background: mode.query,
+                  panel: _launch.panel,
+                );
+              });
+            },
+            pageBuilder: _page,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class DemoHome extends StatelessWidget {
-  const DemoHome({
-    super.key,
-    required this.index,
-    required this.formPanel,
-    required this.wave1cPanel,
-    required this.themesPanel,
-    required this.bare,
-    required this.background,
-    required this.themeMode,
-    required this.reduceTransparency,
-    required this.reduceMotion,
-    required this.highContrast,
-    required this.onIndexChanged,
-    required this.onBackgroundChanged,
-    required this.onThemeModeChanged,
-    required this.onReduceTransparency,
-    required this.onReduceMotion,
-    required this.onHighContrast,
-  });
-
-  final int index;
-  final FormControlPanel formPanel;
-  final Wave1cPanel wave1cPanel;
-  final ThemesPanel themesPanel;
-  final bool bare;
-  final GalleryBackground background;
-  final ThemeMode themeMode;
-  final bool reduceTransparency;
-  final bool reduceMotion;
-  final bool highContrast;
-  final ValueChanged<int> onIndexChanged;
-  final ValueChanged<GalleryBackground> onBackgroundChanged;
-  final ValueChanged<ThemeMode> onThemeModeChanged;
-  final ValueChanged<bool> onReduceTransparency;
-  final ValueChanged<bool> onReduceMotion;
-  final ValueChanged<bool> onHighContrast;
-
-  static const _destinations = [
-    NavigationDestination(
-      icon: Icon(Icons.layers_outlined),
-      selectedIcon: Icon(Icons.layers),
-      label: '材质',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.auto_awesome_outlined),
-      selectedIcon: Icon(Icons.auto_awesome),
-      label: '玻璃',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.view_carousel_outlined),
-      selectedIcon: Icon(Icons.view_carousel),
-      label: '标签栏',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.brightness_6_outlined),
-      selectedIcon: Icon(Icons.brightness_6),
-      label: '主题',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.devices_outlined),
-      selectedIcon: Icon(Icons.devices),
-      label: '布局',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.accessibility_new_outlined),
-      selectedIcon: Icon(Icons.accessibility_new),
-      label: '辅助功能',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.phone_iphone_outlined),
-      selectedIcon: Icon(Icons.phone_iphone),
-      label: '原生',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.notifications_outlined),
-      selectedIcon: Icon(Icons.notifications),
-      label: '提示',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.tune_outlined),
-      selectedIcon: Icon(Icons.tune),
-      label: '旋钮',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.list_alt_outlined),
-      selectedIcon: Icon(Icons.list_alt),
-      label: '列表',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.short_text_outlined),
-      selectedIcon: Icon(Icons.short_text),
-      label: '文本框',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.timelapse_outlined),
-      selectedIcon: Icon(Icons.timelapse),
-      label: '进度',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.toggle_on_outlined),
-      selectedIcon: Icon(Icons.toggle_on),
-      label: '开关',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.horizontal_split),
-      selectedIcon: Icon(Icons.horizontal_split),
-      label: '工作表',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.more_horiz_outlined),
-      selectedIcon: Icon(Icons.more_horiz),
-      label: '操作表',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.view_week_outlined),
-      selectedIcon: Icon(Icons.view_week),
-      label: '分段',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.view_sidebar_outlined),
-      selectedIcon: Icon(Icons.view_sidebar),
-      label: '侧栏',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.view_agenda_outlined),
-      selectedIcon: Icon(Icons.view_agenda),
-      label: '工具栏',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.chat_bubble_outline),
-      selectedIcon: Icon(Icons.chat_bubble),
-      label: '弹出框',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.menu_open_outlined),
-      selectedIcon: Icon(Icons.menu_open),
-      label: '菜单',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final pages = [
-      const MaterialsPage(),
-      const GlassPage(),
-      const TabBarPage(),
-      ThemesPage(
-        themeMode: themeMode,
-        onThemeModeChanged: onThemeModeChanged,
-        initialPanel: themesPanel,
-      ),
-      const LayoutPage(),
-      AccessibilityPage(
-        reduceTransparency: reduceTransparency,
-        reduceMotion: reduceMotion,
-        highContrast: highContrast,
-        onReduceTransparency: onReduceTransparency,
-        onReduceMotion: onReduceMotion,
-        onHighContrast: onHighContrast,
-      ),
-      const NativePage(),
-      AlertsPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-      ControlsPage(
-        themeMode: themeMode,
-        onThemeModeChanged: onThemeModeChanged,
-      ),
-      const ListsPage(),
-      const TextFieldsPage(),
-      const ProgressPage(),
-      FormControlsPage(
-        themeMode: themeMode,
-        onThemeModeChanged: onThemeModeChanged,
-        initialPanel: formPanel,
-      ),
-      SheetsPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-      ActionSheetsPage(brightness: Theme.of(context).brightness),
-      Wave1cPage(
-        themeMode: themeMode,
-        onThemeModeChanged: onThemeModeChanged,
-        initialPanel: wave1cPanel,
-      ),
-      SidebarsPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-      ToolbarsPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-      PopoversPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-      MenusPage(
-        brightness: Theme.of(context).brightness,
-        onBrightnessChanged: (brightness) => onThemeModeChanged(
-          brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        ),
-      ),
-    ];
-
-    return LingyunTheme(
-      brightness: Theme.of(context).brightness,
-      child: LingyunLayoutBuilder(
-        builder: (context, data) {
-          final useRail = !data.isCompact || data.isWideShort;
-          final body = Stack(
-            fit: StackFit.expand,
-            children: [
-              const SystemWallpaper(),
-              pages[index],
-              if (!bare)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 8),
-                      child: GalleryBackgroundButton(
-                        mode: background,
-                        onChanged: onBackgroundChanged,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          );
-
-          if (bare) {
-            return Scaffold(backgroundColor: Colors.transparent, body: body);
-          }
-
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Row(
-              children: [
-                if (useRail)
-                  NavigationRail(
-                    key: const Key('gallery-rail'),
-                    selectedIndex: index,
-                    onDestinationSelected: onIndexChanged,
-                    labelType: NavigationRailLabelType.all,
-                    // Twenty labeled destinations do not fit a short window.
-                    scrollable: true,
-                    backgroundColor: Colors.white.withValues(alpha: 0.18),
-                    destinations: [
-                      for (final d in _destinations)
-                        NavigationRailDestination(
-                          icon: d.icon,
-                          selectedIcon: d.selectedIcon,
-                          label: Text(d.label),
-                        ),
-                    ],
-                  ),
-                Expanded(
-                  child: KeyedSubtree(
-                    key: const Key('gallery-body'),
-                    child: body,
-                  ),
-                ),
-              ],
-            ),
-            bottomNavigationBar: useRail
-                ? null
-                : NavigationBar(
-                    selectedIndex: index,
-                    onDestinationSelected: onIndexChanged,
-                    destinations: _destinations,
-                  ),
-          );
-        },
       ),
     );
   }
