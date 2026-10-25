@@ -289,19 +289,12 @@ def install_app_store_profile!(team_id)
       "API Key 需要 Admin（能管理 Certificates, Identifiers & Profiles）。" \
       "如果这里 403，改为提供 secret IOS_APPSTORE_PROFILE_BASE64。"
     )
+    # Do not pass adhoc/development, even as false. Fastlane 2.241 treats an
+    # explicit false as enabled for sigh's conflicting_options check.
+    # Unset flags default to false and select an App Store profile.
     sigh(
       api_key: asc_api_key,
-      app_identifier: CiSupport::APP_IDENTIFIER,
-      team_id: team_id,
-      platform: "ios",
-      adhoc: false,
-      development: false,
-      provisioning_name: CiSupport::PROFILE_NAME,
-      ignore_profiles_with_different_name: true,
-      force: true,
-      skip_install: false,
-      filename: "appstore.mobileprovision",
-      output_path: @work_dir
+      **CiSupport.app_store_sigh_options(team_id: team_id, output_path: @work_dir)
     )
     profile_path = File.join(@work_dir, "appstore.mobileprovision")
     unless File.exist?(profile_path)

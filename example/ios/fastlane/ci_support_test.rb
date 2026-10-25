@@ -173,6 +173,29 @@ check(failures, "ios directory") do
   end
 end
 
+check(failures, "sigh options") do
+  options = CiSupport.app_store_sigh_options(team_id: "YMLG7W5FZH", output_path: "/tmp/work")
+  raise "app store options conflict" if CiSupport.sigh_options_conflict?(options)
+  %i[adhoc development developer_id].each do |key|
+    raise "#{key} was set" if options.key?(key)
+  end
+  raise "platform" unless options[:platform] == "ios"
+  raise "bundle" unless options[:app_identifier] == CiSupport::APP_IDENTIFIER
+  raise "name" unless options[:provisioning_name] == CiSupport::PROFILE_NAME
+  raise "force" unless options[:force] == true
+  raise "filename" unless options[:filename] == "appstore.mobileprovision"
+  raise "team" unless options[:team_id] == "YMLG7W5FZH"
+  raise "output" unless options[:output_path] == "/tmp/work"
+  raise "ignore name" unless options[:ignore_profiles_with_different_name] == true
+
+  # Same rule as Fastlane 2.241 Configuration#verify_conflicts: false is set, nil is not.
+  raise "false pair accepted" unless CiSupport.sigh_options_conflict?(adhoc: false, development: false)
+  raise "true pair accepted" unless CiSupport.sigh_options_conflict?(adhoc: true, development: false)
+  raise "omitted flagged" if CiSupport.sigh_options_conflict?(platform: "ios", force: true)
+  raise "nil flagged" if CiSupport.sigh_options_conflict?(adhoc: nil, development: false)
+  raise "adhoc only flagged" if CiSupport.sigh_options_conflict?(adhoc: false)
+end
+
 check(failures, "export plist") do
   plist = CiSupport.export_options_plist(
     team_id: "AB12CD34EF",
