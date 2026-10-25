@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -1072,6 +1073,105 @@ void main() {
           .device,
       GalleryPreviewFrame.air,
     );
+    expect(GalleryPreviewFrame.pro.platform, TargetPlatform.iOS);
+    expect(GalleryPreviewFrame.proMax.platform, TargetPlatform.iOS);
+    expect(GalleryPreviewFrame.air.platform, TargetPlatform.iOS);
+    expect(GalleryPreviewFrame.duoOuter.platform, TargetPlatform.iOS);
+    expect(GalleryPreviewFrame.duoInnerLandscape.platform, TargetPlatform.iOS);
+    expect(GalleryPreviewFrame.duoInnerPortrait.platform, TargetPlatform.iOS);
+    expect(
+      GalleryPreviewFrame.pro.safePadding,
+      const EdgeInsets.only(top: 59, bottom: 34),
+    );
+    expect(
+      GalleryPreviewFrame.duoOuter.safePadding,
+      const EdgeInsets.only(top: 24, bottom: 12),
+    );
+    expect(GalleryPreviewFrame.window.platform, isNull);
+    expect(GalleryPreviewFrame.window.safePadding, EdgeInsets.zero);
+    expect(GalleryPreviewFrame.window.form, GalleryPreviewForm.window);
+
+    expect(GalleryPreviewFrame.ipadMini.shortLabel, 'iPad mini');
+    expect(GalleryPreviewFrame.ipadMini.label, 'iPad mini 744×1133');
+    expect(GalleryPreviewFrame.ipadMini.logicalSize, const Size(744, 1133));
+    expect(GalleryPreviewFrame.ipadMini.platform, TargetPlatform.iOS);
+    expect(
+      GalleryPreviewFrame.ipadMini.safePadding,
+      const EdgeInsets.only(top: 24, bottom: 20),
+    );
+    expect(GalleryPreviewFrame.ipadAir11.shortLabel, 'iPad Air 11');
+    expect(GalleryPreviewFrame.ipadAir11.label, 'iPad Air 11" 820×1180');
+    expect(GalleryPreviewFrame.ipadAir11.logicalSize, const Size(820, 1180));
+    expect(GalleryPreviewFrame.ipadPro11.label, 'iPad Pro 11" 834×1210');
+    expect(GalleryPreviewFrame.ipadPro11.logicalSize, const Size(834, 1210));
+    expect(GalleryPreviewFrame.ipadAir13.shortLabel, 'iPad Air 13');
+    expect(GalleryPreviewFrame.ipadAir13.label, 'iPad Air 13" 1024×1366');
+    expect(GalleryPreviewFrame.ipadPro13.shortLabel, 'iPad Pro 13');
+    expect(GalleryPreviewFrame.ipadPro13.label, 'iPad Pro 13" 1032×1376');
+    expect(GalleryPreviewFrame.ipadPro13.logicalSize, const Size(1032, 1376));
+    expect(GalleryPreviewFrame.macos.shortLabel, 'macOS');
+    expect(GalleryPreviewFrame.macos.label, 'macOS 1440×900');
+    expect(GalleryPreviewFrame.macos.logicalSize, const Size(1440, 900));
+    expect(GalleryPreviewFrame.macos.platform, TargetPlatform.macOS);
+    expect(GalleryPreviewFrame.macos.safePadding, EdgeInsets.zero);
+    expect(GalleryPreviewFrame.windows.shortLabel, 'Windows');
+    expect(GalleryPreviewFrame.windows.label, 'Windows 1280×800');
+    expect(GalleryPreviewFrame.windows.logicalSize, const Size(1280, 800));
+    expect(GalleryPreviewFrame.windows.platform, TargetPlatform.windows);
+    expect(GalleryPreviewFrame.windows.safePadding, EdgeInsets.zero);
+
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=ipad-mini'))
+          .device,
+      GalleryPreviewFrame.ipadMini,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=ipadmini'))
+          .device,
+      GalleryPreviewFrame.ipadMini,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=820×1180'))
+          .device,
+      GalleryPreviewFrame.ipadAir11,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=ipad-pro-11'),
+      ).device,
+      GalleryPreviewFrame.ipadPro11,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=air13'))
+          .device,
+      GalleryPreviewFrame.ipadAir13,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=pro13'))
+          .device,
+      GalleryPreviewFrame.ipadPro13,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=macos&frame=pro'),
+      ).device,
+      GalleryPreviewFrame.macos,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=mac'))
+          .device,
+      GalleryPreviewFrame.macos,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=win'))
+          .device,
+      GalleryPreviewFrame.windows,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?frame=1280x800'))
+          .device,
+      GalleryPreviewFrame.windows,
+    );
 
     final home = GalleryLaunch.fromUri(
       Uri.parse('https://example.test/?home=controls'),
@@ -1393,10 +1493,12 @@ void main() {
   testWidgets('device frame clips the stage and keeps chrome outside', (
     tester,
   ) async {
+    final hostPlatform = defaultTargetPlatform;
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1600, 1600);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
     await tester.pumpWidget(
       LingyunGlassDemoApp(
@@ -1415,6 +1517,17 @@ void main() {
       isTrue,
     );
     expect(MediaQuery.sizeOf(tester.element(title)), const Size(402, 874));
+    expect(Theme.of(tester.element(title)).platform, TargetPlatform.iOS);
+    final board = find.byKey(const Key('gallery-workbench'));
+    expect(
+      MediaQuery.paddingOf(tester.element(board)),
+      GalleryPreviewFrame.pro.safePadding,
+    );
+    expect(
+      MediaQuery.viewPaddingOf(tester.element(board)),
+      GalleryPreviewFrame.pro.safePadding,
+    );
+    expect(defaultTargetPlatform, TargetPlatform.iOS);
     expect(find.byKey(const Key('gallery-preview-chrome')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
     expect(find.byKey(const Key('gallery-device-bg-meadow')), findsOneWidget);
@@ -1430,6 +1543,19 @@ void main() {
     );
     expect(frameRect.size, const Size(402, 874));
     expect(frameRect.center.dx, closeTo(800, 1));
+    final bezelRect = tester.getRect(
+      find.byKey(const Key('gallery-device-bezel')),
+    );
+    expect(
+      tester
+          .widget<IgnorePointer>(find.byKey(const Key('gallery-device-bezel')))
+          .ignoring,
+      isTrue,
+    );
+    expect(bezelRect.left, lessThan(frameRect.left));
+    expect(bezelRect.top, lessThan(frameRect.top));
+    expect(bezelRect.right, greaterThan(frameRect.right));
+    expect(bezelRect.bottom, greaterThan(frameRect.bottom));
     expect(innerMeadow.width, closeTo(frameRect.width, 1));
     expect(innerMeadow.height, closeTo(frameRect.height, 1));
     expect(clusterRect.bottom, lessThanOrEqualTo(frameRect.top));
@@ -1470,6 +1596,13 @@ void main() {
       GalleryPreviewFrame.duoOuter: Size(466, 678),
       GalleryPreviewFrame.duoInnerLandscape: Size(951, 669),
       GalleryPreviewFrame.duoInnerPortrait: Size(669, 951),
+      GalleryPreviewFrame.ipadMini: Size(744, 1133),
+      GalleryPreviewFrame.ipadAir11: Size(820, 1180),
+      GalleryPreviewFrame.ipadPro11: Size(834, 1210),
+      GalleryPreviewFrame.ipadAir13: Size(1024, 1366),
+      GalleryPreviewFrame.ipadPro13: Size(1032, 1376),
+      GalleryPreviewFrame.macos: Size(1440, 900),
+      GalleryPreviewFrame.windows: Size(1280, 800),
       GalleryPreviewFrame.window: Size(1600, 1600),
     };
     for (final entry in frames.entries) {
@@ -1479,18 +1612,50 @@ void main() {
         find.byKey(Key('gallery-device-option-${entry.key.query}')),
       );
       await tester.pumpAndSettle();
-      expect(
-        MediaQuery.sizeOf(
-          tester.element(find.byKey(const Key('gallery-workbench-title'))),
-        ),
-        entry.value,
-      );
+      final titleFinder = find.byKey(const Key('gallery-workbench-title'));
+      expect(MediaQuery.sizeOf(tester.element(titleFinder)), entry.value);
       if (entry.key == GalleryPreviewFrame.window) {
         expect(find.byKey(const Key('gallery-device-frame')), findsNothing);
+        expect(find.byKey(const Key('gallery-device-bezel')), findsNothing);
         expect(find.byKey(const Key('gallery-preview-chrome')), findsNothing);
         expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
         expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
+        expect(defaultTargetPlatform, hostPlatform);
+        expect(Theme.of(tester.element(titleFinder)).platform, hostPlatform);
       } else {
+        expect(
+          Theme.of(tester.element(titleFinder)).platform,
+          entry.key.platform,
+        );
+        final workbench = find.byKey(const Key('gallery-workbench'));
+        expect(
+          MediaQuery.paddingOf(tester.element(workbench)),
+          entry.key.safePadding,
+        );
+        expect(
+          MediaQuery.viewPaddingOf(tester.element(workbench)),
+          entry.key.safePadding,
+        );
+        expect(defaultTargetPlatform, entry.key.platform);
+        expect(find.byKey(const Key('gallery-device-bezel')), findsOneWidget);
+        expect(
+          tester
+              .widget<IgnorePointer>(
+                find.byKey(const Key('gallery-device-bezel')),
+              )
+              .ignoring,
+          isTrue,
+        );
+        final screen = tester.getRect(
+          find.byKey(const Key('gallery-device-frame')),
+        );
+        final shell = tester.getRect(
+          find.byKey(const Key('gallery-device-bezel')),
+        );
+        expect(shell.left, lessThanOrEqualTo(screen.left));
+        expect(shell.top, lessThanOrEqualTo(screen.top));
+        expect(shell.right, greaterThanOrEqualTo(screen.right));
+        expect(shell.bottom, greaterThanOrEqualTo(screen.bottom));
         expect(
           tester.getSize(find.byKey(const Key('gallery-device-frame'))),
           entry.value,
@@ -1517,6 +1682,74 @@ void main() {
         expect(board.height, closeTo(chrome.height, 1));
       }
     }
+  });
+
+  testWidgets('large boards scale down and keep logical size and platform', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(720, 480);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(device: GalleryPreviewFrame.ipadPro13),
+      ),
+    );
+    final title = find.byKey(const Key('gallery-workbench-title'));
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1032, 1376));
+    expect(Theme.of(tester.element(title)).platform, TargetPlatform.iOS);
+    final padBoard = find.byKey(const Key('gallery-workbench'));
+    expect(MediaQuery.paddingOf(tester.element(padBoard)).top, greaterThan(0));
+    expect(
+      MediaQuery.paddingOf(tester.element(padBoard)).bottom,
+      greaterThan(0),
+    );
+    expect(defaultTargetPlatform, TargetPlatform.iOS);
+    final pad = tester.getRect(find.byKey(const Key('gallery-device-frame')));
+    expect(pad.width, lessThan(1032));
+    expect(pad.height, lessThan(1376));
+    expect(pad.width / pad.height, closeTo(1032 / 1376, 0.02));
+    expect(find.byKey(const Key('gallery-device-bezel')), findsOneWidget);
+    expect(
+      tester.getRect(find.byKey(const Key('gallery-preview-cluster'))).bottom,
+      lessThanOrEqualTo(pad.top),
+    );
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(device: GalleryPreviewFrame.macos),
+      ),
+    );
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1440, 900));
+    expect(Theme.of(tester.element(title)).platform, TargetPlatform.macOS);
+    final macBoard = find.byKey(const Key('gallery-workbench'));
+    expect(MediaQuery.paddingOf(tester.element(macBoard)), EdgeInsets.zero);
+    expect(MediaQuery.viewPaddingOf(tester.element(macBoard)), EdgeInsets.zero);
+    expect(defaultTargetPlatform, TargetPlatform.macOS);
+    final mac = tester.getRect(find.byKey(const Key('gallery-device-frame')));
+    expect(mac.width, lessThan(1440));
+    expect(mac.width / mac.height, closeTo(1440 / 900, 0.02));
+
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(device: GalleryPreviewFrame.windows),
+      ),
+    );
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1280, 800));
+    expect(Theme.of(tester.element(title)).platform, TargetPlatform.windows);
+    expect(
+      MediaQuery.paddingOf(
+        tester.element(find.byKey(const Key('gallery-workbench'))),
+      ),
+      EdgeInsets.zero,
+    );
+    expect(defaultTargetPlatform, TargetPlatform.windows);
+    final win = tester.getRect(find.byKey(const Key('gallery-device-frame')));
+    expect(win.width / win.height, closeTo(1280 / 800, 0.02));
+    expect(win.width, lessThanOrEqualTo(720));
   });
 
   testWidgets('a narrow window scales the frame and keeps logical points', (

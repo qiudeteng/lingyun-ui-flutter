@@ -1,8 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 
 void main() {
+  test('iOS preview override does not pretend the process is an iOS host', () {
+    expect(LingyunPageHost.isIOSHost, isFalse);
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    expect(defaultTargetPlatform, TargetPlatform.iOS);
+    expect(LingyunPageHost.isIOSHost, isFalse);
+  });
+
   const destinations = [
     GlassTabBarItem(icon: Icons.home_outlined, label: 'Home'),
     GlassTabBarItem(icon: Icons.search, label: 'Search'),

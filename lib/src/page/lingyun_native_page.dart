@@ -1,7 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'lingyun_host_io.dart'
+    if (dart.library.js_interop) 'lingyun_host_web.dart';
 import 'lingyun_page_spec.dart';
 
 /// Method-channel and platform-view names shared with `LYPagePlatformView`.
@@ -12,8 +13,12 @@ class LingyunPageHost {
 
   static String channelName(int viewId) => 'lingyun_ui_flutter/ly_page_$viewId';
 
-  static bool get isIOSHost =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  /// True only when this process is iOS.
+  ///
+  /// `Platform.isIOS`, not `defaultTargetPlatform`. A gallery board may set
+  /// `debugDefaultTargetPlatformOverride` so controls resemble iOS; that
+  /// must not swap this page for a [UiKitView] on hosts with no LYPage embed.
+  static bool get isIOSHost => lingyunProcessIsIOS;
 }
 
 /// Embeds the iOS `LYPage` host. On other platforms, builds [placeholder].

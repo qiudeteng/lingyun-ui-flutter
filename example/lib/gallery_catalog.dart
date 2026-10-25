@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One reachable gallery demo.
@@ -380,49 +381,86 @@ GalleryGroup? resolveGalleryWorkbench(String? key) {
   return null;
 }
 
+/// Hardware family for a [GalleryPreviewFrame].
+///
+/// Picks the vector bezel and the simplified safe-area inset.
+enum GalleryPreviewForm { window, phone, pad, duo, desktop }
+
 /// Preview board for the gallery stage.
 ///
 /// [logicalSize] is the point size of the clipped demo. Null is
-/// 「自适应窗口」: the stage fills the window. Public sizes:
+/// 「自适应窗口」: the stage fills the window, draws no bezel, and leaves
+/// [platform] unset so the host shows through. Every fixed frame injects
+/// that size, a [platform], and [safePadding].
+///
+/// Public sizes:
 /// Pro class 402×874, Pro Max 440×956, iPhone Air 420×912,
 /// Duo outer 466×678, Duo inner landscape 951×669,
-/// Duo inner portrait 669×951.
+/// Duo inner portrait 669×951,
+/// iPad mini 744×1133, iPad Air 11" 820×1180, iPad Pro 11" 834×1210,
+/// iPad Air 13" 1024×1366, iPad Pro 13" 1032×1376,
+/// macOS 1440×900, Windows 1280×800.
 enum GalleryPreviewFrame {
-  window('window', '窗口', '自适应窗口', null, ['window', 'adaptive', 'auto', 'fit']),
-  pro('pro', 'Pro', '18 / 17 / 16 Pro 402×874', Size(402, 874), [
+  window('window', '窗口', '自适应窗口', null, [
+    'window',
+    'adaptive',
+    'auto',
+    'fit',
+  ], form: GalleryPreviewForm.window),
+  pro(
     'pro',
-    '18pro',
-    '18-pro',
-    '17',
-    '17pro',
-    '17-pro',
-    '16pro',
-    '16-pro',
-    '402x874',
-  ]),
-  proMax('pro-max', 'Pro Max', 'Pro Max 440×956', Size(440, 956), [
+    'Pro',
+    '18 / 17 / 16 Pro 402×874',
+    Size(402, 874),
+    [
+      'pro',
+      '18pro',
+      '18-pro',
+      '17',
+      '17pro',
+      '17-pro',
+      '16pro',
+      '16-pro',
+      '402x874',
+    ],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.phone,
+  ),
+  proMax(
     'pro-max',
-    'promax',
-    '440x956',
-  ]),
-  air('air', 'Air', 'iPhone Air 420×912', Size(420, 912), [
+    'Pro Max',
+    'Pro Max 440×956',
+    Size(440, 956),
+    ['pro-max', 'promax', '440x956'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.phone,
+  ),
+  air(
     'air',
-    'iphone-air',
-    'iphoneair',
-    '420x912',
-  ]),
-  duoOuter('duo-outer', 'Duo 外屏', 'Duo 外屏 466×678', Size(466, 678), [
+    'Air',
+    'iPhone Air 420×912',
+    Size(420, 912),
+    ['air', 'iphone-air', 'iphoneair', '420x912'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.phone,
+  ),
+  duoOuter(
     'duo-outer',
-    'duo',
-    'outer',
-    '466x678',
-  ]),
+    'Duo 外屏',
+    'Duo 外屏 466×678',
+    Size(466, 678),
+    ['duo-outer', 'duo', 'outer', '466x678'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.duo,
+  ),
   duoInnerLandscape(
     'duo-inner-landscape',
     'Duo 内屏横',
     'Duo 内屏横 951×669',
     Size(951, 669),
     ['duo-inner-landscape', 'duo-inner-land', 'duo-landscape', '951x669'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.duo,
   ),
   duoInnerPortrait(
     'duo-inner-portrait',
@@ -430,6 +468,71 @@ enum GalleryPreviewFrame {
     'Duo 内屏竖 669×951',
     Size(669, 951),
     ['duo-inner-portrait', 'duo-inner-port', 'duo-portrait', '669x951'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.duo,
+  ),
+  ipadMini(
+    'ipad-mini',
+    'iPad mini',
+    'iPad mini 744×1133',
+    Size(744, 1133),
+    ['ipad-mini', 'ipadmini', 'iPad mini', 'mini', '744x1133'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.pad,
+  ),
+  ipadAir11(
+    'ipad-air-11',
+    'iPad Air 11',
+    'iPad Air 11" 820×1180',
+    Size(820, 1180),
+    ['ipad-air-11', 'ipadair11', 'iPad Air 11', 'air11', '820x1180'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.pad,
+  ),
+  ipadPro11(
+    'ipad-pro-11',
+    'iPad Pro 11',
+    'iPad Pro 11" 834×1210',
+    Size(834, 1210),
+    ['ipad-pro-11', 'ipadpro11', 'iPad Pro 11', 'pro11', '834x1210'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.pad,
+  ),
+  ipadAir13(
+    'ipad-air-13',
+    'iPad Air 13',
+    'iPad Air 13" 1024×1366',
+    Size(1024, 1366),
+    ['ipad-air-13', 'ipadair13', 'iPad Air 13', 'air13', '1024x1366'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.pad,
+  ),
+  ipadPro13(
+    'ipad-pro-13',
+    'iPad Pro 13',
+    'iPad Pro 13" 1032×1376',
+    Size(1032, 1376),
+    ['ipad-pro-13', 'ipadpro13', 'iPad Pro 13', 'pro13', '1032x1376'],
+    platform: TargetPlatform.iOS,
+    form: GalleryPreviewForm.pad,
+  ),
+  macos(
+    'macos',
+    'macOS',
+    'macOS 1440×900',
+    Size(1440, 900),
+    ['macos', 'mac', 'osx', 'macbook', '1440x900'],
+    platform: TargetPlatform.macOS,
+    form: GalleryPreviewForm.desktop,
+  ),
+  windows(
+    'windows',
+    'Windows',
+    'Windows 1280×800',
+    Size(1280, 800),
+    ['windows', 'win', 'win32', 'pc', '1280x800'],
+    platform: TargetPlatform.windows,
+    form: GalleryPreviewForm.desktop,
   );
 
   const GalleryPreviewFrame(
@@ -437,8 +540,10 @@ enum GalleryPreviewFrame {
     this.shortLabel,
     this.label,
     this.logicalSize,
-    this.aliases,
-  );
+    this.aliases, {
+    required this.form,
+    this.platform,
+  });
 
   /// Canonical `device=` / `frame=` value.
   final String query;
@@ -453,6 +558,24 @@ enum GalleryPreviewFrame {
   final Size? logicalSize;
 
   final List<String> aliases;
+
+  /// Bezel and safe-area family. [GalleryPreviewForm.window] has neither.
+  final GalleryPreviewForm form;
+
+  /// Platform identity injected into the fixed board. Null follows the host.
+  final TargetPlatform? platform;
+
+  /// Status and home inset inside the logical board.
+  ///
+  /// Phone uses a Dynamic Island band and a home indicator. Pad uses a
+  /// status bar and a shorter home indicator. Duo uses a short status band
+  /// and a small gesture inset. Desktop and 「自适应窗口」 stay zero.
+  EdgeInsets get safePadding => switch (form) {
+    GalleryPreviewForm.window || GalleryPreviewForm.desktop => EdgeInsets.zero,
+    GalleryPreviewForm.phone => const EdgeInsets.only(top: 59, bottom: 34),
+    GalleryPreviewForm.pad => const EdgeInsets.only(top: 24, bottom: 20),
+    GalleryPreviewForm.duo => const EdgeInsets.only(top: 24, bottom: 12),
+  };
 
   static final Map<String, GalleryPreviewFrame> _byQuery = () {
     final map = <String, GalleryPreviewFrame>{};
@@ -489,6 +612,20 @@ enum GalleryPreviewFrame {
   static GalleryPreviewFrame resolve(String? device, String? frame) {
     return tryParse(device) ?? tryParse(frame) ?? GalleryPreviewFrame.window;
   }
+}
+
+/// Publishes [platform] as [defaultTargetPlatform] for a debug preview board.
+///
+/// [Theme.platform] and the board [MediaQuery] are the scoped signals and
+/// apply on every build. [debugDefaultTargetPlatformOverride] is only a
+/// debug-mode stand-in for widgets that still read the global (alerts,
+/// native shells). The setter throws outside debug mode, which includes
+/// `flutter build web`, so release and profile builds — web included —
+/// skip it and keep [Theme.platform] plus [MediaQuery]. Web debug honors
+/// the override. Null clears it and the host platform shows through.
+void bindGalleryFramePlatform(TargetPlatform? platform) {
+  if (!kDebugMode) return;
+  debugDefaultTargetPlatformOverride = platform;
 }
 
 /// Launch query and `GALLERY_*` environment values.

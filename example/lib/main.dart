@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -51,10 +52,22 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   Wave1cPanel _wave1cPanel = Wave1cPanel.segmented;
   ThemesPanel _themesPanel = ThemesPanel.colors;
 
+  /// Captured before [bindGalleryFramePlatform] so later rebuilds do not
+  /// bake the board's override into the shell [ThemeData]. The device stage
+  /// sets [Theme.platform] for the clipped demo.
+  late final TargetPlatform _hostPlatform;
+
   @override
   void initState() {
     super.initState();
+    _hostPlatform = defaultTargetPlatform;
     _apply(widget.launch ?? GalleryLaunch.fromUri(Uri.base));
+  }
+
+  @override
+  void dispose() {
+    bindGalleryFramePlatform(null);
+    super.dispose();
   }
 
   @override
@@ -78,6 +91,12 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     _reduceTransparency = launch.reduceTransparency;
     _frame = launch.device;
     _background = GalleryBackground.fromQuery(launch.background);
+    bindGalleryFramePlatform(_frame.platform);
+  }
+
+  void _setFrame(GalleryPreviewFrame frame) {
+    bindGalleryFramePlatform(frame.platform);
+    setState(() => _frame = frame);
   }
 
   void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
@@ -176,12 +195,14 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
+        platform: _hostPlatform,
         colorSchemeSeed: const Color(0xFF6B7C93),
         extensions: const [LiquidGlassTheme.light],
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        platform: _hostPlatform,
         colorSchemeSeed: const Color(0xFF6B7C93),
         extensions: const [LiquidGlassTheme.dark],
       ),
@@ -204,7 +225,7 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
             onReduceTransparency: (value) =>
                 setState(() => _reduceTransparency = value),
             frame: _frame,
-            onFrameChanged: (frame) => setState(() => _frame = frame),
+            onFrameChanged: _setFrame,
             pageBuilder: _page,
           ),
         ),
