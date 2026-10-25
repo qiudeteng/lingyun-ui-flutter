@@ -198,9 +198,11 @@ struct LYPagePane: View {
     }
     return metrics.regions.map { region in
       let state = region.isActive ? "激活" : "未激活"
-      return "\(regionKindLabel(region.kind)) \(state) \
-        横 \(format(region.x)) 纵 \(format(region.y)) \
-        \(format(region.width))×\(format(region.height))"
+      return """
+      \(regionKindLabel(region.kind)) \(state) \
+      横 \(format(region.x)) 纵 \(format(region.y)) \
+      \(format(region.width))×\(format(region.height))
+      """
     }.joined(separator: "\n")
   }
 
