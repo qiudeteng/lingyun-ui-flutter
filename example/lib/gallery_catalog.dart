@@ -369,10 +369,45 @@ GalleryGroup? resolveGalleryWorkbench(String? key) {
   return null;
 }
 
+/// Query token used by device aliases and `orientation=`.
+///
+/// Trims, lowercases, and folds `×` / `*` to `x`. Spaces, underscores, and
+/// hyphens are removed so `half-fold` and `678×466` share a key shape with
+/// the existing `device=` aliases.
+String _galleryQueryKey(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  return raw
+      .trim()
+      .toLowerCase()
+      .replaceAll('×', 'x')
+      .replaceAll('*', 'x')
+      .replaceAll(RegExp(r'[\s_\-]'), '');
+}
+
 /// Hardware family for a [GalleryPreviewFrame].
 ///
 /// Picks the vector bezel and the simplified safe-area inset.
 enum GalleryPreviewForm { window, phone, pad, duo, desktop }
+
+/// Portrait or landscape for a rotatable preview board.
+///
+/// `orientation=` accepts `portrait` / `landscape`, `port` / `land`,
+/// `vertical` / `horizontal`, and `竖` / `横` / `竖屏` / `横屏`.
+/// Desktop macOS / Windows and 「自适应窗口」 ignore it: rotation is not
+/// meaningful there. `swap=1` or `rotate=1` flips the canonical
+/// orientation when this value is absent. An explicit orientation wins.
+enum GalleryPreviewOrientation {
+  portrait,
+  landscape;
+
+  static GalleryPreviewOrientation? tryParse(String? raw) {
+    return switch (_galleryQueryKey(raw)) {
+      'portrait' || 'port' || 'vertical' || '竖' || '竖屏' => portrait,
+      'landscape' || 'land' || 'horizontal' || '横' || '横屏' => landscape,
+      _ => null,
+    };
+  }
+}
 
 /// Preview board for the gallery stage.
 ///
@@ -553,6 +588,15 @@ enum GalleryPreviewFrame {
   /// Platform identity injected into the fixed board. Null follows the host.
   final TargetPlatform? platform;
 
+  /// Phones, iPads, and Duo postures have a clear orientation.
+  /// macOS, Windows, and 「自适应窗口」 do not.
+  bool get canRotate => switch (form) {
+    GalleryPreviewForm.window || GalleryPreviewForm.desktop => false,
+    GalleryPreviewForm.phone ||
+    GalleryPreviewForm.pad ||
+    GalleryPreviewForm.duo => true,
+  };
+
   /// Status and home inset inside the logical board.
   ///
   /// Phone uses a Dynamic Island band and a home indicator. Pad uses a
@@ -565,11 +609,89 @@ enum GalleryPreviewFrame {
     GalleryPreviewForm.duo => const EdgeInsets.only(top: 24, bottom: 12),
   };
 
+  /// [logicalSize] after [orientation] / [swap].
+  ///
+  /// Null orientation and `swap: false` keep the canonical size. An
+  /// explicit [orientation] wins over [swap]. Frames that cannot rotate
+  /// ignore both and keep [logicalSize].
+  Size? logicalSizeFor(
+    GalleryPreviewOrientation? orientation, {
+    bool swap = false,
+  }) {
+    final size = logicalSize;
+    if (size == null || !canRotate) return size;
+    final canonicalLandscape = size.width > size.height;
+    final wantLandscape = switch (orientation) {
+      GalleryPreviewOrientation.landscape => true,
+      GalleryPreviewOrientation.portrait => false,
+      null => swap ? !canonicalLandscape : canonicalLandscape,
+    };
+    if (wantLandscape == canonicalLandscape) return size;
+    return Size(size.height, size.width);
+  }
+
+  /// Safe inset for [logicalSizeFor].
+  ///
+  /// A rotated phone moves the Dynamic Island to the side, so the inset
+  /// follows that edge. Pad and Duo cameras sit in the bezel; their status
+  /// band stays on the top of the logical rect.
+  EdgeInsets safePaddingFor(
+    GalleryPreviewOrientation? orientation, {
+    bool swap = false,
+  }) {
+    final size = logicalSize;
+    final oriented = logicalSizeFor(orientation, swap: swap);
+    if (size == null || oriented == null || oriented.width == size.width) {
+      return safePadding;
+    }
+    if (form == GalleryPreviewForm.phone) {
+      return const EdgeInsets.fromLTRB(59, 0, 59, 21);
+    }
+    return safePadding;
+  }
+
+  /// True when the oriented board is wider than it is tall.
+  bool showsLandscape(
+    GalleryPreviewOrientation? orientation, {
+    bool swap = false,
+  }) {
+    final size = logicalSizeFor(orientation, swap: swap);
+    if (size == null) return false;
+    return size.width > size.height;
+  }
+
+  /// Menu label. The trailing point size follows [orientation].
+  String labelFor(GalleryPreviewOrientation? orientation, {bool swap = false}) {
+    final size = logicalSize;
+    final oriented = logicalSizeFor(orientation, swap: swap);
+    if (size == null || oriented == null || oriented.width == size.width) {
+      return label;
+    }
+    return label.replaceFirst(RegExp(r'\d+×\d+$'), _points(oriented));
+  }
+
+  /// Chip label. Canonical boards keep [shortLabel]. A swapped board appends
+  /// the oriented point size.
+  String shortLabelFor(
+    GalleryPreviewOrientation? orientation, {
+    bool swap = false,
+  }) {
+    final size = logicalSize;
+    final oriented = logicalSizeFor(orientation, swap: swap);
+    if (size == null || oriented == null || oriented.width == size.width) {
+      return shortLabel;
+    }
+    return '$shortLabel ${_points(oriented)}';
+  }
+
+  static String _points(Size size) =>
+      '${size.width.round()}×${size.height.round()}';
+
   static final Map<String, GalleryPreviewFrame> _byQuery = () {
     final map = <String, GalleryPreviewFrame>{};
     for (final frame in GalleryPreviewFrame.values) {
       for (final alias in [frame.query, ...frame.aliases]) {
-        final key = _normalize(alias);
+        final key = _galleryQueryKey(alias);
         final existing = map[key];
         if (existing != null && existing != frame) {
           throw StateError('Duplicate preview frame alias $key');
@@ -580,19 +702,10 @@ enum GalleryPreviewFrame {
     return map;
   }();
 
-  static String _normalize(String raw) {
-    return raw
-        .trim()
-        .toLowerCase()
-        .replaceAll('×', 'x')
-        .replaceAll('*', 'x')
-        .replaceAll(RegExp(r'[\s_\-]'), '');
-  }
-
   /// Known [raw] value, or null when it is missing or not a frame id.
   static GalleryPreviewFrame? tryParse(String? raw) {
     if (raw == null || raw.isEmpty) return null;
-    return _byQuery[_normalize(raw)];
+    return _byQuery[_galleryQueryKey(raw)];
   }
 
   /// `device` wins when it names a frame. Otherwise `frame`.
@@ -631,6 +744,8 @@ class GalleryLaunch {
     this.panel,
     this.reduceTransparency = false,
     this.device = GalleryPreviewFrame.window,
+    this.orientation,
+    this.swapOrientation = false,
   });
 
   final String? page;
@@ -652,6 +767,14 @@ class GalleryLaunch {
 
   /// `device=` or `frame=`. See [GalleryPreviewFrame].
   final GalleryPreviewFrame device;
+
+  /// `orientation=`. Null keeps the board's canonical orientation.
+  /// Desktop and 「自适应窗口」 ignore it. See [GalleryPreviewOrientation].
+  final GalleryPreviewOrientation? orientation;
+
+  /// `swap=` or `rotate=`. Flips the canonical orientation when
+  /// [orientation] is null. An explicit [orientation] wins.
+  final bool swapOrientation;
 
   /// Level-2 target. A known [page] is a leaf and is not applied here.
   GalleryGroup? get workbench =>
@@ -675,6 +798,9 @@ class GalleryLaunch {
     const envBg = String.fromEnvironment('GALLERY_BG');
     const envDevice = String.fromEnvironment('GALLERY_DEVICE');
     const envFrame = String.fromEnvironment('GALLERY_FRAME');
+    const envOrientation = String.fromEnvironment('GALLERY_ORIENTATION');
+    const envSwap = String.fromEnvironment('GALLERY_SWAP');
+    const envRotate = String.fromEnvironment('GALLERY_ROTATE');
     const envReduce = String.fromEnvironment('GALLERY_REDUCE_TRANSPARENCY');
     const envA11y = String.fromEnvironment('GALLERY_A11Y');
     final query = uri.queryParameters;
@@ -696,7 +822,24 @@ class GalleryLaunch {
         _first(query['device'], envDevice),
         _first(query['frame'], envFrame),
       ),
+      orientation: GalleryPreviewOrientation.tryParse(
+        _first(query['orientation'], envOrientation),
+      ),
+      swapOrientation: _readSwap(query, envSwap: envSwap, envRotate: envRotate),
     );
+  }
+
+  /// Explicit `swap` wins over `rotate`. Truthy tokens match the a11y switch.
+  static bool _readSwap(
+    Map<String, String> query, {
+    required String envSwap,
+    required String envRotate,
+  }) {
+    if (query.containsKey('swap')) return _toggleOn(query['swap']);
+    if (query.containsKey('rotate')) return _toggleOn(query['rotate']);
+    if (envSwap.isNotEmpty) return _toggleOn(envSwap);
+    if (envRotate.isNotEmpty) return _toggleOn(envRotate);
+    return false;
   }
 
   static String? _first(String? query, String env) {

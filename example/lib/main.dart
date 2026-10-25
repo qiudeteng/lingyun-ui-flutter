@@ -46,6 +46,8 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   bool _reduceMotion = false;
   bool _highContrast = false;
   GalleryPreviewFrame _frame = GalleryPreviewFrame.window;
+  GalleryPreviewOrientation? _orientation;
+  bool _swapOrientation = false;
   GalleryBackground _background = GalleryBackground.canvas;
   Wave1cPanel _wave1cPanel = Wave1cPanel.segmented;
   ThemesPanel _themesPanel = ThemesPanel.colors;
@@ -88,6 +90,8 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
     _themeMode = launch.themeMode;
     _reduceTransparency = launch.reduceTransparency;
     _frame = launch.device;
+    _orientation = launch.orientation;
+    _swapOrientation = launch.swapOrientation;
     _background = GalleryBackground.fromQuery(launch.background);
     bindGalleryFramePlatform(_frame.platform);
   }
@@ -95,6 +99,13 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   void _setFrame(GalleryPreviewFrame frame) {
     bindGalleryFramePlatform(frame.platform);
     setState(() => _frame = frame);
+  }
+
+  void _setOrientation(GalleryPreviewOrientation orientation) {
+    setState(() {
+      _orientation = orientation;
+      _swapOrientation = false;
+    });
   }
 
   void _setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
@@ -221,6 +232,9 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
                 setState(() => _reduceTransparency = value),
             frame: _frame,
             onFrameChanged: _setFrame,
+            orientation: _orientation,
+            swapOrientation: _swapOrientation,
+            onOrientationChanged: _setOrientation,
             pageBuilder: _page,
           ),
         ),

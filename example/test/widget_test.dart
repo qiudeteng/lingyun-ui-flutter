@@ -1386,6 +1386,152 @@ void main() {
     );
   });
 
+  test('orientation query and Duo fold frames', () {
+    Size oriented(String query) {
+      final launch = GalleryLaunch.fromUri(Uri.parse(query));
+      return launch.device.logicalSizeFor(
+        launch.orientation,
+        swap: launch.swapOrientation,
+      )!;
+    }
+
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=pro&orientation=landscape'),
+      ).orientation,
+      GalleryPreviewOrientation.landscape,
+    );
+    expect(
+      oriented('https://example.test/?device=pro&orientation=landscape'),
+      const Size(874, 402),
+    );
+    expect(
+      oriented('https://example.test/?device=pro&orientation=Landscape'),
+      const Size(874, 402),
+    );
+    expect(
+      oriented('https://example.test/?device=pro&orientation=横屏'),
+      const Size(874, 402),
+    );
+    expect(
+      oriented('https://example.test/?device=air&orientation=land'),
+      const Size(912, 420),
+    );
+    expect(
+      oriented(
+        'https://example.test/?device=duo-inner-landscape&orientation=portrait',
+      ),
+      const Size(669, 951),
+    );
+    expect(
+      oriented('https://example.test/?device=pro&orientation=nope'),
+      const Size(402, 874),
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=pro&orientation=nope'),
+      ).orientation,
+      isNull,
+    );
+    expect(
+      oriented('https://example.test/?device=pro&swap=1'),
+      const Size(874, 402),
+    );
+    expect(
+      oriented('https://example.test/?device=duo-inner-landscape&rotate=on'),
+      const Size(669, 951),
+    );
+    expect(
+      oriented('https://example.test/?device=pro&orientation=portrait&swap=1'),
+      const Size(402, 874),
+    );
+    expect(
+      oriented(
+        'https://example.test/?device=macos&orientation=portrait&swap=1',
+      ),
+      const Size(1440, 900),
+    );
+    expect(
+      oriented('https://example.test/?device=windows&orientation=竖'),
+      const Size(1280, 800),
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=window&orientation=landscape'),
+      ).device.logicalSizeFor(GalleryPreviewOrientation.landscape),
+      isNull,
+    );
+
+    expect(
+      GalleryPreviewFrame.pro.labelFor(GalleryPreviewOrientation.landscape),
+      '18 / 17 / 16 Pro 874×402',
+    );
+    expect(
+      GalleryPreviewFrame.pro.shortLabelFor(
+        GalleryPreviewOrientation.landscape,
+      ),
+      'Pro 874×402',
+    );
+    expect(
+      GalleryPreviewFrame.pro.labelFor(null),
+      GalleryPreviewFrame.pro.label,
+    );
+    expect(
+      GalleryPreviewFrame.ipadAir11.labelFor(
+        GalleryPreviewOrientation.landscape,
+      ),
+      'iPad Air 11" 1180×820',
+    );
+    expect(
+      GalleryPreviewFrame.macos.shortLabelFor(
+        GalleryPreviewOrientation.portrait,
+        swap: true,
+      ),
+      'macOS',
+    );
+    expect(GalleryPreviewFrame.pro.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoOuter.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoInnerLandscape.canRotate, isTrue);
+    expect(GalleryPreviewFrame.duoInnerPortrait.canRotate, isTrue);
+    expect(GalleryPreviewFrame.macos.canRotate, isFalse);
+    expect(GalleryPreviewFrame.windows.canRotate, isFalse);
+    expect(GalleryPreviewFrame.window.canRotate, isFalse);
+    expect(
+      GalleryPreviewFrame.pro.safePaddingFor(
+        GalleryPreviewOrientation.landscape,
+      ),
+      const EdgeInsets.fromLTRB(59, 0, 59, 21),
+    );
+    expect(
+      GalleryPreviewFrame.ipadMini.safePaddingFor(
+        GalleryPreviewOrientation.landscape,
+      ),
+      GalleryPreviewFrame.ipadMini.safePadding,
+    );
+
+    expect(GalleryPreviewFrame.tryParse('duo-half'), isNull);
+    expect(GalleryPreviewFrame.tryParse('半折叠'), isNull);
+    expect(GalleryPreviewFrame.tryParse('duo-tent'), isNull);
+    expect(GalleryPreviewFrame.tryParse('帐篷'), isNull);
+    expect(GalleryPreviewFrame.tryParse('台历'), isNull);
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=半折叠'))
+          .device,
+      GalleryPreviewFrame.window,
+    );
+    expect(
+      GalleryLaunch.fromUri(Uri.parse('https://example.test/?device=帐篷'))
+          .device,
+      GalleryPreviewFrame.window,
+    );
+    expect(
+      GalleryLaunch.fromUri(
+        Uri.parse('https://example.test/?device=duo-outer&frame=duo-tent'),
+      ).device,
+      GalleryPreviewFrame.duoOuter,
+    );
+  });
+
   testWidgets('home and tab queries open that workbench', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1280, 900);
@@ -1713,6 +1859,15 @@ void main() {
     );
     expect(defaultTargetPlatform, TargetPlatform.iOS);
     expect(find.byKey(const Key('gallery-preview-chrome')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-camera')), findsOneWidget);
+    expect(
+      find.byKey(const Key('gallery-orientation-control')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('gallery-orientation-portrait')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
     expect(find.byKey(const Key('gallery-device-bg-meadow')), findsOneWidget);
     final innerMeadow = tester.getRect(
@@ -1801,6 +1956,11 @@ void main() {
       if (entry.key == GalleryPreviewFrame.window) {
         expect(find.byKey(const Key('gallery-device-frame')), findsNothing);
         expect(find.byKey(const Key('gallery-device-bezel')), findsNothing);
+        expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+        expect(
+          find.byKey(const Key('gallery-orientation-control')),
+          findsNothing,
+        );
         expect(find.byKey(const Key('gallery-preview-chrome')), findsNothing);
         expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
         expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
@@ -1822,6 +1982,16 @@ void main() {
         );
         expect(defaultTargetPlatform, entry.key.platform);
         expect(find.byKey(const Key('gallery-device-bezel')), findsOneWidget);
+        expect(
+          find.byKey(const Key('gallery-device-camera')),
+          entry.key.form == GalleryPreviewForm.phone
+              ? findsOneWidget
+              : findsNothing,
+        );
+        expect(
+          find.byKey(const Key('gallery-orientation-control')),
+          entry.key.canRotate ? findsOneWidget : findsNothing,
+        );
         expect(
           tester
               .widget<IgnorePointer>(
@@ -2089,5 +2259,311 @@ void main() {
         reason: 'The slot beside the capsule stays transparent',
       );
     }
+  });
+
+  testWidgets('orientation control swaps size, padding, and labels', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1600, 1600);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    await tester.pumpWidget(
+      LingyunGlassDemoApp(
+        launch: GalleryLaunch.fromUri(
+          Uri.parse('https://example.test/?device=pro&orientation=横屏'),
+        ),
+      ),
+    );
+    final title = find.byKey(const Key('gallery-workbench-title'));
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(874, 402));
+    expect(
+      MediaQuery.paddingOf(
+        tester.element(find.byKey(const Key('gallery-workbench'))),
+      ),
+      const EdgeInsets.fromLTRB(59, 0, 59, 21),
+    );
+    expect(
+      find.byKey(const Key('gallery-orientation-landscape')),
+      findsOneWidget,
+    );
+    expect(find.text('横屏'), findsOneWidget);
+    expect(find.text('Pro 874×402'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-device-control')));
+    await tester.pumpAndSettle();
+    expect(find.text('18 / 17 / 16 Pro 874×402'), findsOneWidget);
+    expect(find.text('iPad mini 1133×744'), findsOneWidget);
+    expect(find.text('Duo 内屏横 951×669'), findsOneWidget);
+    expect(find.text('Duo 外屏 678×466'), findsOneWidget);
+    expect(find.text('Duo 内屏竖 951×669'), findsOneWidget);
+    expect(find.textContaining('半折叠'), findsNothing);
+    expect(find.textContaining('帐篷'), findsNothing);
+    expect(find.text('macOS 1440×900'), findsOneWidget);
+    expect(find.text('Windows 1280×800'), findsOneWidget);
+    expect(find.text('自适应窗口'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-device-option-ipad-mini')));
+    await tester.pumpAndSettle();
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1133, 744));
+    expect(find.text('iPad mini 1133×744'), findsOneWidget);
+    expect(
+      MediaQuery.paddingOf(
+        tester.element(find.byKey(const Key('gallery-workbench'))),
+      ),
+      GalleryPreviewFrame.ipadMini.safePadding,
+    );
+
+    await tester.tap(find.byKey(const Key('gallery-orientation-control')));
+    await tester.pumpAndSettle();
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(744, 1133));
+    expect(
+      find.byKey(const Key('gallery-orientation-portrait')),
+      findsOneWidget,
+    );
+    expect(find.text('iPad mini'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-device-control')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gallery-device-option-macos')));
+    await tester.pumpAndSettle();
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1440, 900));
+    expect(find.byKey(const Key('gallery-orientation-control')), findsNothing);
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('gallery-device-control')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gallery-device-option-windows')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('gallery-orientation-control')), findsNothing);
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(1280, 800));
+
+    await tester.tap(find.byKey(const Key('gallery-device-control')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gallery-device-option-pro')));
+    await tester.pumpAndSettle();
+    expect(MediaQuery.sizeOf(tester.element(title)), const Size(402, 874));
+    expect(find.byKey(const Key('gallery-device-camera')), findsOneWidget);
+  });
+
+  testWidgets('device shells paint cameras and flat Duo strokes', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1800, 1700);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    Future<void> pumpFrame(
+      GalleryPreviewFrame frame, {
+      GalleryPreviewOrientation? orientation,
+      Brightness brightness = Brightness.light,
+      Color fill = const Color(0xFFE8E8EC),
+    }) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(brightness: brightness),
+          // MaterialApp animates theme changes. The probe reads brightness
+          // on the first frame, so pin it on a descendant Theme.
+          home: Theme(
+            data: ThemeData(brightness: brightness),
+            child: RepaintBoundary(
+              key: const Key('bezel-probe'),
+              child: ColoredBox(
+                color: const Color(0xFFFF00FF),
+                child: GalleryDeviceStage(
+                  frame: frame,
+                  orientation: orientation,
+                  backdrop: ColoredBox(color: fill),
+                  child: ColoredBox(color: fill),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    Future<int> lumaAt(Offset global) async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const Key('bezel-probe')),
+      );
+      final local = boundary.globalToLocal(global);
+      final width = boundary.size.width.round();
+      final height = boundary.size.height.round();
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        return data!.buffer.asUint8List();
+      });
+      final x = local.dx.round().clamp(0, width - 1).toInt();
+      final y = local.dy.round().clamp(0, height - 1).toInt();
+      final i = (y * width + x) * 4;
+      return (bytes![i] + bytes[i + 1] + bytes[i + 2]) ~/ 3;
+    }
+
+    Rect frameRect() =>
+        tester.getRect(find.byKey(const Key('gallery-device-frame')));
+    Rect bezelRect() =>
+        tester.getRect(find.byKey(const Key('gallery-device-bezel')));
+
+    await pumpFrame(GalleryPreviewFrame.pro);
+    var frame = frameRect();
+    expect(await lumaAt(frame.topCenter + const Offset(0, 30)), lessThan(40));
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 90)),
+      greaterThan(180),
+    );
+    expect(find.byKey(const Key('gallery-device-camera')), findsOneWidget);
+    expect(
+      tester
+          .widget<IgnorePointer>(find.byKey(const Key('gallery-device-camera')))
+          .ignoring,
+      isTrue,
+    );
+
+    await pumpFrame(
+      GalleryPreviewFrame.pro,
+      orientation: GalleryPreviewOrientation.landscape,
+    );
+    frame = frameRect();
+    expect(frame.size, const Size(874, 402));
+    expect(await lumaAt(frame.centerLeft + const Offset(30, 0)), lessThan(40));
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 30)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(GalleryPreviewFrame.ipadMini);
+    frame = frameRect();
+    var bezel = bezelRect();
+    final padTop = Offset(frame.center.dx, (bezel.top + frame.top) / 2);
+    expect(await lumaAt(padTop), lessThan(40));
+    expect(await lumaAt(padTop + const Offset(36, 0)), greaterThan(45));
+
+    await pumpFrame(
+      GalleryPreviewFrame.ipadMini,
+      orientation: GalleryPreviewOrientation.landscape,
+    );
+    frame = frameRect();
+    bezel = bezelRect();
+    final padSide = Offset((bezel.left + frame.left) / 2, frame.center.dy);
+    expect(await lumaAt(padSide), lessThan(40));
+    expect(await lumaAt(padSide + const Offset(0, 28)), greaterThan(45));
+    final rotatedTop = Offset(frame.center.dx, (bezel.top + frame.top) / 2);
+    expect(
+      (await lumaAt(rotatedTop) -
+              await lumaAt(rotatedTop + const Offset(48, 0)))
+          .abs(),
+      lessThan(12),
+    );
+
+    await pumpFrame(GalleryPreviewFrame.duoOuter);
+    frame = frameRect();
+    bezel = bezelRect();
+    expect(frame.top - bezel.top, closeTo(3, 0.6));
+    expect(frame.left - bezel.left, closeTo(3, 0.6));
+    expect(bezel.right - frame.right, closeTo(3, 0.6));
+    expect(bezel.bottom - frame.bottom, closeTo(3, 0.6));
+    expect(find.byKey(const Key('gallery-duo-camera')), findsOneWidget);
+    expect(
+      tester
+          .widget<IgnorePointer>(find.byKey(const Key('gallery-duo-camera')))
+          .ignoring,
+      isTrue,
+    );
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      lessThan(40),
+    );
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 30)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(frame.centerLeft + const Offset(12, 0)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(GalleryPreviewFrame.duoInnerPortrait);
+    frame = frameRect();
+    expect(frame.top - bezelRect().top, closeTo(3, 0.6));
+    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(GalleryPreviewFrame.duoInnerLandscape);
+    frame = frameRect();
+    expect(frame.size, const Size(951, 669));
+    expect(await lumaAt(Offset(frame.center.dx, frame.top + 16)), lessThan(40));
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(
+      GalleryPreviewFrame.duoOuter,
+      orientation: GalleryPreviewOrientation.landscape,
+    );
+    frame = frameRect();
+    expect(frame.size, const Size(678, 466));
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      lessThan(40),
+    );
+    expect(
+      await lumaAt(frame.topCenter + const Offset(0, 30)),
+      greaterThan(180),
+    );
+
+    await pumpFrame(
+      GalleryPreviewFrame.duoOuter,
+      brightness: Brightness.dark,
+      fill: const Color(0xFF204060),
+    );
+    frame = frameRect();
+    bezel = bezelRect();
+    expect(
+      await lumaAt(Offset(frame.center.dx, (bezel.top + frame.top) / 2)),
+      greaterThan(180),
+    );
+    expect(
+      await lumaAt(Offset(frame.right - 26, frame.top + 20)),
+      greaterThan(180),
+    );
+    expect(await lumaAt(frame.center), lessThan(80));
+
+    await pumpFrame(GalleryPreviewFrame.macos);
+    frame = frameRect();
+    bezel = bezelRect();
+    expect(frame.top - bezel.top, closeTo(32, 1));
+    final macY = (bezel.top + frame.top) / 2;
+    final notch = await lumaAt(Offset(frame.center.dx + 22, macY));
+    final metal = await lumaAt(Offset(frame.center.dx + 80, macY));
+    expect(notch, lessThan(30));
+    expect(metal - notch, greaterThan(25));
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+
+    await pumpFrame(GalleryPreviewFrame.windows);
+    frame = frameRect();
+    bezel = bezelRect();
+    final winY = (bezel.top + frame.top) / 2;
+    final winCenter = await lumaAt(Offset(frame.center.dx + 22, winY));
+    final winMetal = await lumaAt(Offset(frame.center.dx + 80, winY));
+    expect((winCenter - winMetal).abs(), lessThan(12));
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+
+    await pumpFrame(GalleryPreviewFrame.window);
+    expect(find.byKey(const Key('gallery-device-bezel')), findsNothing);
+    expect(find.byKey(const Key('gallery-device-camera')), findsNothing);
+    expect(find.byKey(const Key('gallery-device-frame')), findsNothing);
   });
 }
