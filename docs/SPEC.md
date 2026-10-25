@@ -349,3 +349,11 @@ leading / title / trailing：title 不包进玻璃，所以不是通栏材质条
 大块玻璃不在这里：分组是小块，一块一个环境光。`blurSigma` 仍是目录近似，**待核验**。工具栏弹簧未公布，不进 token。
 
 细节见 [`docs/TOOLBARS.md`](TOOLBARS.md)。示例 `?page=toolbars`，文案简体中文。
+
+## L. Popovers（液态玻璃 Regular Medium，非约束）
+
+权威顺序：WWDC25 Meet Liquid Glass 的透镜 / flex / morph / Reduce Motion，然后是 Adopting Liquid Glass 与 UIKit / SwiftUI 的「从玻璃控件里长出来」，然后是 HIG 的锚点与点外面收起。Sketch / Figma 只看静态。本轮没量到 Popovers 页。
+
+`cupertino_ui` 没有 popover。不包 `CupertinoPopupSurface`（那是操作表的底）。休息态是 `GlassSurface(style: LiquidGlassStyle.regularMedium)`，不传 `tokens` / `material`。这是「比按钮厚、比工作表薄」的档位近似，**不是**连续变厚的公式，也不在动画里插值 blur σ。待核验。
+
+进出场：从箭头尖端缩放，时长和曲线是 `LiquidGlassMotion.standard`（360ms 与已有 cubic）。不写 `SpringDescription`。不淡出。按压复用玻璃按钮的 0.97 / quick / 按下罩层。减弱动态把这些时长收成 0。紧凑宽度不改成工作表。细节见 [`docs/POPOVERS.md`](POPOVERS.md)。示例 `?page=popovers`，文案简体中文。

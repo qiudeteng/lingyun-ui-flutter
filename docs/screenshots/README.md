@@ -68,6 +68,23 @@ flutter test tool/capture_action_sheet_screenshots.dart
 flutter test tool/capture_action_sheet_screenshots.dart
 ```
 
+- `popovers_light.png` — 弹出框：箭头朝上、朝下、朝后，以及钉住的按下。Chrome 是 **液态玻璃 Regular Medium**（非约束，待核验，不是厚材质）。文案简体中文。设计画布 `#D1D1D6`，1440×1200。进出场缩放不在这张静帧里。
+- `popovers_dark.png` — 同一版面，深色，设计画布 `#000000`，1440×1200。
+
+在 `example/` 重拍（bash、PowerShell、cmd 相同）：
+
+```bash
+flutter test tool/capture_popover_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_popover_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_popover_screenshots.dart
+```
+
 Alerts captures are the system dialog from `package:cupertino_ui`, not a Liquid Glass drawing. Confirm and cancel are the kit system blue. The typeface on these boards is the ambient desktop family (Roboto on this Linux host, plus a CJK UI fallback when a glyph is missing), not SF Pro on device. Regenerate from `example/` (bash, PowerShell, or cmd):
 
 ```bash

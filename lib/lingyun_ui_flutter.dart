@@ -49,6 +49,12 @@
 /// groups ([LiquidGlassStyle.regularMedium]). It is not Dock, not
 /// Materials Thick, and not the native vertical toolbar.
 ///
+/// Popovers ([showLingyunPopover] / [LingyunPopover]) are smaller anchored
+/// chrome. The working plate is Liquid Glass Regular Medium, not Materials
+/// Thick and not a system popover (`cupertino_ui` has none). Enter / exit
+/// scale from the anchor with [LiquidGlassMotion]; press reuses the glass
+/// button flex. No new spring token.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -86,6 +92,7 @@ export 'src/widgets/glass_text_field.dart';
 export 'src/widgets/lingyun_action_sheet.dart';
 export 'src/widgets/lingyun_alert.dart';
 export 'src/widgets/lingyun_page_control.dart';
+export 'src/widgets/lingyun_popover.dart';
 export 'src/widgets/lingyun_segmented_control.dart';
 export 'src/widgets/lingyun_sheet.dart';
 export 'src/widgets/lingyun_sidebar.dart';
