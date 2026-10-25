@@ -79,8 +79,10 @@ class GlassTabBarItem {
 /// Selection is a System Blue tint on the icon and caption
 /// ([systemBlueLight] / [systemBlueDark], the kit Tint). Unselected items
 /// use [LiquidGlassLabels] at [unselectedOpacity]. There is no Material
-/// indicator bar. The selected slot is a light lens nested in the Dock
-/// platter (caustic, lip, refraction stroke). It is not a second
+/// indicator bar. The selected slot is a darker glass lens nested in the
+/// Dock platter: a sheer dark veil, a thin edge catch, and a faint
+/// caustic, so the platter and the backdrop stay visible. It is not a
+/// white capsule and it is not a second
 /// [GlassSurface]: a nested blur would stack glass on glass. The lens
 /// stretches while it travels, then settles into a capsule. A drag lags
 /// behind the finger; release selects the item under the pointer and
@@ -505,9 +507,9 @@ class _ItemRow extends StatefulWidget {
 class _LensMotion {
   const _LensMotion._();
 
-  static const double pressLift = 1.06;
-  static const Offset pressSlide = Offset(0, -0.035);
-  static const double lensPressScale = 1.04;
+  static const double pressLift = 1.14;
+  static const Offset pressSlide = Offset(0, -0.08);
+  static const double lensPressScale = 1.08;
   static const double pulseAmp = 0.055;
   static const double travelStretch = 0.30;
   static const double speedStretch = 0.028;
@@ -935,13 +937,14 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
   }
 }
 
-/// Light lens nested in the Dock platter.
+/// Darker glass lens nested in the Dock platter.
 ///
-/// Not a gradient highlight capsule and not a second [GlassSurface].
+/// The body is a sheer dark veil so the platter and the backdrop read
+/// through it. It is not a white capsule and not a second [GlassSurface].
 /// A nested backdrop blur would stack glass on glass (WWDC25 219
-/// principles) and would sample the Dock's own blur. This layer paints
-/// a caustic, a top lip, and a refraction stroke, then settles as a
-/// stadium. It does not draw the Dock rim's side hairlines.
+/// principles) and would sample the Dock's own blur. A thin edge catch
+/// and a faint caustic keep the thickness. It does not draw the Dock
+/// rim's side hairlines, and it does not change the Dock optics recipe.
 ///
 /// Fill alphas are provisional appearance, not Dock recipe tokens.
 /// 待核验 vs 真机/Sketch.
@@ -982,7 +985,7 @@ class _SelectionLens extends StatelessWidget {
                 gradient: RadialGradient(
                   center: Alignment(0, -0.15),
                   radius: 0.9,
-                  colors: [Color(0x66FFFFFF), Color(0x00FFFFFF)],
+                  colors: [Color(0xA6FFFFFF), Color(0x00FFFFFF)],
                   stops: [0.0, 0.8],
                 ),
               ),
@@ -1020,33 +1023,37 @@ class _LiquidLensPainter extends CustomPainter {
     final Color lip;
     final Color shade;
     if (solid) {
-      top = const Color(0xF7FFFFFF);
+      // Opaque fallback cannot show the backdrop. A darker chip keeps
+      // the selection readable without turning into a white pill.
+      top = brightness == Brightness.dark
+          ? const Color(0xF0141418)
+          : const Color(0xE6D5D5DC);
       bottom = brightness == Brightness.dark
-          ? const Color(0xE62C2C30)
-          : const Color(0xF2F7F7F9);
-      caustic = const Color(0xE6FFFFFF);
-      lip = const Color(0xFFFFFFFF);
-      shade = const Color(0x14000000);
+          ? const Color(0xF0101014)
+          : const Color(0xE6C6C6CE);
+      caustic = const Color(0x33FFFFFF);
+      lip = const Color(0x99FFFFFF);
+      shade = const Color(0x22000000);
     } else if (tintedBar) {
-      top = const Color(0x5CFFFFFF);
-      bottom = const Color(0x14FFFFFF);
-      caustic = const Color(0x8CFFFFFF);
-      lip = const Color(0xD9FFFFFF);
-      shade = const Color(0x1A000000);
+      top = const Color(0x4D000000);
+      bottom = const Color(0x26000000);
+      caustic = const Color(0x33FFFFFF);
+      lip = const Color(0x80FFFFFF);
+      shade = const Color(0x40000000);
     } else if (brightness == Brightness.dark) {
-      top = const Color(0x38FFFFFF);
-      bottom = const Color(0x0FFFFFFF);
-      caustic = const Color(0x73FFFFFF);
-      lip = const Color(0xA6FFFFFF);
-      shade = const Color(0x66000000);
+      top = const Color(0x66101418);
+      bottom = const Color(0x33101418);
+      caustic = const Color(0x22FFFFFF);
+      lip = const Color(0x66FFFFFF);
+      shade = const Color(0x80000000);
     } else {
-      // Body stays sheer so the Dock shows through. The lip is a thin
-      // catch, not a white cap. 待核验 vs 真机/Sketch.
-      top = const Color(0x47FFFFFF);
-      bottom = const Color(0x0CFFFFFF);
-      caustic = const Color(0x8CFFFFFF);
-      lip = const Color(0xF5FFFFFF);
-      shade = const Color(0x10000000);
+      // Sheer dark veil on the see-through Dock. White body fill read
+      // as a solid pill. 待核验 vs 真机/Sketch.
+      top = const Color(0x4A12141A);
+      bottom = const Color(0x2412141A);
+      caustic = const Color(0x28FFFFFF);
+      lip = const Color(0x73FFFFFF);
+      shade = const Color(0x38000000);
     }
 
     canvas.drawRRect(
@@ -1073,8 +1080,8 @@ class _LiquidLensPainter extends CustomPainter {
         ).createShader(bounds),
     );
 
-    // Thin top catch. A tall lip reads as a white sticker on the Dock.
-    final lipHeight = math.min(size.height * 0.16, 6.0);
+    // Hairline catch only. A tall white lip becomes a white cap.
+    final lipHeight = math.min(size.height * 0.08, 3.0);
     final lipRect = Rect.fromLTWH(0, 0, size.width, lipHeight);
     canvas.drawRect(
       lipRect,

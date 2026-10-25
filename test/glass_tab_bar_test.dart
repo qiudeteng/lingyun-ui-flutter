@@ -282,7 +282,8 @@ void main() {
           matching: find.byType(AnimatedScale),
         ),
       );
-      expect(scale.scale, greaterThan(1.02));
+      expect(scale.scale, greaterThan(1.12));
+      expect(scale.scale, lessThan(1.16));
       expect(
         tester
             .widget<Opacity>(find.byKey(const Key('glass-tab-lens-glow')))
