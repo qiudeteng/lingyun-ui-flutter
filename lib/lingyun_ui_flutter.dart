@@ -55,6 +55,10 @@
 /// scale from the anchor with [LiquidGlassMotion]; press reuses the glass
 /// button flex. No new spring token.
 ///
+/// Menus ([showLingyunMenu] / [LingyunMenu]) are Liquid Glass bubbles.
+/// A glass button morphs into the menu (Regular Large by hypothesis).
+/// They are not Materials Thick, not an action sheet, and not a popover.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -91,6 +95,7 @@ export 'src/widgets/glass_tab_bar.dart';
 export 'src/widgets/glass_text_field.dart';
 export 'src/widgets/lingyun_action_sheet.dart';
 export 'src/widgets/lingyun_alert.dart';
+export 'src/widgets/lingyun_menu.dart';
 export 'src/widgets/lingyun_page_control.dart';
 export 'src/widgets/lingyun_popover.dart';
 export 'src/widgets/lingyun_segmented_control.dart';

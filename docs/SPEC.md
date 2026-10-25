@@ -357,3 +357,11 @@ leading / title / trailing：title 不包进玻璃，所以不是通栏材质条
 `cupertino_ui` 没有 popover。不包 `CupertinoPopupSurface`（那是操作表的底）。休息态是 `GlassSurface(style: LiquidGlassStyle.regularMedium)`，不传 `tokens` / `material`。这是「比按钮厚、比工作表薄」的档位近似，**不是**连续变厚的公式，也不在动画里插值 blur σ。待核验。
 
 进出场：从箭头尖端缩放，时长和曲线是 `LiquidGlassMotion.standard`（360ms 与已有 cubic）。不写 `SpringDescription`。不淡出。按压复用玻璃按钮的 0.97 / quick / 按下罩层。减弱动态把这些时长收成 0。紧凑宽度不改成工作表。细节见 [`docs/POPOVERS.md`](POPOVERS.md)。示例 `?page=popovers`，文案简体中文。
+
+## M. Menus（Liquid Glass）
+
+权威顺序：WWDC25 *Meet Liquid Glass*（气泡从控件弹出、按压 flex、lensing 进出场、Reduce Motion 关掉弹性）→ *Adopting Liquid Glass* 与 WWDC25 *Build a UIKit app*（按钮 morph 成菜单，菜单采用 Liquid Glass）→ HIG Menus → Sketch / Figma 只核静止画面。
+
+不是 Materials Thick。按钮仍是 Regular Small；菜单静止盘子用 **Regular Large**（放大后更“厚”的玻璃，沿用已有配方，不新写 blur）。这一档是假设，**待核验** vs Sketch Menus（Figma 本轮限流）。不包 `CupertinoContextMenu`（iOS 16 长按预览 + 不透明底，交互和材质都不对）。不做动作表、不做 Popover。
+
+动效不新立弹簧 token。进出场时长和缓动是 `LiquidGlassMotion.standard` / `standardCurve`。按压缩放是 GlassButton 已有的 0.97，配 `quick`。Reduce Motion 直接到位，并且不缩放。细节见 [`docs/MENUS.md`](MENUS.md)。示例 `?page=menus`，文案简体中文。
