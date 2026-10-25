@@ -66,6 +66,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- 示例 iOS 工程接入 UIScene 生命周期，对齐 Flutter 3.47.8 模板：`AppDelegate` 实现 `FlutterImplicitEngineDelegate`，插件改在 `didInitializeImplicitFlutterEngine` 注册；新增 `SceneDelegate`（`FlutterSceneDelegate`）；`Info.plist` 写入 `UIApplicationSceneManifest`。iOS 27.1 模拟器不再因未接入场景生命周期在启动时 SIGTRAP。Bundle ID 仍是 `com.qiudeteng.lingyunui`。
 - 玻璃边缘是一条连续圆角描边。`_CrispRimPainter` 不再另画左右两条竖线，浅色材质样例卡左侧和底栏 Dock 两端不再出现独立竖向白线。`rimSideOffset` / `rimSideSpread` 仍留在 `LiquidGlassTokens.shadows` 的旧侧板上，列表长度不变；前景描边不再读取它们。
 
 ## 0.4.0 — 2026-09-23
