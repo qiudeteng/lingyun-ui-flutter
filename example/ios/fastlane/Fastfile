@@ -81,14 +81,12 @@ def upload_example_to_testflight
     apply_release_signing!(ios_dir: ios_dir, team_id: team_id, identity: identity, profile_name: profile_name)
     unlock_keychain!(keychain_password)
 
-    Dir.chdir(example_dir) do
-      sh(
-        "flutter", "build", "ipa", "--release",
-        "--build-name", build_name,
-        "--build-number", build_number,
-        "--export-options-plist", export_plist
-      )
-    end
+    run_flutter_ipa!(
+      example_dir: example_dir,
+      build_name: build_name,
+      build_number: build_number,
+      export_plist: export_plist
+    )
 
     ipas = Dir[File.join(example_dir, "build", "ios", "ipa", "*.ipa")]
     UI.user_error!("flutter build ipa 没有产出 IPA。") if ipas.empty?
@@ -123,6 +121,46 @@ def upload_example_to_testflight
     UI.user_error!(e.message)
   ensure
     cleanup_signing_material!
+  end
+end
+
+def run_flutter_ipa!(example_dir:, build_name:, build_number:, export_plist:)
+  # bundle exec hooks Process.spawn and puts GEM_HOME/RUBYOPT back even if the
+  # caller deleted them. with_unbundled_env removes that hook for the block.
+  with_unbundled_env do
+    bindir = RbConfig::CONFIG.fetch("bindir")
+    pod = File.join(bindir, "pod")
+    unless File.executable?(pod)
+      UI.user_error!("#{bindir} 里没有可执行的 pod。工作流应先把 CocoaPods 装进 setup-ruby 的 Ruby。")
+    end
+
+    ENV["PATH"] = CiSupport.flutter_command_env(ENV.to_h, pod_bindir: bindir).fetch("PATH")
+    stdout, stderr, status = Open3.capture3(pod, "--version")
+    version = stdout.to_s.strip
+    unless status.success? && CiSupport.pod_version_acceptable?(version)
+      detail = stderr.to_s.strip
+      detail = stdout.to_s.strip if detail.empty?
+      detail = "（无输出）" if detail.empty?
+      UI.user_error!("#{pod} --version 失败：#{detail}。Flutter 会跳过 pod install。")
+    end
+    UI.message("Flutter 将使用 #{pod} #{version}")
+
+    Dir.chdir(example_dir) do
+      sh(
+        "flutter", "build", "ipa", "--release",
+        "--build-name", build_name,
+        "--build-number", build_number,
+        "--export-options-plist", export_plist
+      )
+    end
+  end
+end
+
+def with_unbundled_env(&block)
+  if defined?(Bundler) && Bundler.respond_to?(:with_unbundled_env)
+    Bundler.with_unbundled_env(&block)
+  else
+    yield
   end
 end
 

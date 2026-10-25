@@ -196,6 +196,37 @@ check(failures, "sigh options") do
   raise "adhoc only flagged" if CiSupport.sigh_options_conflict?(adhoc: false)
 end
 
+check(failures, "flutter pod env") do
+  base = {
+    "GEM_HOME" => "/tmp/vendor/bundle/ruby/3.3.0",
+    "GEM_PATH" => "/tmp/vendor/bundle/ruby/3.3.0",
+    "RUBYOPT" => "-r/tmp/bundler/setup",
+    "RUBYLIB" => "/tmp/lib",
+    "BUNDLE_GEMFILE" => "/tmp/example/ios/Gemfile",
+    "BUNDLE_BIN_PATH" => "/tmp/bin/bundle",
+    "BUNDLE_APP_CONFIG" => "/tmp/example/ios/.bundle",
+    "PATH" => "/opt/homebrew/bin#{File::PATH_SEPARATOR}/usr/bin",
+    "APP_STORE_CONNECT_KEY_ID" => "SECRET"
+  }
+  env = CiSupport.flutter_command_env(base, pod_bindir: "/ruby/3.3/bin")
+  %w[GEM_HOME GEM_PATH RUBYOPT RUBYLIB BUNDLE_GEMFILE BUNDLE_BIN_PATH BUNDLE_APP_CONFIG].each do |key|
+    raise "#{key} leaked" if env.key?(key)
+  end
+  raise "secret dropped" unless env["APP_STORE_CONNECT_KEY_ID"] == "SECRET"
+  parts = env["PATH"].split(File::PATH_SEPARATOR)
+  raise "bindir not first: #{env["PATH"]}" unless parts.first == "/ruby/3.3/bin"
+  raise "homebrew lost" unless parts.include?("/opt/homebrew/bin")
+  raise "duplicate bindir" unless parts.count("/ruby/3.3/bin") == 1
+
+  again = CiSupport.flutter_command_env(env, pod_bindir: "/ruby/3.3/bin")
+  raise "bindir duplicated on second pass" unless again["PATH"].split(File::PATH_SEPARATOR).count("/ruby/3.3/bin") == 1
+
+  raise "1.17" unless CiSupport.pod_version_acceptable?("1.17.0\n")
+  raise "1.16.2" unless CiSupport.pod_version_acceptable?("1.16.2")
+  raise "old accepted" if CiSupport.pod_version_acceptable?("1.16.1")
+  raise "noise accepted" if CiSupport.pod_version_acceptable?("1.17.0\nwarning")
+end
+
 check(failures, "export plist") do
   plist = CiSupport.export_options_plist(
     team_id: "AB12CD34EF",
