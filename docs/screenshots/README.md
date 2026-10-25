@@ -177,3 +177,26 @@ flutter test tool/capture_form_control_screenshots.dart
 ```
 
 地址 `?page=toggles&theme=light&chrome=0`。滑杆把 `page` 换成 `sliders`，步进器换成 `steppers`。深色把 `theme` 换成 `dark`。页上的分段也能切。
+
+分段控件与页面控件（导航「分段」，文案为简体中文）：
+
+- `segmented_controls_light.png` — 分段：小尺寸、按下、五段、大尺寸、禁用、着色、实时。选中透镜是液态玻璃常规小，轨道是三级填充，不是厚材质。浅色画布 `#D1D1D6`，1280×1040。
+- `segmented_controls_dark.png` — 同一页，深色，设计画布 `#000000`，1280×1040。
+- `page_controls_light.png` — 页点：当前点高亮，其余低对比。默认不能点。忙碌底上的托盘是液态玻璃常规小。浅色画布 `#D1D1D6`，1280×760。
+- `page_controls_dark.png` — 同一页，深色，设计画布 `#000000`，1280×760。
+
+高 32 / 50、内边距 2、段间距 4、样张宽 370、页点直径 7 与间距 9 标为待核验，不是令牌。重新生成（在 `example/` 里）：
+
+```bash
+flutter test tool/capture_wave1c_screenshots.dart
+```
+
+```powershell
+flutter test tool/capture_wave1c_screenshots.dart
+```
+
+```bat
+flutter test tool/capture_wave1c_screenshots.dart
+```
+
+地址 `?page=segmented&theme=light&chrome=0`。页点把 `page` 换成 `pages`。深色把 `theme` 换成 `dark`。

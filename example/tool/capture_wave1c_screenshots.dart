@@ -19,24 +19,28 @@ void main() {
       tester,
       brightness: Brightness.light,
       panel: Wave1cPanel.segmented,
+      height: 1040,
       path: '../docs/screenshots/segmented_controls_light.png',
     );
     await _capture(
       tester,
       brightness: Brightness.dark,
       panel: Wave1cPanel.segmented,
+      height: 1040,
       path: '../docs/screenshots/segmented_controls_dark.png',
     );
     await _capture(
       tester,
       brightness: Brightness.light,
       panel: Wave1cPanel.pages,
+      height: 760,
       path: '../docs/screenshots/page_controls_light.png',
     );
     await _capture(
       tester,
       brightness: Brightness.dark,
       panel: Wave1cPanel.pages,
+      height: 760,
       path: '../docs/screenshots/page_controls_dark.png',
     );
   });
@@ -46,10 +50,10 @@ Future<void> _capture(
   WidgetTester tester, {
   required Brightness brightness,
   required Wave1cPanel panel,
+  required double height,
   required String path,
 }) async {
-  const height = 1680.0;
-  await tester.binding.setSurfaceSize(const Size(1280, height));
+  await tester.binding.setSurfaceSize(Size(1280, height));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final canvas = brightness == Brightness.dark
       ? const Color(0xFF000000)

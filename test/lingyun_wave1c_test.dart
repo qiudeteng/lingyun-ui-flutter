@@ -36,10 +36,9 @@ const _three = <LingyunSegment<int>>[
 ];
 
 class _LiveSegments extends StatefulWidget {
-  const _LiveSegments({this.reduceMotion = false, this.width = 370});
+  const _LiveSegments({this.reduceMotion = false});
 
   final bool reduceMotion;
-  final double width;
 
   @override
   State<_LiveSegments> createState() => _LiveSegmentsState();
@@ -53,7 +52,7 @@ class _LiveSegmentsState extends State<_LiveSegments> {
     return LingyunAdaptivity(
       reduceMotion: widget.reduceMotion,
       child: SizedBox(
-        width: widget.width,
+        width: 370,
         child: LingyunSegmentedControl<int>(
           segments: _three,
           selected: selected,
