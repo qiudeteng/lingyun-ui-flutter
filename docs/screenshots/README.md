@@ -21,7 +21,7 @@ flutter build linux --debug --dart-define=GALLERY_CHROME=0 --dart-define=GALLERY
 - `tab_bar_dark.png` — same page, dark, design canvas `#000000`
 - `alerts_light.png` — Alerts formal: system `cupertino_ui` dialogs (one button, two buttons with cancel leading, destructive, title + message, message only) on `kCupertinoModalBarrierColor`, design canvas `#D1D1D6`, 1280×960. Confirm and cancel use kit system blue. Demo copy is Simplified Chinese. The capture host is a Material theme so desktop type can follow the ambient family; it is still not SF Pro.
 - `alerts_dark.png` — same states, dark, design canvas `#000000`, 1280×960. Confirm and cancel use the dark kit system blue. Demo copy is Simplified Chinese.
-- [lists_light.png](./lists_light.png) / [lists_dark.png](./lists_dark.png) — 列表：内嵌分组（液态玻璃常规中号托盘）与通栏。浅色画布 `#D1D1D6`，深色画布 `#000000`，1280×900，隐藏导航。页面文案为简体中文。设计已验收。
+- [lists_light.png](./lists_light.png) / [lists_dark.png](./lists_dark.png) — 列表旧图：仍是液态玻璃常规中号托盘。现行口径是内容层常规材质 + 系统内嵌分组，页底为系统分组背景。浅色画布当时是 `#D1D1D6`，深色 `#000000`，1280×900，隐藏导航。页面文案为简体中文。这两张还没按新口径重拍。
 - [text_fields_light.png](./text_fields_light.png) / [text_fields_dark.png](./text_fields_dark.png) — 文本框：默认、聚焦、错误、禁用、密码、实时编辑。同上画布与视口。设计已验收。
 - [progress_light.png](./progress_light.png) / [progress_dark.png](./progress_dark.png) — 进度指示器：线性与圆形，确定与不确定，以及着色。同上画布与视口。设计已验收。
 

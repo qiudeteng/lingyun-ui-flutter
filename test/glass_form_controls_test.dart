@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
@@ -70,18 +72,23 @@ void main() {
   });
 
   group('GlassList', () {
-    test('defaults are inset Regular Medium, not a Materials tier', () {
+    test('inset source is Materials Regular, not Liquid Glass', () {
+      final source = File('lib/src/widgets/glass_list.dart').readAsStringSync();
+      expect(source.contains('MaterialTier.regular'), isTrue);
+      expect(source.contains('CupertinoListSection.insetGrouped'), isTrue);
+      expect(source.contains('LiquidGlassStyle'), isFalse);
+      expect(source.contains('MaterialTier.thick'), isFalse);
+      expect(source.contains('ControlLayer'), isFalse);
       const list = GlassList(
         sections: [
           GlassListSection(tiles: [GlassListTile(title: 'One')]),
         ],
       );
       expect(list.style, GlassListStyle.inset);
-      expect(list.glassStyle, LiquidGlassStyle.regularMedium);
       expect(list.showSeparators, isTrue);
     });
 
-    testWidgets('inset platter is Liquid Glass and separators are tertiary', (
+    testWidgets('inset section is Materials Regular inside insetGrouped', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -108,19 +115,18 @@ void main() {
       );
 
       final surface = tester.widget<GlassSurface>(find.byType(GlassSurface));
-      expect(surface.style, LiquidGlassStyle.regularMedium);
-      expect(surface.material, isNull);
+      expect(surface.material, MaterialTier.regular);
+      expect(surface.style, isNull);
       expect(surface.tokens, isNull);
+      expect(surface.borderRadius, const BorderRadius.all(Radius.circular(10)));
 
       final section = tester.widget<CupertinoListSection>(
         find.byType(CupertinoListSection),
       );
       expect(section.type, CupertinoListSectionType.insetGrouped);
-      expect(
-        section.separatorColor,
-        LingyunColors.light.liquidGlassLabels.tertiary,
-      );
+      expect(section.separatorColor, isNull);
       expect(section.backgroundColor, CupertinoColors.transparent);
+      expect(section.decoration?.color, const Color(0x00000000));
 
       expect(find.text('Connectivity'), findsOneWidget);
       expect(find.text('Home'), findsOneWidget);

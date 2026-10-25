@@ -52,7 +52,7 @@ It is a row on **基础工作台**. The **液态玻璃** page keeps style swatch
 `steppers`; aliases `toggle`, `slider`, `stepper`). 浅色 / 深色. Copy is
 Simplified Chinese. **分段与页控** still shares one page.
 
-**列表** / **文本框** / **进度**（`?page=lists|fields|progress`）的标题、按钮、标签、占位符和辅助说明是简体中文。代码标识保持英文。
+**列表**（`?page=lists`）内嵌分组是内容层常规材质（Materials Regular，不是液态玻璃）加系统内嵌分组；通栏没有分组块。**文本框** / **进度**（`?page=fields|progress`）的标题、按钮、标签、占位符和辅助说明是简体中文。代码标识保持英文。
 
 Default backdrop is the design canvas (light `#D1D1D6`, dark `#000000`).
 The top-right cluster is on every page (hidden when `chrome=0`): **浅色 / 暗黑**,
