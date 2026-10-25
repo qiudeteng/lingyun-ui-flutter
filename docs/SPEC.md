@@ -189,6 +189,7 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 - 选中反馈是短时 **selection lens**（胶囊，`LiquidGlassMotion.quick`），**不是** Material indicator 条。
 - 浮动胶囊圆角是 stadium（`BorderRadius.circular(100)`，kit `cornerRadius: 100`）。**不是** 18 / 26 / 34。胶囊左右留白大于项间距（项间距 4，项内水平 padding 8；屏幕侧留白更大）。
 - `blurSigma` / `saturation` 仍是 **implementation approximation / not official Design Tokens**，来自 Dock 配方，不要当成 kit 值。Figma 上的 Frost / Depth 同样不是这组数字。
+- Dock 盘面是透底磨砂，不是乳白实板。罩色 alpha 低于 0.25（浅）/ 0.35（深），模糊停在能看出壁纸的一档，叠层不再铺第二层白。体积靠 `LiquidGlassOptics.lens` 的短顶缘和沿圆角走的内折光，不靠更厚的罩，也不叠第二层 `BackdropFilter`。这是透镜的近似，**不是**实时像素弯折，也**不是**随底层采样的自适应阴影。数值 **待核验 vs 真机/Sketch**。前景 rim 是一条连续圆角描边，本光学改动不另画竖线。
 
 ## 待核验（给设计 QA）
 
@@ -197,7 +198,7 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 | 项 | 状态 |
 | --- | --- |
 | 圆角 18 / 26 / 34 | **待核验**。板材工作档，不是按钮圆角。Figma Button 导出是 stadium `1000`；浮动 Tab 胶囊是 `cornerRadius: 100`。Dock 配方里的 28 只是占位，Tab Bar 会覆盖成胶囊。 |
-| `blurSigma` / saturation | **待核验**。实现近似。Figma Frost=6、Depth=30、Refraction=70、Dispersion=20、Splay=20、Opacity=25 是档位，限流后未再对 `5584:32505` 与 `3:72207` 跑 `get_variable_defs`。 |
+| `blurSigma` / saturation / Dock 罩色与折光 | **待核验**。实现近似。Dock 盘面必须透出底色；体积在边缘折光，不在实心罩。不是真机像素弯折。Figma Frost=6、Depth=30、Refraction=70、Dispersion=20、Splay=20、Opacity=25 是档位，限流后未再对 `5584:32505` 与 `3:72207` 跑 `get_variable_defs`。 |
 | 未选中字形不透明度 | **实现近似**（LINEAR_BURN / LINEAR_DODGE），不是 kit 百分比。 |
 | Search Role、Prominent Tab 旁侧圆钮 | **非本轮**。`GlassTabBarStyle.sidebar` 已被 `LingyunPage` 用作玻璃 rail，不是 iOS 27.1 竖向系统条。 |
 | Colors 页语义色（`0:1746`） | **本批已入 Sketch 变量**。Figma 页 MCP 限流，未复读。以 Sketch 色变量为准。 |

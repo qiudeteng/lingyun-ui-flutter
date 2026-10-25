@@ -91,6 +91,66 @@ void main() {
       expect(MaterialCatalog.light.thin, isNot(LiquidGlassCatalog.light.clear));
     });
 
+    test('Dock veil is a lens, Materials stay standard frost', () {
+      final lightDock = LiquidGlassTokens.lightDock;
+      final darkDock = LiquidGlassTokens.darkDock;
+      expect(lightDock.optics, LiquidGlassOptics.lens);
+      expect(darkDock.optics, LiquidGlassOptics.lens);
+      // Face must stay a frost you can see through. 0.36 still read as a
+      // milk plate. Bounds are gates, not kit tokens — 待核验 vs 真机/Sketch.
+      expect(lightDock.tintColor.a, lessThan(0.25));
+      expect(lightDock.tintColor.a, greaterThan(0.10));
+      expect(
+        lightDock.tintColor.a,
+        lessThan(LiquidGlassTokens.lightRegularMedium.tintColor.a),
+      );
+      expect(darkDock.tintColor.a, lessThan(0.35));
+      expect(darkDock.tintColor.a, greaterThan(0.15));
+      expect(
+        darkDock.tintColor.a,
+        lessThan(LiquidGlassTokens.darkRegularMedium.tintColor.a),
+      );
+      expect(lightDock.overlayColor.a, lessThan(0.05));
+      expect(darkDock.overlayColor.a, lessThan(0.05));
+      expect(
+        lightDock.blurSigma,
+        lessThan(LiquidGlassTokens.lightRegularMedium.blurSigma),
+      );
+      expect(lightDock.blurSigma, greaterThan(6));
+      expect(lightDock.blurSigma, lessThanOrEqualTo(10));
+      expect(
+        darkDock.blurSigma,
+        lessThan(LiquidGlassTokens.darkRegularMedium.blurSigma),
+      );
+      expect(darkDock.blurSigma, lessThanOrEqualTo(12));
+      expect(lightDock.saturation, greaterThan(1));
+      expect(darkDock.saturation, greaterThan(1));
+      expect(lightDock.shadowColor.a, lessThan(0.20));
+      expect(lightDock.copyWith().optics, LiquidGlassOptics.lens);
+      expect(lightDock.lerp(darkDock, 0.5).optics, LiquidGlassOptics.lens);
+
+      for (final tokens in [
+        MaterialCatalog.light.ultrathin,
+        MaterialCatalog.light.thin,
+        MaterialCatalog.light.regular,
+        MaterialCatalog.light.thick,
+        MaterialCatalog.dark.ultrathin,
+        MaterialCatalog.dark.thin,
+        MaterialCatalog.dark.regular,
+        MaterialCatalog.dark.thick,
+        LiquidGlassCatalog.light.clear,
+        LiquidGlassCatalog.light.regularSmall,
+        LiquidGlassCatalog.light.regularMedium,
+        LiquidGlassCatalog.light.regularLarge,
+        LiquidGlassCatalog.light.widgetGlass,
+        LiquidGlassCatalog.dark.clear,
+        LiquidGlassCatalog.dark.regularLarge,
+        LiquidGlassCatalog.dark.widgetGlass,
+      ]) {
+        expect(tokens.optics, LiquidGlassOptics.standard);
+      }
+    });
+
     test('rim is a 0.5 hairline — not linearly thickened by tier', () {
       const hairline = LiquidGlassTokens.hairlineWidth;
       expect(hairline, 0.5);
@@ -478,6 +538,101 @@ void main() {
       expect(find.text('thin'), findsOneWidget);
       expect(find.byType(BackdropFilter), findsOneWidget);
     });
+
+    testWidgets(
+      'Dock lens is one backdrop filter, Materials stay a flat tint',
+      (tester) async {
+        Future<BoxDecoration> pumpDock(ThemeData theme) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: theme,
+              home: const Scaffold(
+                body: GlassSurface(
+                  key: Key('dock-surface'),
+                  style: LiquidGlassStyle.dock,
+                  child: SizedBox(width: 266, height: 54),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final dock = find.byKey(const Key('dock-surface'));
+          expect(
+            find.descendant(of: dock, matching: find.byType(BackdropFilter)),
+            findsOneWidget,
+          );
+          return tester
+                  .widget<AnimatedContainer>(
+                    find.descendant(
+                      of: dock,
+                      matching: find.byType(AnimatedContainer),
+                    ),
+                  )
+                  .decoration!
+              as BoxDecoration;
+        }
+
+        final lightVeil = await pumpDock(
+          ThemeData(extensions: const [LiquidGlassTheme.light]),
+        );
+        expect(lightVeil.color, LiquidGlassTokens.lightDock.tintColor);
+        expect(lightVeil.gradient, isNull);
+
+        final darkVeil = await pumpDock(
+          ThemeData(
+            brightness: Brightness.dark,
+            extensions: const [LiquidGlassTheme.dark],
+          ),
+        );
+        expect(darkVeil.color, LiquidGlassTokens.darkDock.tintColor);
+        expect(darkVeil.gradient, isNull);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+            home: Scaffold(
+              body: Column(
+                children: [
+                  for (final tier in MaterialTier.values)
+                    GlassSurface(
+                      material: tier,
+                      child: const SizedBox(width: 120, height: 48),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final surfaces = find.byType(GlassSurface);
+        expect(surfaces, findsNWidgets(MaterialTier.values.length));
+        final veils = tester
+            .widgetList<AnimatedContainer>(
+              find.descendant(
+                of: surfaces,
+                matching: find.byType(AnimatedContainer),
+              ),
+            )
+            .map((container) => container.decoration)
+            .whereType<BoxDecoration>()
+            .toList();
+        expect(veils, hasLength(MaterialTier.values.length));
+        for (final veil in veils) {
+          expect(veil.gradient, isNull);
+          expect(veil.color, isNotNull);
+        }
+        expect(veils.map((veil) => veil.color!.a).toList(), [
+          MaterialCatalog.light.ultrathin.tintColor.a,
+          MaterialCatalog.light.thin.tintColor.a,
+          MaterialCatalog.light.regular.tintColor.a,
+          MaterialCatalog.light.thick.tintColor.a,
+        ]);
+        expect(
+          find.descendant(of: surfaces, matching: find.byType(BackdropFilter)),
+          findsNWidgets(4),
+        );
+      },
+    );
 
     testWidgets('Liquid Glass style is applied', (tester) async {
       await tester.pumpWidget(
