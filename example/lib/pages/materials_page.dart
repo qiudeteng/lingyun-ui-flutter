@@ -21,7 +21,7 @@ class MaterialsPage extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           '材质是内容层的半透明填充：超薄、薄、常规、厚，各有浅色与深色。'
-          '它们不是液态玻璃。厚只用于表单和侧栏，不是按钮的默认材质，'
+          '它们不是液态玻璃。厚只用于工作表和侧栏，不是按钮的默认材质，'
           '也不是标签栏（标签栏是液态玻璃 Dock）。每块板后面的条纹是材质页样张，'
           '不是设计令牌。霜化与景深是设计档位，不是模糊数值。',
           style: textTheme.bodyMedium,
@@ -125,7 +125,7 @@ String _tierUsage(MaterialTier tier) => switch (tier) {
   MaterialTier.ultrathin => '最轻的内容填充，条纹和壁纸仍能透出。',
   MaterialTier.thin => '轻霜，用于紧凑内容和行内分组。',
   MaterialTier.regular => '默认的内容层分隔。',
-  MaterialTier.thick => '只用于表单和侧栏外壳，不是按钮默认。',
+  MaterialTier.thick => '只用于工作表和侧栏外壳，不是按钮默认。',
 };
 
 /// 竖向灰条，作用与 Figma 材质页的条纹底相同：

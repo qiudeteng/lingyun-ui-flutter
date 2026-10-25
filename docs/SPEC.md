@@ -217,6 +217,10 @@ Linux 与 web 上，`BackdropFilter` 会采样已经画进场景的内容。零�
 | Figma Controls 层样式 | **未复读**。本轮 MCP 限流。以 Sketch `Controls/*` 为准。 |
 | 深色静止旋钮 | **稿面没有共享层样式**。不把开关画板上的白旋钮写成令牌。 |
 | 步进器轨道 | **没有独立层样式名**。`LingyunStepper` 复用未着色轨道，不画旋钮。 |
+| 正式侧栏列宽 320、行高 44、节头 28 | **待核验**。44 引自 `CupertinoListTile` 的最低高度，不是新 token。不是玻璃 rail 的 96。 |
+| 正式侧栏圆角 | **待核验**。复用已标待核验的 `LiquidGlassRadii.large`（34）/ 选中胶囊 `small`（18）。 |
+| 侧栏 / 工具栏弹簧 | **不进 token**。iOS 27.1 未公布刚度、阻尼、回弹。展开收起用 `CupertinoPageTransition` 的系统曲线 `Curves.fastEaseInToSlowEaseOut`，时钟是已有 `LiquidGlassMotion.emphasized`。选中与按压用 `quick`。工具栏显隐用 `standard`。对照官方观感，**待核验**。 |
+| 工具栏玻璃档 | **待核验**。分组默认 `LiquidGlassStyle.regularMedium`。不是 Dock，不是 Materials Thick。胶囊外形复用按钮的 stadium `1000`。 |
 
 ## D. Page 壳
 
@@ -308,3 +312,40 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S` 的 Controls 层样式本轮没有复读�
 | 页面 | `LingyunPageControl` | 圆点是内容层。可选托盘才是 Liquid Glass Regular Small。默认不可点 |
 
 选中标签默认液态玻璃主色（与玻璃按钮一致）。`tint` 只改标签或当前点，不把透镜涂成色块。尺寸：小 32、大 50，样张宽 370。透镜位移用 SwiftUI `spring(duration:bounce:)` 同一公式，`bounce` 保持 API 默认值，时长复用已有 `LiquidGlassMotion.quick`。按下缩放 0.97，与 `GlassButton` 相同。减少动态效果时取消弹性，直接落点。细节见 [`docs/SEGMENTED.md`](SEGMENTED.md)。
+
+## J. Sidebars（Materials Thick）
+
+权威静态：Sketch UI Kit 与 Figma Community（fileKey `X2nwP1156zkZAscUSZGv9S`，Tab Bars 页的 iPad sidebar 零件；Materials Thick 用于侧栏等非 Liquid Glass 控件）。动效权威按这个顺序，**Sketch / Figma 不管动效**：
+
+1. WWDC25 **Meet Liquid Glass** — 大块表面不要在同一块上切浅色和深色；外观跟着环境走。
+2. **Adopting Liquid Glass** 与 WWDC25 **Build a UIKit app** — Tab 与 Sidebar 的流体过渡发生在 **Liquid Glass Dock**（玻璃 rail）上，不把 Materials Thick 卷进去。
+3. HIG Sidebars。
+4. Sketch / Figma 只核对静态分界。
+
+| 件 | API | 材质 |
+| --- | --- | --- |
+| 正式侧栏 | `LingyunSidebar` / `LingyunSidebarLayout` | `GlassSurface(material: MaterialTier.thick)`，不传 `style` / `tokens`。条纹或内容在下，盘子直盖。与工作表同一装配 |
+| 玻璃 rail | `GlassTabBarStyle.sidebar` | Liquid Glass **Dock**。`LingyunPage` 在 regular / wide 使用。宽 **96**，**待核验** |
+| 竖向系统条 | `ios/` | 不在本组件。`LY_IOS_27_1_SDK=1` 才链接 |
+
+正式侧栏有标题、分区、选中胶囊。行是 `CupertinoListTile`（系统按压）。展开 / 收起走系统页面曲线 `Curves.fastEaseInToSlowEaseOut`（`CupertinoPageTransition` 用的那条，不把控制点抄进 token），时钟是 `LiquidGlassMotion.emphasized`。选中胶囊用 `quick`。减少动态效果或 `MediaQuery.disableAnimations` 时时长为 0。不新造弹簧 token。列宽 320、圆角 34 **待核验**。
+
+整页过渡控件自带的边缘阴影不套在厚材质和条纹中间，否则滤镜会采到那块阴影而不是条纹。曲线仍是系统的。
+
+细节见 [`docs/SIDEBARS.md`](SIDEBARS.md)。示例 `?page=sidebars`，文案简体中文，浅色 / 深色各一块完整样张。
+
+## K. Toolbars（Flutter，悬浮玻璃分组）
+
+不是 Materials Thick，不是 Tab Bar Dock，不是 `ios/` 的竖向系统 Toolbar。
+
+| 件 | API | 材质 |
+| --- | --- | --- |
+| 横条分组 | `LingyunToolbar` | 每组一块 `GlassSurface(style: LiquidGlassStyle.regularMedium)`。`LiquidGlassStyle.dock` 会断言失败。没有 `material:` |
+| 动作 | `LingyunToolbarAction` / `LingyunToolbarActionButton` | 按压缩放 0.97，复用 `GlassButton` 已有的按压近似和 press veil。不是新 token。时长 `quick` |
+| 显隐 | `visible` | `LiquidGlassMotion.standard`，短滑动。减少动态效果时为 0 |
+
+leading / title / trailing：title 不包进玻璃，所以不是通栏材质条。`placement` 只决定安全区在顶边还是底边。`avoidHinge` 使用已有的 `LingyunLayout.chromeInsetsFor`，是 Flutter 留白，不是 Duo 竖条，也没有姿态枚举。和 regular / wide 分栏共存时，把条放在详情列。
+
+大块玻璃不在这里：分组是小块，一块一个环境光。`blurSigma` 仍是目录近似，**待核验**。工具栏弹簧未公布，不进 token。
+
+细节见 [`docs/TOOLBARS.md`](TOOLBARS.md)。示例 `?page=toolbars`，文案简体中文。

@@ -59,7 +59,7 @@
 
 - `Tab Bar - iPhone` `3:70967`：变体 `Minimized` × `Tabs=2…5` × `Type=Default | Search Role | Prominent Tab`。  
 - 默认样例：`Minimized=False, Tabs=2, Type=Default` `3:72207`。  
-- 另有 iPhone Duo、iPad 顶栏/侧栏零件（`_Tab Bar Button - iPad - *`）；**竖向 sidebar 可仅 API 预留**，与现 `GlassTabBarStyle.sidebar` stub 一致。
+- 另有 iPhone Duo、iPad 顶栏/侧栏零件（`_Tab Bar Button - iPad - *`）。正式侧栏是 Materials Thick（`LingyunSidebar`，见 `docs/SIDEBARS.md`）。`GlassTabBarStyle.sidebar` 仍是液态玻璃 Dock rail，两者不混材质。Tab↔Sidebar 的系统流体过渡在 UIKit，不在 Thick 列上。
 
 ---
 
@@ -151,7 +151,7 @@
 | 选中色 | System Blue（Light `#0088FF` / Dark `#0091FF`） | 对齐 Sketch System Colors |
 | 未选中标签 | LG Primary 降透（`#1A1A1A` / `#EDEDED`） | 禁止用普通 Label Primary 替代玻璃标签 |
 | 整条着色 | `tintedBar: true` | 蓝底 + 白图标（已有） |
-| iPad / sidebar | `GlassTabBarStyle.sidebar` stub | Figma 有 iPad 零件；竖向仅预留 OK |
+| iPad / sidebar | `LingyunSidebar`（Materials Thick）与 `GlassTabBarStyle.sidebar`（Dock rail）分开 | 正式侧栏不是 Dock stub。竖向系统条仍在 `ios/` |
 | iPhone Duo | 另帧 | **待核验 / 非本轮必须** |
 
 截图：`figma-screenshots/tabbars-iphone.png`（随设计代理人存档，不在本仓库）。

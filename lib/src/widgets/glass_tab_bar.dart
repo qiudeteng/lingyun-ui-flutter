@@ -28,6 +28,11 @@ enum GlassTabBarStyle {
   ///
   /// The Flutter page shell uses this on regular and wide widths. It does
   /// not replicate the iOS 27.1 vertical system Toolbar / Tab Bar.
+  ///
+  /// Not the formal Materials Thick sidebar. That column is a separate
+  /// widget and stays Thick. This rail stays Liquid Glass Dock, including
+  /// when a Flutter demo moves it between the bottom tab and the rail.
+  /// The system Tab-to-Sidebar fluid transition lives in UIKit (`ios/`).
   sidebar,
 }
 

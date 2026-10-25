@@ -41,6 +41,14 @@
 /// Sheets ([showLingyunSheet] / [LingyunSheet]) use Materials Thick via
 /// [GlassSurface]. They are not a liquid-glass control and not a dock.
 ///
+/// Formal sidebars ([LingyunSidebar]) use that same Thick platter. They
+/// are not [GlassTabBarStyle.sidebar] (Liquid Glass Dock rail) and not
+/// the iOS 27.1 vertical system toolbar.
+///
+/// [LingyunToolbar] is a Flutter horizontal bar of floating Liquid Glass
+/// groups ([LiquidGlassStyle.regularMedium]). It is not Dock, not
+/// Materials Thick, and not the native vertical toolbar.
+///
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
@@ -80,6 +88,8 @@ export 'src/widgets/lingyun_alert.dart';
 export 'src/widgets/lingyun_page_control.dart';
 export 'src/widgets/lingyun_segmented_control.dart';
 export 'src/widgets/lingyun_sheet.dart';
+export 'src/widgets/lingyun_sidebar.dart';
+export 'src/widgets/lingyun_toolbar.dart';
 export 'src/widgets/lingyun_slider.dart';
 export 'src/widgets/lingyun_stepper.dart';
 export 'src/widgets/lingyun_toggle.dart';

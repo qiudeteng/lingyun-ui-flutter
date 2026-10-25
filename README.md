@@ -64,6 +64,8 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LingyunPageControl` | Page indicator. Current dot highlighted, the rest lower contrast, optional `tint`. Indicator-only unless `onChanged` is set. Optional Liquid Glass platter for busy backgrounds. Dots are not a Materials tier |
 | `showLingyunSheet` / `LingyunSheet` | Sketch **Sheets**. Chrome is Materials Thick (`material: MaterialTier.thick` only). Medium / large detents, grabber, compact full-bleed vs regular/wide inset, keyboard lift. Not Dock and not a glass button. Gallery copy is Simplified Chinese. See [`docs/SHEETS.md`](docs/SHEETS.md) |
 | `showLingyunActionSheet` / `LingyunActionSheet` | Sketch **Action Sheets** via `cupertino_ui` (`CupertinoModalPopupRoute` + `CupertinoActionSheet`). Cancel is separated at the bottom. Destructive is system red. Enter / exit are the package spring; Reduce Motion skips it. Not Liquid Glass and not `LingyunSheet`. Gallery copy is Simplified Chinese. See [`docs/ACTION-SHEETS.md`](docs/ACTION-SHEETS.md) |
+| `LingyunSidebar` / `LingyunSidebarLayout` | Formal sidebar. Same Materials Thick platter as sheets (stripes underneath, no style override). Not `GlassTabBarStyle.sidebar` (Dock rail) and not the native vertical toolbar. See [`docs/SIDEBARS.md`](docs/SIDEBARS.md) |
+| `LingyunToolbar` | Flutter horizontal bar. Floating Liquid Glass groups (`regularMedium`), not Dock and not Materials Thick. Not the iOS 27.1 vertical system toolbar. See [`docs/TOOLBARS.md`](docs/TOOLBARS.md) |
 | `LiquidGlassMotion` | Standard / emphasized / quick curves; **reduce-motion** → `Duration.zero` |
 | `LingyunAdaptivity` | Reduce Transparency, Reduce Motion, high-contrast overrides |
 | `LingyunLayout` | Width classes, safe-area + layout margins, hinge/division band, wide-short heuristic, side-edge chrome |
@@ -230,7 +232,7 @@ flutter run -d chrome -t lib/foundation_app.dart
 
 `?page=colors` or `?page=text`, plus `&theme=dark` and `&chrome=0`. Screenshots: `docs/screenshots/colors_*.png`, `docs/screenshots/text_*.png`.
 
-Open a page directly: `?page=tabs`, `?page=alerts`, or `?page=sheets` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Sheets has 浅色 / 深色 on the page. Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
+Open a page directly: `?page=tabs`, `?page=alerts`, `?page=sheets`, `?page=sidebars`, or `?page=toolbars` (add `&theme=dark` and `&chrome=0` for a bare light/dark capture). Sheets, sidebars, and toolbars have 浅色 / 深色 on the page. The sidebar page is the Materials Thick column; the Layout page rail stays Liquid Glass Dock. Layout presets: `?page=layout&preset=compact`. Native host notes: `?page=native`. Backdrop: `&bg=canvas` (default), `wash`, `meadow`, `abstract`, or `busy`.
 
 Screenshots: [`docs/screenshots/`](docs/screenshots/).
 
