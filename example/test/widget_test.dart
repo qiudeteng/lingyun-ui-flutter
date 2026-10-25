@@ -600,7 +600,65 @@ void main() {
     expect(find.text('无线局域网'), findsOneWidget);
     expect(find.text('设计评审'), findsOneWidget);
     expect(find.text('Lists'), findsNothing);
+    expect(find.textContaining('液态玻璃托盘'), findsNothing);
+    expect(find.textContaining('常规材质'), findsWidgets);
+    final pageBackground = tester.widget<ColoredBox>(
+      find.byKey(const Key('lists-page-background')),
+    );
+    expect(pageBackground.color.toARGB32(), 0xFFF2F2F7);
+    final insetSurfaces = tester.widgetList<GlassSurface>(
+      find.descendant(
+        of: find.byKey(const Key('lists-inset')),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(insetSurfaces, hasLength(2));
+    for (final surface in insetSurfaces) {
+      expect(surface.material, MaterialTier.regular);
+      expect(surface.style, isNull);
+      expect(surface.tokens, isNull);
+    }
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('lists-plain')),
+        matching: find.byType(GlassSurface),
+      ),
+      findsNothing,
+    );
 
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    await tester.pumpWidget(
+      const LingyunGlassDemoApp(
+        launch: GalleryLaunch(page: 'lists', theme: 'dark', chrome: '0'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('无线局域网'), findsOneWidget);
+    expect(find.textContaining('液态玻璃托盘'), findsNothing);
+    final darkBackground = tester.widget<ColoredBox>(
+      find.byKey(const Key('lists-page-background')),
+    );
+    expect(darkBackground.color.toARGB32(), 0xFF000000);
+    final darkSurfaces = tester.widgetList<GlassSurface>(
+      find.descendant(
+        of: find.byKey(const Key('lists-inset')),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(darkSurfaces, isNotEmpty);
+    for (final surface in darkSurfaces) {
+      expect(surface.material, MaterialTier.regular);
+      expect(surface.style, isNull);
+    }
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 900);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
     await openGalleryEntry(tester, 'fields');
     expect(find.byKey(const Key('fields-title')), findsOneWidget);
     expect(find.text('显示名称'), findsOneWidget);

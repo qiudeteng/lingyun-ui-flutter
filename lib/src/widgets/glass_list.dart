@@ -1,22 +1,29 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 
 import '../theme/lingyun_theme.dart';
+import '../tokens/glass_material.dart';
 import '../tokens/lingyun_text_styles.dart';
-import '../tokens/liquid_glass_style.dart';
 import 'glass_cupertino_host.dart';
 import 'glass_surface.dart';
 
+/// Corner of an inset grouped section.
+///
+/// Same 10pt as [CupertinoListSection.insetGrouped]. Not [LiquidGlassRadii],
+/// and not the Materials Regular token radius (that one is the large panel).
+const BorderRadius _kInsetGroupedRadius = BorderRadius.all(Radius.circular(10));
+
 /// How a [GlassList] groups its rows.
 ///
-/// Sketch / iOS list page: inset grouped platter, or plain edge-to-edge rows.
-/// Neither style uses Materials Thick.
+/// Inset is a Settings-style grouped content list. Plain is edge-to-edge
+/// rows with no platter.
 enum GlassListStyle {
-  /// Rounded section platter. Chrome is [LiquidGlassStyle.regularMedium]
-  /// via [GlassSurface] (grouped controls). Row fill stays clear so the
-  /// glass shows through.
+  /// [CupertinoListSection.insetGrouped] on Materials Regular.
+  ///
+  /// Chrome is [GlassSurface] with `material: MaterialTier.regular` and
+  /// no Liquid Glass style. Not Thick, and not a new background API.
   inset,
 
-  /// Edge-to-edge rows. No glass platter. Separators only.
+  /// Edge-to-edge rows. No platter. Separators only.
   plain,
 }
 
@@ -68,28 +75,33 @@ class GlassListSection {
   final List<GlassListTile> tiles;
 }
 
-/// iOS 27 **Liquid Glass** list.
+/// Settings-style grouped list, or a plain edge-to-edge list.
 ///
-/// Rows are [CupertinoListTile]s inside [CupertinoListSection] (inset
-/// grouped or plain). Subtitle and trailing value use liquid-glass
-/// **secondary** from [LingyunTheme] (light `#727272`, dark `#8A8A8A`).
-/// Separators and the section footer stay liquid-glass tertiary.
+/// Rows are [CupertinoListTile]s inside [CupertinoListSection].
 ///
-/// Inset chrome is one [GlassSurface] per section at
-/// [LiquidGlassStyle.regularMedium]. The section decoration is cleared so
-/// the platter is Liquid Glass, not the Cupertino grouped fill and not
-/// Materials Thick. Plain lists do not build a [GlassSurface].
+/// Inset is the content layer: [MaterialTier.regular] painted by
+/// [GlassSurface] (`material:`, no `style:`, no token override) around
+/// [CupertinoListSection.insetGrouped]. That is not Liquid Glass, not
+/// Materials Thick, and not a list-specific background primitive. A later
+/// Materials Regular change shows up here without a recipe in this file.
+/// The Cupertino grouped fill is cleared so the material is the section
+/// color. Header and footer sit outside the platter so the rounded clip
+/// does not crop them.
 ///
-/// `blurSigma` / `saturation` stay the existing GlassSurface approximations.
-/// They are not printed as kit tokens.
+/// Inset dividers are [CupertinoColors.separator]. Plain lists do not
+/// build a [GlassSurface]. They keep a clear fill and the tertiary label
+/// color for separators, so a plain list can sit on other chrome.
+///
+/// Subtitle and trailing value use liquid-glass **secondary** from
+/// [LingyunTheme] (light `#727272`, dark `#8A8A8A`). The section footer
+/// stays liquid-glass tertiary. Leading symbols take the title color at
+/// 22pt inside the tile's leading slot: no plate, stroke, or halo.
 class GlassList extends StatelessWidget {
   const GlassList({
     super.key,
     required this.sections,
     this.style = GlassListStyle.inset,
-    this.glassStyle = LiquidGlassStyle.regularMedium,
     this.showSeparators = true,
-    this.forceOpaque = false,
   });
 
   final List<GlassListSection> sections;
@@ -97,17 +109,8 @@ class GlassList extends StatelessWidget {
   /// [GlassListStyle.inset] or [GlassListStyle.plain].
   final GlassListStyle style;
 
-  /// Liquid Glass style for the inset platter.
-  ///
-  /// Ignored when [style] is [GlassListStyle.plain]. Default is Regular
-  /// Medium (grouped controls). Never a Materials tier.
-  final LiquidGlassStyle glassStyle;
-
   /// When false, dividers are transparent. The section still lays out rows.
   final bool showSeparators;
-
-  /// Passed to the inset [GlassSurface]. Plain lists have no surface.
-  final bool forceOpaque;
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +119,13 @@ class GlassList extends StatelessWidget {
     final secondary = labels.secondary;
     final tertiary = labels.tertiary;
     final disabled = tertiary;
-    final separator = showSeparators ? tertiary : const Color(0x00000000);
+    // Inset uses the system separator (null). Plain keeps tertiary so a
+    // plain list on glass chrome does not grow a grouped card or a new ink.
+    final Color? separator = !showSeparators
+        ? const Color(0x00000000)
+        : style == GlassListStyle.inset
+        ? null
+        : tertiary;
 
     return GlassCupertinoHost(
       child: Column(
@@ -127,8 +136,6 @@ class GlassList extends StatelessWidget {
             _GlassListSectionView(
               section: sections[i],
               style: style,
-              glassStyle: glassStyle,
-              forceOpaque: forceOpaque,
               primary: primary,
               secondary: secondary,
               tertiary: tertiary,
@@ -146,8 +153,6 @@ class _GlassListSectionView extends StatelessWidget {
   const _GlassListSectionView({
     required this.section,
     required this.style,
-    required this.glassStyle,
-    required this.forceOpaque,
     required this.primary,
     required this.secondary,
     required this.tertiary,
@@ -157,13 +162,11 @@ class _GlassListSectionView extends StatelessWidget {
 
   final GlassListSection section;
   final GlassListStyle style;
-  final LiquidGlassStyle glassStyle;
-  final bool forceOpaque;
   final Color primary;
   final Color secondary;
   final Color tertiary;
   final Color disabled;
-  final Color separator;
+  final Color? separator;
 
   bool get _inset => style == GlassListStyle.inset;
 
@@ -186,11 +189,15 @@ class _GlassListSectionView extends StatelessWidget {
         ),
     ];
 
+    // inherit: false so the section's DefaultTextStyle (inset headers are
+    // 20pt bold) cannot restyle the title-style header or the footnote.
     final header = section.header == null
         ? null
         : Text(
             section.header!,
-            style: LingyunTextStyles.footnote(emphasized: true, color: primary),
+            style: _opaque(
+              LingyunTextStyles.footnote(emphasized: true, color: primary),
+            ),
           );
     final footer = section.footer == null
         ? null
@@ -200,53 +207,52 @@ class _GlassListSectionView extends StatelessWidget {
             style: _opaque(LingyunTextStyles.footnote(color: tertiary)),
           );
 
-    final transparent = CupertinoColors.transparent;
-    final sectionWidget = _inset
-        ? CupertinoListSection.insetGrouped(
-            margin: EdgeInsets.zero,
-            backgroundColor: transparent,
-            decoration: const BoxDecoration(color: Color(0x00000000)),
-            clipBehavior: Clip.none,
-            separatorColor: separator,
-            hasLeading: hasLeading,
-            children: rows,
-          )
-        : CupertinoListSection(
-            margin: EdgeInsets.zero,
-            topMargin: 0,
-            backgroundColor: transparent,
-            decoration: const BoxDecoration(color: Color(0x00000000)),
-            separatorColor: separator,
-            hasLeading: hasLeading,
-            header: header,
-            footer: footer,
-            children: rows,
-          );
+    if (!_inset) {
+      return CupertinoListSection(
+        margin: EdgeInsets.zero,
+        topMargin: 0,
+        backgroundColor: CupertinoColors.transparent,
+        decoration: const BoxDecoration(color: Color(0x00000000)),
+        separatorColor: separator,
+        hasLeading: hasLeading,
+        header: header,
+        footer: footer,
+        children: rows,
+      );
+    }
 
-    if (!_inset) return sectionWidget;
+    final transparent = CupertinoColors.transparent;
+    final rowsOnly = CupertinoListSection.insetGrouped(
+      margin: EdgeInsets.zero,
+      backgroundColor: transparent,
+      decoration: const BoxDecoration(color: Color(0x00000000)),
+      clipBehavior: Clip.none,
+      separatorColor: separator,
+      hasLeading: hasLeading,
+      children: rows,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (header != null)
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 6),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 6),
             child: header,
           ),
         GlassSurface(
-          style: glassStyle,
+          material: MaterialTier.regular,
           padding: EdgeInsets.zero,
-          forceOpaque: forceOpaque,
-          child: sectionWidget,
+          borderRadius: _kInsetGroupedRadius,
+          enableHoverHighlight: false,
+          child: rowsOnly,
         ),
         if (footer != null)
-          // Outside the platter. GlassSurface clips its own child to the
-          // rounded rect; the footnote is a sibling so that clip (and the
-          // next section) cannot crop it. The top gap clears the drop
-          // shadow, which otherwise sits on the same gray as Tertiary and
-          // hides the line.
+          // Outside the platter. GlassSurface clips its child to the
+          // rounded rect; the footnote is a sibling so that clip cannot
+          // crop it. The top gap clears the material shadow.
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 8),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 10),
             child: footer,
           ),
       ],
@@ -285,6 +291,8 @@ class _GlassListSectionView extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: _opaque(LingyunTextStyles.body(color: secondary)),
           );
+    // Plain symbol in the tile's leading slot (30pt notched / 28pt plain).
+    // No plate, stroke, or halo — that chrome belongs to controls, not rows.
     final leading = tile.leading == null
         ? null
         : IconTheme.merge(
@@ -324,7 +332,8 @@ class _GlassListSectionView extends StatelessWidget {
   /// [DefaultTextStyle] of [CupertinoColors.secondaryLabel] (60% label)
   /// at 12–14px. `inherit: false` keeps Subheadline 15 / Body 17 and the
   /// theme color — secondary for subtitle and trailing value, tertiary
-  /// for the section footer — from being faded again.
+  /// for the section footer — from being faded again. The same lock keeps
+  /// an inset header from picking up the section's 20pt bold default.
   static TextStyle _opaque(TextStyle style) {
     return TextStyle(
       inherit: false,

@@ -45,7 +45,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 | `LingyunColors` / `LingyunTheme` | Sketch iOS 27 system colors, labels, backgrounds, fills, grays, separators. Cupertino theme. Liquid Glass labels: Primary `#1A1A1A` / `#EDEDED`, Tertiary `#BFBFBF` / `#404040` |
 | `LingyunTextStyles` | Large Title…Caption 2 at the Large size, plus loose / tight leading. `LingyunMaterialTheme` maps them onto `TextTheme` |
 | `LiquidGlassLabels` | Labels — Liquid Glass Primary: Light `#1A1A1A`, Dark `#EDEDED` |
-| `GlassList` | Inset grouped Liquid Glass Regular Medium platter, or plain rows. Label color and type come from `LingyunTheme` / `LingyunTextStyles` |
+| `GlassList` | Inset grouped content layer: Materials Regular (`material: MaterialTier.regular`, no Liquid Glass style) on `CupertinoListSection.insetGrouped`, or plain rows with no platter. Label color and type come from `LingyunTheme` / `LingyunTextStyles` |
 | `GlassTextField` | Liquid Glass Regular Small field. Clear button, obscure toggle, error hairline. Same theme labels and Large text styles |
 | `GlassProgressIndicator` | Determinate / indeterminate, linear / circular. Tint defaults to theme System Blue |
 | `GlassButtonRole` / `GlassButtonProminence` | Kit **Destructive** and **Glass Prominent** (tinted / filled System Blue, white label) on `GlassButton` |

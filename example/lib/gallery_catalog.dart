@@ -195,7 +195,7 @@ const List<GalleryGroup> galleryGroups = [
           GalleryEntry(
             id: 'lists',
             label: '列表',
-            detail: '分组列表',
+            detail: '常规材质的系统分组',
             icon: Icons.list_alt_outlined,
             queries: ['lists'],
           ),

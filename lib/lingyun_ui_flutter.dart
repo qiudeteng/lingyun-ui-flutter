@@ -32,9 +32,10 @@
 /// indicator by default; an optional platter is the same Liquid Glass,
 /// and the dots themselves are content.
 ///
-/// Wave 1a form chrome is also Liquid Glass, not Materials Thick:
-/// [GlassList] inset platters use Regular Medium, [GlassTextField] uses
-/// Regular Small. [GlassProgressIndicator] is a content-layer indicator.
+/// Wave 1a form chrome: [GlassList] inset sections are Materials Regular
+/// (`GlassSurface(material: MaterialTier.regular)`, no Liquid Glass style)
+/// around `CupertinoListSection.insetGrouped`. Not Thick. [GlassTextField]
+/// uses Regular Small. [GlassProgressIndicator] is a content-layer indicator.
 /// Labels and the Large text scale come from [LingyunTheme] /
 /// [LingyunTextStyles].
 ///
