@@ -22,10 +22,11 @@ import 'liquid_glass_style.dart';
 /// Recipes are tuned against the public iOS 27 Sketch / Figma UI Kit
 /// without claiming those names as Apple APIs:
 ///
-/// * **Rim** — ~0.5px hairline + multi-layer specular (grey ring, side
-///   hairlines, inner-lip, tight top-leading catch, directional inner
+/// * **Rim** — ~0.5px continuous rounded hairline + multi-layer specular
+///   (grey ring, inner-lip, tight top-leading catch, directional inner
 ///   refraction). **Not** linearly thickened by Materials tier or glass
-///   style (no 0.55 → 0.85 progression).
+///   style (no 0.55 → 0.85 progression). Legacy side-plate offsets stay
+///   on [shadows] only.
 /// * **Tint** ([tintColor]) — veil over the blurred backdrop.
 /// * **Overlay** ([overlayColor], [overlayBlend]) — second fill
 ///   (Luminosity on light, Lighten on dark).
@@ -134,10 +135,16 @@ class LiquidGlassTokens {
   /// Zero-blur ring spread (kit +0.5).
   final double rimSpread;
 
-  /// Side hairline offset (kit / Sketch ≈ 1.25).
+  /// Legacy side-plate offset on [shadows] (kit / Sketch ≈ 1.25).
+  ///
+  /// The foreground rim is one continuous rounded stroke and does not
+  /// read this value.
   final double rimSideOffset;
 
-  /// Side hairline spread (kit / Sketch ≈ −0.75).
+  /// Legacy side-plate spread on [shadows] (kit / Sketch ≈ −0.75).
+  ///
+  /// The foreground rim is one continuous rounded stroke and does not
+  /// read this value.
   final double rimSideSpread;
 
   /// Dark inner-lip color (kit specular via inner shadows).
@@ -684,12 +691,14 @@ class LiquidGlassTokens {
     return copyWith(borderRadius: LiquidGlassRadii.borderRadius(scale));
   }
 
-  /// Soft deep shadow + crisp grey ring + side hairlines.
+  /// Soft deep shadow, crisp grey ring, and legacy side plates.
   ///
-  /// The zero-blur entries are filled plates in the shadow color. Do not
-  /// put them under a [BackdropFilter] — use [dropShadows] for the underlay
-  /// and paint the ring as a foreground stroke. On Linux and web the filter
-  /// samples that fill, so Materials tiers collapse to one milky color.
+  /// The zero-blur entries are filled plates in the shadow color. Put only
+  /// [dropShadows] under a [BackdropFilter], and paint the ring as one
+  /// continuous foreground stroke. On Linux and web the filter samples a
+  /// zero-blur fill, so Materials tiers collapse to one milky color. The
+  /// side plates stay on this list so existing callers keep the same
+  /// length; [GlassSurface] does not stroke them as vertical lines.
   List<BoxShadow> get shadows => [
     BoxShadow(
       color: shadowColor,
