@@ -188,6 +188,36 @@ module CiSupport
     }
   end
 
+  # `bundle exec` sets GEM_HOME / RUBYOPT and also wraps Process.spawn, so
+  # Flutter's `pod` loads the Fastlane bundle and cannot see CocoaPods.
+  # The lane runs flutter inside Bundler.with_unbundled_env and uses this map
+  # to put the setup-ruby bindir ahead of /opt/homebrew/bin.
+  def flutter_command_env(base_env, pod_bindir:)
+    env = {}
+    base_env.each do |key, value|
+      next if key == "GEM_HOME" || key == "GEM_PATH" || key == "RUBYOPT" || key == "RUBYLIB"
+      next if key.start_with?("BUNDLE_")
+
+      env[key] = value
+    end
+
+    bindir = pod_bindir.to_s
+    unless bindir.empty?
+      parts = env.fetch("PATH", "").split(File::PATH_SEPARATOR).reject do |part|
+        part.empty? || part == bindir
+      end
+      env["PATH"] = [bindir, *parts].join(File::PATH_SEPARATOR)
+    end
+    env
+  end
+
+  def pod_version_acceptable?(stdout)
+    text = stdout.to_s.strip
+    return false unless text.match?(/\A\d+(?:\.\d+)+\z/)
+
+    Gem::Version.new(text) >= Gem::Version.new("1.16.2")
+  end
+
   def sigh_options_conflict?(options)
     keys = options.keys
     SIGH_PROFILE_CONFLICTS.each do |key, conflicts|

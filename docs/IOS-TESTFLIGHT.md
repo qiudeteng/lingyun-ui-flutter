@@ -106,7 +106,7 @@ base64 -i distribution.p12 | pbcopy
 ## 第一次失败时先看
 
 - secret 检查在装 Flutter 之前就会停，避免空跑 macOS 分钟数。
-- 「CocoaPods is installed but broken」：`ruby/setup-ruby` 使用 Ruby 3.3，并会拿掉镜像里 Homebrew Ruby 3.4 的 gem bin。自带的 `pod` 在新 Ruby 下会失败，Flutter 就跳过 `pod install`。工作流会把 CocoaPods 1.17.0 装进这次选中的 Ruby（Flutter 建议 ≥ 1.16.2），再跑 `flutter build ipa`。
+- 「CocoaPods is installed but broken」：镜像里的 `pod` 属于 Homebrew Ruby。工作流会把 CocoaPods 1.17.0 装进 setup-ruby 的 Ruby，并移走 `/opt/homebrew/bin/pod`。`bundle exec` 还会挂钩子进程，把 `GEM_HOME` / `RUBYOPT` 注回 Fastlane 的 bundle，Flutter 里的 `pod --version` 因此失败。lane 用 `Bundler.with_unbundled_env` 调用 `flutter build ipa`，并把该 Ruby 的 bindir 放在 PATH 最前面。
 - sigh 403：把 API Key 改成 Admin，或提供 `IOS_APPSTORE_PROFILE_BASE64`。
 - 「No signing certificate」/ 导入 p12 失败：密码不对，或 p12 里没有私钥，或用成了 Development 证书。
 - 构建号重复：给 `build_number` 填一个更大的整数。
