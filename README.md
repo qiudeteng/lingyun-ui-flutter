@@ -78,7 +78,7 @@ Sketch / iOS 27 kit authority: [UI Kit](https://www.sketch.com/s/04c24d8b-38fb-4
 Documented on `LiquidGlassTokens` and painted by `GlassSurface`:
 
 - **Specular** — a *tight* top-leading catch (`edgeHighlightColor`) plus dark **inner-lip** bands (`innerShadowColor`) that approximate the kit's ±40 Y / −40 spread inner shadows. Not a full-face 2018 sheen or a focus ring.
-- **Refraction** — directional **inner rim** (bright top-leading → quiet bottom-trailing). Distinct from the outer **grey ring** (`rimColor`, zero-blur +0.5 spread) and side hairlines (Sketch "Plus Darker", ~1.25 / −0.75).
+- **Refraction** — directional **inner rim** (bright top-leading → quiet bottom-trailing). Distinct from the outer **grey ring** (`rimColor`, one continuous rounded stroke, ~0.5px).
 - **Shadows** — soft deep drop (`shadowColor`, large blur, modest Y, negative spread) stacked with the crisp rim.
 - **Rim** — ~0.5px hairline + multi-layer specular like Clear. **Not** linearly thickened by Materials tier (no 0.55→0.85).
 - **Radius** — `GlassRadiusScale` 18 / 26 / 34 is **待核验 (unverified vs Sketch)** and applies to panels, not buttons. `GlassButton` is a capsule (`BorderRadius.circular(1000)`). Control sizes are Small / Medium / Large (about 28 / 34 / 50). Regular Small is the button **material**, not a 48pt height.

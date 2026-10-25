@@ -1,6 +1,9 @@
-import 'package:material_ui/material_ui.dart';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('LiquidGlassTokens', () {
@@ -649,6 +652,103 @@ void main() {
       );
       expect(find.text('card'), findsOneWidget);
       expect(find.byType(GlassSurface), findsOneWidget);
+    });
+
+    testWidgets('crisp rim stays on the rounded edge', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(400, 300);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [LiquidGlassTheme.light]),
+          home: const ColoredBox(
+            color: Color(0xFF2C2C30),
+            child: Center(
+              child: RepaintBoundary(
+                key: Key('rim-probe'),
+                child: SizedBox(
+                  width: 320,
+                  height: 220,
+                  child: ColoredBox(
+                    color: Color(0xFF2C2C30),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 240,
+                          height: 88,
+                          child: GlassSurface(
+                            key: Key('rim-card'),
+                            material: MaterialTier.ultrathin,
+                            radiusScale: GlassRadiusScale.large,
+                            child: SizedBox.expand(),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        SizedBox(
+                          width: 240,
+                          height: 56,
+                          child: GlassSurface(
+                            key: Key('rim-dock'),
+                            style: LiquidGlassStyle.dock,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
+                            child: SizedBox.expand(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const Key('rim-probe')),
+      );
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        return data!.buffer.asUint8List();
+      });
+      final imageWidth = boundary.size.width.round();
+      final origin = tester.getTopLeft(find.byKey(const Key('rim-probe')));
+
+      int lum(int x, int y) {
+        final i = (y * imageWidth + x) * 4;
+        return (bytes![i] + bytes[i + 1] + bytes[i + 2]) ~/ 3;
+      }
+
+      int ix(double globalX) => (globalX - origin.dx).floor();
+      int iy(double globalY) => (globalY - origin.dy).floor();
+
+      // Old side strokes were vertical segments at x = ±1.25, from 12% to
+      // 88% of the height, including pixels outside the rounded silhouette.
+      void expectNoInsetHairline(Rect rect) {
+        final y = iy(rect.top + rect.height * 0.16);
+        final leftHair = ix(rect.left + 1.25);
+        final rightHair = ix(rect.right - 1.25);
+        final backdrop = lum(4, 4);
+        expect((lum(leftHair, y) - backdrop).abs(), lessThan(40));
+        expect((lum(rightHair, y) - backdrop).abs(), lessThan(40));
+      }
+
+      final card = tester.getRect(find.byKey(const Key('rim-card')));
+      final dock = tester.getRect(find.byKey(const Key('rim-dock')));
+      expectNoInsetHairline(card);
+      expectNoInsetHairline(dock);
+
+      final midY = iy(card.center.dy);
+      final rim = lum(ix(card.left), midY);
+      final interior = lum(ix(card.left + 18), midY);
+      expect(rim, greaterThan(interior + 40));
     });
 
     testWidgets('GlassButton defaults to Regular Small', (tester) async {

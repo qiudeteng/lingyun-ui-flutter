@@ -19,11 +19,11 @@ import '../tokens/liquid_glass_tokens.dart';
 /// mean a Liquid Glass style (or the reverse).
 ///
 /// Layers (bottom → top):
-/// 1. Soft deep shadow only (translucent). Crisp grey rim and side
-///    hairlines are foreground strokes — a zero-blur opaque [BoxShadow]
-///    is a filled plate, and on Linux / web [BackdropFilter] samples that
-///    plate instead of the backdrop, so every Materials tier looks like
-///    the same milky fill.
+/// 1. Soft deep shadow only (translucent). The crisp grey rim is one
+///    continuous foreground stroke along the rounded rectangle. A
+///    zero-blur opaque [BoxShadow] is a filled plate, and on Linux / web
+///    [BackdropFilter] samples that plate instead of the backdrop, so
+///    every Materials tier looks like the same milky fill.
 /// 2. [BackdropFilter] blur (`TileMode.clamp`, no `bounds` named param)
 /// 3. Saturation [ColorFilter]
 /// 4. Tint fill
@@ -34,8 +34,7 @@ import '../tokens/liquid_glass_tokens.dart';
 /// 8. Directional inner refraction rim (not a second white border)
 /// 9. Quiet outer hairline
 /// 10. [child]
-/// 11. Foreground crisp rim + side hairlines (~0.5px). Those side
-///     lines are outside this optical pass.
+/// 11. Foreground crisp rim (~0.5px, one continuous rounded stroke)
 ///
 /// Accessibility: [LingyunAdaptivity.useOpaqueFallback] — Reduce
 /// Transparency, high contrast ([MediaQuery] or gallery toggle), or
@@ -269,7 +268,6 @@ class _GlassSurfaceState extends State<GlassSurface> {
           borderRadius: radius,
           color: recipe.rimColor,
           width: math.max(recipe.rimSpread, recipe.borderWidth),
-          sideOffset: recipe.rimSideOffset,
         ),
         child: result,
       );
@@ -339,21 +337,20 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-/// Foreground crisp rim + side hairlines.
+/// Foreground crisp rim.
 ///
-/// Drawn above the glass so the stroke is not part of the backdrop sample.
+/// One continuous rounded stroke, drawn above the glass so it is not part
+/// of the backdrop sample. The sides follow the same [RRect].
 class _CrispRimPainter extends CustomPainter {
   const _CrispRimPainter({
     required this.borderRadius,
     required this.color,
     required this.width,
-    required this.sideOffset,
   });
 
   final BorderRadius borderRadius;
   final Color color;
   final double width;
-  final double sideOffset;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -369,28 +366,13 @@ class _CrispRimPainter extends CustomPainter {
         ..strokeWidth = width
         ..color = color,
     );
-
-    final side = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = width
-      ..color = color;
-    final top = size.height * 0.12;
-    final bottom = size.height * 0.88;
-    final x = sideOffset.clamp(width, size.width * 0.5);
-    canvas.drawLine(Offset(x, top), Offset(x, bottom), side);
-    canvas.drawLine(
-      Offset(size.width - x, top),
-      Offset(size.width - x, bottom),
-      side,
-    );
   }
 
   @override
   bool shouldRepaint(covariant _CrispRimPainter oldDelegate) {
     return oldDelegate.borderRadius != borderRadius ||
         oldDelegate.color != color ||
-        oldDelegate.width != width ||
-        oldDelegate.sideOffset != sideOffset;
+        oldDelegate.width != width;
   }
 }
 
