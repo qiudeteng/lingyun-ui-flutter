@@ -78,3 +78,7 @@ Web production build (GitHub Pages):
 ```bash
 flutter build web --base-href /lingyun-ui-flutter/
 ```
+
+## TestFlight
+
+iOS Bundle ID 是 `com.qiudeteng.lingyunui`。Actions 里的 **iOS TestFlight** 会把本示例打成 IPA 并上传 TestFlight，不提交 App Review。手动运行，步骤和 secrets 见 [`docs/IOS-TESTFLIGHT.md`](../docs/IOS-TESTFLIGHT.md)。
