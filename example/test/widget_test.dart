@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/form_controls_page.dart';
+import 'package:example/pages/wave1c_page.dart';
 import 'package:example/pages/native_page.dart';
 import 'package:example/wallpaper.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
@@ -585,5 +586,65 @@ void main() {
     await tester.tapAt(Offset(live.right - 12, live.center.dy));
     await tester.pumpAndSettle();
     expect(find.text('实时：4。到 0 或到 8 时，对应一侧停用。'), findsOneWidget);
+  });
+
+  test('wave 1c query opens segmented controls or page controls', () {
+    expect(Wave1cPanel.fromQuery('segmented'), Wave1cPanel.segmented);
+    expect(Wave1cPanel.fromQuery('segments'), Wave1cPanel.segmented);
+    expect(Wave1cPanel.fromQuery('pages'), Wave1cPanel.pages);
+    expect(Wave1cPanel.fromQuery('page-controls'), Wave1cPanel.pages);
+    expect(Wave1cPanel.fromQuery('pagecontrol'), Wave1cPanel.pages);
+    expect(Wave1cPanel.fromQuery('toggles'), isNull);
+    expect(Wave1cPanel.fromQuery(null), isNull);
+  });
+
+  testWidgets('segmented and page gallery is Simplified Chinese', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1280, 1400);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.tap(find.text('分段').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('wave1c-title')), findsOneWidget);
+    expect(find.text('分段与页面控件'), findsOneWidget);
+    expect(find.textContaining('不是厚材质'), findsWidgets);
+    expect(find.text('Segmented'), findsNothing);
+    expect(find.byKey(const Key('segmented-two')), findsOneWidget);
+    expect(find.byKey(const Key('segmented-large')), findsOneWidget);
+    expect(find.byKey(const Key('segmented-pressed')), findsOneWidget);
+    expect(find.text('实时：左。点按后透镜滑过去。'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('segmented-live')),
+        matching: find.text('中'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('实时：中。点按后透镜滑过去。'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('wave1c-panel')),
+        matching: find.text('页点'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('不能点'), findsWidgets);
+    expect(find.byKey(const Key('page-five')), findsOneWidget);
+    expect(find.byKey(const Key('page-busy')), findsOneWidget);
+    expect(find.byKey(const Key('page-five')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('page-five')),
+        matching: find.byKey(LingyunPageControl.tapKey),
+      ),
+      findsNothing,
+    );
+    expect(find.text('Page Control'), findsNothing);
   });
 }

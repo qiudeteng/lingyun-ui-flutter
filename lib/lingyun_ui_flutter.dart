@@ -26,6 +26,12 @@
 /// [LingyunToggle], [LingyunSlider], and [LingyunStepper] paint with
 /// those styles. The stepper has no knob of its own.
 ///
+/// [LingyunSegmentedControl] draws a Liquid Glass selection lens
+/// ([LiquidGlassStyle.regularSmall] by default) on a tertiary system
+/// fill. The lens is not Materials Thick. [LingyunPageControl] is an
+/// indicator by default; an optional platter is the same Liquid Glass,
+/// and the dots themselves are content.
+///
 /// Wave 1a form chrome is also Liquid Glass, not Materials Thick:
 /// [GlassList] inset platters use Regular Medium, [GlassTextField] uses
 /// Regular Small. [GlassProgressIndicator] is a content-layer indicator.
@@ -71,6 +77,8 @@ export 'src/widgets/glass_tab_bar.dart';
 export 'src/widgets/glass_text_field.dart';
 export 'src/widgets/lingyun_action_sheet.dart';
 export 'src/widgets/lingyun_alert.dart';
+export 'src/widgets/lingyun_page_control.dart';
+export 'src/widgets/lingyun_segmented_control.dart';
 export 'src/widgets/lingyun_sheet.dart';
 export 'src/widgets/lingyun_slider.dart';
 export 'src/widgets/lingyun_stepper.dart';
