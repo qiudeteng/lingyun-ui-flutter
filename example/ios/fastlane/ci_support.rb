@@ -162,6 +162,48 @@ module CiSupport
     [name, app_id]
   end
 
+  # Fastlane 2.241 sigh lists :adhoc, :development, and :developer_id as
+  # conflicting_options. Configuration#verify_conflicts skips only nil, so an
+  # explicit false still counts as set. Passing adhoc: false together with
+  # development: false raises "You can't enable both :development and :adhoc"
+  # before any API call. Omitting both keeps the defaults (false), which
+  # Sigh.profile_type_for_config maps to an App Store profile.
+  SIGH_PROFILE_CONFLICTS = {
+    adhoc: [:developer_id, :development],
+    developer_id: [:adhoc, :development],
+    development: [:adhoc, :developer_id]
+  }.freeze
+
+  def app_store_sigh_options(team_id:, output_path:)
+    {
+      app_identifier: APP_IDENTIFIER,
+      team_id: team_id,
+      platform: "ios",
+      provisioning_name: PROFILE_NAME,
+      ignore_profiles_with_different_name: true,
+      force: true,
+      skip_install: false,
+      filename: "appstore.mobileprovision",
+      output_path: output_path
+    }
+  end
+
+  def sigh_options_conflict?(options)
+    keys = options.keys
+    SIGH_PROFILE_CONFLICTS.each do |key, conflicts|
+      next unless keys.include?(key)
+      next if options[key].nil?
+
+      conflicts.each do |other|
+        next unless keys.include?(other)
+        next if options[other].nil?
+
+        return true
+      end
+    end
+    false
+  end
+
   def xml_escape(text)
     text.to_s.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub('"', "&quot;")
   end
