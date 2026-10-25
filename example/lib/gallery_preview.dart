@@ -248,16 +248,25 @@ class GalleryDeviceButton extends StatelessWidget {
 ///
 /// The child lays out at [GalleryPreviewFrame.logicalSize]. When the
 /// window is smaller, the board scales down uniformly. Callers keep the
-/// preview cluster and the backdrop outside this box.
+/// preview cluster and the window backdrop outside this box.
+///
+/// [backdrop] is painted inside the clip, under [child]. [FittedBox] and
+/// [ClipRect] keep the Dock's backdrop filter from seeing the window
+/// wallpaper, so the board carries its own copy. The default matches
+/// [SystemWallpaper].
 class GalleryDeviceStage extends StatelessWidget {
   const GalleryDeviceStage({
     super.key,
     required this.frame,
     required this.child,
+    this.backdrop = const SystemWallpaper(keyPrefix: 'gallery-device-bg'),
   });
 
   final GalleryPreviewFrame frame;
   final Widget child;
+
+  /// Sample source for glass inside the board.
+  final Widget backdrop;
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +304,15 @@ class GalleryDeviceStage extends StatelessWidget {
                         viewInsets: EdgeInsets.zero,
                         systemGestureInsets: EdgeInsets.zero,
                       ),
-                      child: ClipRect(child: child),
+                      child: ClipRect(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            IgnorePointer(child: backdrop),
+                            child,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

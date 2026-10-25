@@ -65,15 +65,20 @@ class GalleryBackgroundScope extends InheritedWidget {
 }
 
 /// Backdrop behind gallery pages. Resolves [GalleryBackgroundScope].
+///
+/// [keyPrefix] keeps the window backdrop (`gallery-bg`) distinct from the
+/// copy painted inside a device board (`gallery-device-bg`).
 class SystemWallpaper extends StatelessWidget {
-  const SystemWallpaper({super.key});
+  const SystemWallpaper({super.key, this.keyPrefix = 'gallery-bg'});
+
+  final String keyPrefix;
 
   @override
   Widget build(BuildContext context) {
     final mode = GalleryBackgroundScope.modeOf(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     return KeyedSubtree(
-      key: Key('gallery-bg-${mode.query}'),
+      key: Key('$keyPrefix-${mode.query}'),
       child: switch (mode) {
         GalleryBackground.canvas => ColoredBox(
           color: dark ? GalleryCanvasColors.dark : GalleryCanvasColors.light,

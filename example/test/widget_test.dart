@@ -1,7 +1,11 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
 import 'package:example/gallery_catalog.dart';
+import 'package:example/gallery_preview.dart';
 import 'package:example/main.dart';
 import 'package:example/pages/form_controls_page.dart';
 import 'package:example/pages/wave1c_page.dart';
@@ -1278,6 +1282,14 @@ void main() {
     expect(find.byKey(const Key('gallery-theme-dark-on')), findsNothing);
     expect(find.byKey(const Key('gallery-bg-control')), findsOneWidget);
     expect(find.byKey(const Key('gallery-device-control')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.byType(BackdropFilter),
+      ),
+      findsOneWidget,
+    );
     expect(Theme.of(tester.element(title)).brightness, Brightness.light);
     expect(
       LingyunAdaptivity.of(tester.element(title)).reduceTransparency,
@@ -1347,6 +1359,10 @@ void main() {
     expect(MediaQuery.sizeOf(tester.element(title)), const Size(402, 874));
     expect(find.byKey(const Key('gallery-preview-chrome')), findsOneWidget);
     expect(find.byKey(const Key('gallery-bg-meadow')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-meadow')), findsOneWidget);
+    final innerMeadow = tester.getRect(
+      find.byKey(const Key('gallery-device-bg-meadow')),
+    );
 
     final frameRect = tester.getRect(
       find.byKey(const Key('gallery-device-frame')),
@@ -1356,6 +1372,8 @@ void main() {
     );
     expect(frameRect.size, const Size(402, 874));
     expect(frameRect.center.dx, closeTo(800, 1));
+    expect(innerMeadow.width, closeTo(frameRect.width, 1));
+    expect(innerMeadow.height, closeTo(frameRect.height, 1));
     expect(clusterRect.bottom, lessThanOrEqualTo(frameRect.top));
     final wall = tester.getRect(find.byKey(const Key('gallery-bg-meadow')));
     expect(wall.width, greaterThan(frameRect.width));
@@ -1366,6 +1384,8 @@ void main() {
     await tester.tap(find.byKey(const Key('gallery-bg-option-canvas')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-canvas')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-meadow')), findsNothing);
     expect(find.byKey(const Key('gallery-device-frame')), findsOneWidget);
 
     await openGalleryEntry(tester, 'materials');
@@ -1410,6 +1430,8 @@ void main() {
       if (entry.key == GalleryPreviewFrame.window) {
         expect(find.byKey(const Key('gallery-device-frame')), findsNothing);
         expect(find.byKey(const Key('gallery-preview-chrome')), findsNothing);
+        expect(find.byKey(const Key('gallery-device-bg-canvas')), findsNothing);
+        expect(find.byKey(const Key('gallery-bg-canvas')), findsOneWidget);
       } else {
         expect(
           tester.getSize(find.byKey(const Key('gallery-device-frame'))),
@@ -1423,6 +1445,18 @@ void main() {
             tester.getRect(find.byKey(const Key('gallery-device-frame'))).top,
           ),
         );
+        expect(
+          find.byKey(const Key('gallery-device-bg-canvas')),
+          findsOneWidget,
+        );
+        final board = tester.getRect(
+          find.byKey(const Key('gallery-device-bg-canvas')),
+        );
+        final chrome = tester.getRect(
+          find.byKey(const Key('gallery-device-frame')),
+        );
+        expect(board.width, closeTo(chrome.width, 1));
+        expect(board.height, closeTo(chrome.height, 1));
       }
     }
   });
@@ -1475,6 +1509,7 @@ void main() {
     expect(find.byKey(const Key('gallery-bg-control')), findsNothing);
     expect(find.byKey(const Key('gallery-back')), findsNothing);
     expect(find.byKey(const Key('gallery-bg-wash')), findsOneWidget);
+    expect(find.byKey(const Key('gallery-device-bg-wash')), findsOneWidget);
     expect(
       MediaQuery.sizeOf(tester.element(find.byKey(const Key('glass-title')))),
       const Size(420, 912),
@@ -1488,5 +1523,96 @@ void main() {
           .reduceTransparency,
       isTrue,
     );
+  });
+
+  testWidgets('fixed board dock frosts the wallpaper inside the clip', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 1200);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    Future<void> pumpBoard(Brightness brightness) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            brightness: brightness,
+            extensions: [
+              brightness == Brightness.dark
+                  ? LiquidGlassTheme.dark
+                  : LiquidGlassTheme.light,
+            ],
+          ),
+          home: RepaintBoundary(
+            key: const Key('dock-probe'),
+            child: GalleryDeviceStage(
+              frame: GalleryPreviewFrame.pro,
+              backdrop: const Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: ColoredBox(color: Color(0xFF101010))),
+                  Expanded(child: ColoredBox(color: Color(0xFFF4F4F6))),
+                ],
+              ),
+              child: const Align(
+                alignment: Alignment.bottomCenter,
+                child: GlassSurface(
+                  style: LiquidGlassStyle.dock,
+                  borderRadius: BorderRadius.all(Radius.circular(100)),
+                  width: 320,
+                  height: 54,
+                  child: SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    Future<int> redAt(Offset global) async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const Key('dock-probe')),
+      );
+      final local = boundary.globalToLocal(global);
+      final width = boundary.size.width.round();
+      final height = boundary.size.height.round();
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        return data!.buffer.asUint8List();
+      });
+      final x = local.dx.round().clamp(0, width - 1).toInt();
+      final y = local.dy.round().clamp(0, height - 1).toInt();
+      return bytes![(y * width + x) * 4];
+    }
+
+    for (final brightness in [Brightness.light, Brightness.dark]) {
+      await pumpBoard(brightness);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      final glass = tester.getRect(find.byType(GlassSurface));
+      final insideLeft = await redAt(
+        Offset(glass.left + glass.width * 0.2, glass.center.dy),
+      );
+      final insideRight = await redAt(
+        Offset(glass.right - glass.width * 0.2, glass.center.dy),
+      );
+      final outsideLeft = await redAt(Offset(glass.left - 10, glass.center.dy));
+      final outsideRight = await redAt(
+        Offset(glass.right + 10, glass.center.dy),
+      );
+      expect(
+        (insideLeft - insideRight).abs(),
+        greaterThan(20),
+        reason: 'Dock glass must sample the split wallpaper, not a flat fill',
+      );
+      expect(
+        (outsideLeft - outsideRight).abs(),
+        greaterThan(20),
+        reason: 'The slot beside the capsule stays transparent',
+      );
+    }
   });
 }
