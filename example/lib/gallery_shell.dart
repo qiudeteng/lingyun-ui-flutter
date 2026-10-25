@@ -30,7 +30,7 @@ import 'wallpaper.dart';
 /// the 基础 workbench. [bare] hides the tabs, the back bar, and the
 /// preview cluster (`chrome=0`).
 ///
-/// The cluster (浅色 / 暗黑, 降低透明度, 画板, 画布) sits in the top-right
+/// The cluster (浅色 / 暗黑, 降低透明度, 画板, 横竖屏, 画布) sits in the top-right
 /// of the workbench and of a pushed demo. A fixed [frame] hoists that
 /// cluster above the board. The demo, including the Dock, is clipped
 /// and centered on the board. The backdrop outside the board is the
@@ -47,6 +47,9 @@ class GalleryShell extends StatefulWidget {
     required this.onReduceTransparency,
     required this.frame,
     required this.onFrameChanged,
+    this.orientation,
+    this.swapOrientation = false,
+    this.onOrientationChanged,
     this.initialPage,
     this.initialHome,
     this.initialTab,
@@ -65,6 +68,9 @@ class GalleryShell extends StatefulWidget {
   final ValueChanged<bool> onReduceTransparency;
   final GalleryPreviewFrame frame;
   final ValueChanged<GalleryPreviewFrame> onFrameChanged;
+  final GalleryPreviewOrientation? orientation;
+  final bool swapOrientation;
+  final ValueChanged<GalleryPreviewOrientation>? onOrientationChanged;
   final Widget Function(BuildContext context, String entryId) pageBuilder;
 
   @override
@@ -129,6 +135,9 @@ class _GalleryShellState extends State<GalleryShell> {
       onReduceTransparency: widget.onReduceTransparency,
       frame: widget.frame,
       onFrameChanged: widget.onFrameChanged,
+      orientation: widget.orientation,
+      swapOrientation: widget.swapOrientation,
+      onOrientationChanged: widget.onOrientationChanged,
       background: widget.background,
       onBackgroundChanged: widget.onBackgroundChanged,
     );
@@ -218,7 +227,12 @@ class _GalleryShellState extends State<GalleryShell> {
           );
 
     final board = framed
-        ? GalleryDeviceStage(frame: widget.frame, child: page)
+        ? GalleryDeviceStage(
+            frame: widget.frame,
+            orientation: widget.orientation,
+            swapOrientation: widget.swapOrientation,
+            child: page,
+          )
         : page;
 
     final body = framed && !widget.bare
