@@ -191,7 +191,7 @@ flutter test tool/capture_control_screenshots.dart
 flutter test tool/capture_control_screenshots.dart
 ```
 
-导航里点「旋钮」。地址 `?page=knob&theme=light&chrome=0`，深色把 `theme` 换成 `dark`。`page=track` 和 `page=controls` 打开同一页。
+已提交的两张图是合页之前的旋钮页。现在导航里点「材质封装」。地址 `?page=materials-pack`。`page=knob`、`page=track` 和 `page=controls` 打开同一页的控件层。浅色和深色零件在同一页，不再靠 `theme` 切换样张。
 
 开关、滑杆、步进器是三张独立叶子（文案为简体中文）：
 

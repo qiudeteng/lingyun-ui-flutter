@@ -63,8 +63,8 @@ class GalleryGroup {
 
   /// `?home=` / `?tab=` value that opens this workbench (level 2).
   ///
-  /// Distinct from leaf `?page=` ids. `controls` is both this workbench
-  /// and the 旋钮与轨道 leaf; the parameter name decides which.
+  /// Distinct from leaf `?page=` ids. `?home=controls` opens this
+  /// workbench. `?page=controls` opens 材质封装 on the Controls anchor.
   final String homeKey;
 
   final IconData icon;
@@ -106,18 +106,18 @@ const List<GalleryGroup> galleryGroups = [
         title: '表面',
         entries: [
           GalleryEntry(
-            id: 'materials',
-            label: '材质',
-            detail: '超薄、薄、常规、厚',
+            id: 'materials-pack',
+            label: '材质封装',
+            detail: '控件层、液态玻璃与材质',
             icon: Icons.layers_outlined,
-            queries: ['materials'],
-          ),
-          GalleryEntry(
-            id: 'glass',
-            label: '液态玻璃',
-            detail: '清透到程序坞的样式',
-            icon: Icons.auto_awesome_outlined,
-            queries: ['glass'],
+            queries: [
+              'materials-pack',
+              'materials',
+              'glass',
+              'knob',
+              'controls',
+              'track',
+            ],
           ),
           GalleryEntry(
             id: 'buttons',
@@ -177,19 +177,6 @@ const List<GalleryGroup> galleryGroups = [
     icon: Icons.tune_outlined,
     selectedIcon: Icons.tune,
     sections: [
-      GallerySection(
-        id: 'track',
-        title: '轨道',
-        entries: [
-          GalleryEntry(
-            id: 'knob',
-            label: '旋钮与轨道',
-            detail: '圆形旋钮叠在轨道上',
-            icon: Icons.tune_outlined,
-            queries: ['knob', 'track', 'controls'],
-          ),
-        ],
-      ),
       GallerySection(
         id: 'content',
         title: '内容',

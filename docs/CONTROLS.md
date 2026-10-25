@@ -73,7 +73,7 @@ Figma 文件 `X2nwP1156zkZAscUSZGv9S`（[iOS and iPadOS 27](https://www.figma.co
 
 步进器：没有旋钮。板面是未着色轨道；按住的一侧换成未着色按下；整件禁用时用未着色禁用。分隔线是系统 Separators / Non-Opaque。加减号用 Labels Primary，停用的一侧用 Tertiary。
 
-画廊：主 example 导航「旋钮」，或 `?page=knob`。`page=track` 和 `page=controls` 打开同一页。浅色 / 深色用页上的切换。示意是开关（关 / 开，静止 / 按下）和滑杆（中部，静止 / 按下）：胶囊轨道上叠直径 24 的圆旋钮。四周留空，让模糊 36 的阴影落在画布上。不再用灰色衬底，那块灰会把 5% 黑阴影吃掉。深色静止旋钮仍然不画。
+画廊：基础工作台的「材质封装」（`?page=materials-pack`）。控件层在液态玻璃和材质之前。`?page=knob`、`page=track`、`page=controls` 落到控件层锚点。浅色和深色的旋钮、轨道零件同页，不是开关或滑杆成品。页面不写模糊或饱和度数字。深色静止旋钮仍然不画。开关、滑杆、步进器仍是控件工作台里的独立页。
 
 控件：控件工作台里的「开关」「滑杆」「步进器」。`?page=toggles`（`toggle`）、`?page=sliders`（`slider`）、`?page=steppers`（`stepper`）各自打开独立页。页上可切浅色 / 深色，也可以点按实时开关、拖动滑杆、点步进器。文案是简体中文。
 

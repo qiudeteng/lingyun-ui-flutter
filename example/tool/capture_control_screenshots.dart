@@ -5,7 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'package:example/pages/controls_page.dart';
+import 'package:example/pages/materials_pack_page.dart';
 
 /// Writes the light and dark knob / track gallery boards.
 ///
@@ -49,7 +49,9 @@ Future<void> _capture(
           themeMode: mode,
           theme: ThemeData(brightness: Brightness.light, useMaterial3: true),
           darkTheme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
-          home: ControlsPage(themeMode: mode, onThemeModeChanged: (_) {}),
+          home: const MaterialsPackPage(
+            initialSection: MaterialsPackSection.controls,
+          ),
         ),
       ),
     ),

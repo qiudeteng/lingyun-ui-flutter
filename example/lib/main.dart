@@ -8,12 +8,10 @@ import 'pages/accessibility_page.dart';
 import 'pages/action_sheets_page.dart';
 import 'pages/alerts_page.dart';
 import 'pages/buttons_page.dart';
-import 'pages/controls_page.dart';
 import 'pages/form_controls_page.dart';
-import 'pages/glass_page.dart';
 import 'pages/layout_page.dart';
 import 'pages/lists_page.dart';
-import 'pages/materials_page.dart';
+import 'pages/materials_pack_page.dart';
 import 'pages/menus_page.dart';
 import 'pages/native_page.dart';
 import 'pages/popovers_page.dart';
@@ -110,8 +108,9 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
   Widget _page(BuildContext context, String entryId) {
     final brightness = Theme.of(context).brightness;
     return switch (entryId) {
-      'materials' => const MaterialsPage(),
-      'glass' => const GlassPage(),
+      'materials-pack' => MaterialsPackPage(
+        initialSection: MaterialsPackSection.fromQuery(_launch.page),
+      ),
       'themes' => ThemesPage(
         themeMode: _themeMode,
         onThemeModeChanged: _setThemeMode,
@@ -128,10 +127,6 @@ class _LingyunGlassDemoAppState extends State<LingyunGlassDemoApp> {
         onHighContrast: (value) => setState(() => _highContrast = value),
       ),
       'native' => const NativePage(),
-      'knob' => ControlsPage(
-        themeMode: _themeMode,
-        onThemeModeChanged: _setThemeMode,
-      ),
       'lists' => const ListsPage(),
       'fields' => const TextFieldsPage(),
       'progress' => const ProgressPage(),

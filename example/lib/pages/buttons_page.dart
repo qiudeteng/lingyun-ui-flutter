@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// Glass buttons. Standalone leaf (`?page=buttons`, also `button`).
 ///
-/// Not the style swatches on [GlassPage]. Default material is Regular Small,
+/// Not the style swatches on [MaterialsPackPage]. Default material is Regular Small,
 /// not Materials Thick.
 class ButtonsPage extends StatelessWidget {
   const ButtonsPage({super.key});

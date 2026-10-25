@@ -16,8 +16,12 @@ without a demo; a known `tab` wins over `home`. A known `?page=` /
 `GALLERY_PAGE` still opens that demo and wins over `home` / `tab`.
 `theme=light|dark|system`, `chrome=0`, and `bg` still apply. The top-right cluster also sets them: 浅色 / 暗黑, 降低透明度 (`reduceTransparency=1|0` or `a11y=reduceTransparency`), and 画板尺寸 (`device=` or `frame=`). Boards: `window` (自适应窗口), `pro` (402×874), `pro-max` (440×956), `air` (420×912), `duo-outer` (466×678), `duo-inner-landscape` (951×669), `duo-inner-portrait` (669×951). A fixed board clips and centers the demo; the cluster and the backdrop outside the board follow the same settings. The same backdrop is painted inside the board so the Dock can frost it.
 
-Gallery: **Materials** (Ultrathin / Thin / Regular / Thick), **Glass**
-(Clear / Regular S·M·L / Dock / Widget Glass swatches), **Buttons**
+Gallery: **材质封装** (`?page=materials-pack`) is one leaf with three sections
+in Sketch order — **控件层** (knob / track parts, light and dark), **液态玻璃**
+(Clear / Regular S·M·L / Dock / Widget Glass, light and dark), **材质**
+(Thick → Regular → Thin → Ultrathin, light and dark). Legacy
+`?page=materials`, `glass`, `knob`, `controls`, and `track` open that
+page on the matching section. **Buttons** stay a separate row
 (`GlassButton` sizes Small / Medium / Large, states Default / Pressed /
 Disabled, variants Glass, Clear, Destructive, Glass Prominent, Symbol;
 `?page=buttons`), **Tabs**
@@ -44,11 +48,11 @@ not the native vertical toolbar. Copy is Simplified Chinese.
 **主题** (`?page=themes` or the nav item): color swatches by default, Large
 text specimens with `?page=text` or the 文本 segment. Light / dark is
 浅色 / 深色. Titles, buttons, group names, and samples are Simplified Chinese.
-**旋钮与轨道** (`?page=knob`, also `track` / `controls`): Controls knob and track
-layer styles, composed as a circular knob on a toggle or slider track.
-浅色 / 深色. Titles and notes are Simplified Chinese.
-**玻璃按钮** (`?page=buttons`, also `button`): `GlassButton` sizes and states.
-It is a row on **基础工作台**. The **液态玻璃** page keeps style swatches only.
+**材质封装** (`?page=materials-pack`, also `materials` / `glass` / `knob` /
+`track` / `controls`): one row on **基础工作台**, replacing the old 材质,
+液态玻璃, and 旋钮与轨道 rows. Copy is Simplified Chinese. The page does
+not print blur or saturation numbers. **玻璃按钮** (`?page=buttons`, also
+`button`) stays its own row and is not part of that page.
 **开关** / **滑杆** / **步进器** are separate leaves (`?page=toggles`, `sliders`,
 `steppers`; aliases `toggle`, `slider`, `stepper`). 浅色 / 深色. Copy is
 Simplified Chinese. **分段与页控** still shares one page.
