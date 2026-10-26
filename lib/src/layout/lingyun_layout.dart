@@ -2,6 +2,30 @@ import 'dart:math' as math;
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 
+/// Extra bottom padding while a floating dock overlays the page.
+///
+/// [LingyunLayout.layoutMarginOf] reads [bottom]. The widget paints nothing.
+class LingyunOverlayClearance extends InheritedWidget {
+  const LingyunOverlayClearance({
+    super.key,
+    required this.bottom,
+    required super.child,
+  });
+
+  final double bottom;
+
+  static double bottomOf(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<LingyunOverlayClearance>();
+    return scope?.bottom ?? 0;
+  }
+
+  @override
+  bool updateShouldNotify(LingyunOverlayClearance oldWidget) {
+    return oldWidget.bottom != bottom;
+  }
+}
+
 /// Adaptive width classes derived from the current **window / view** size.
 ///
 /// These are not device-model checks and must not be treated as
@@ -150,9 +174,16 @@ class LingyunLayout {
   }
 
   /// Content margins: safe area + width-class gutters.
+  ///
+  /// When a floating dock overlays the page, [LingyunOverlayClearance]
+  /// raises the bottom margin so the last row can rest above the capsule.
+  /// The clearance is padding, not a painted bar.
   static EdgeInsets layoutMarginOf(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    return layoutMarginFor(size, MediaQuery.paddingOf(context));
+    final margin = layoutMarginFor(size, MediaQuery.paddingOf(context));
+    final clearance = LingyunOverlayClearance.bottomOf(context);
+    if (clearance <= margin.bottom) return margin;
+    return margin.copyWith(bottom: clearance);
   }
 
   /// Recommended content gutter for [widthClass], before safe-area insets.

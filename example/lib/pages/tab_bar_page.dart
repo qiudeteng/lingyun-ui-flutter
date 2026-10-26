@@ -22,6 +22,7 @@ class _TabBarPageState extends State<TabBarPage> {
   int _float5 = 0;
   int _tinted = 2;
   int _system = 0;
+  int _fallback = 0;
 
   static const _standardItems = <GlassTabBarItem>[
     GlassTabBarItem(
@@ -137,7 +138,9 @@ class _TabBarPageState extends State<TabBarPage> {
             Text(
               '应用壳的四个分组走 LingyunTabBar：iOS 上是系统标签栏'
               '（液态玻璃，系统把它贴到侧面时也跟着走），其他平台是同一套条目的'
-              'Flutter 系统程序坞。下面第一块就是这套 API。'
+              'Flutter 系统程序坞，浮在页面上，栏外不铺实色底。下面第一块是这套 API。'
+              '紧接着的降级台强制 GlassTabBar(systemDock: true)，在 iOS 上也能'
+              '和系统栏对照。'
               '其余几块是稿面 GlassTabBar：不是材质厚，也不是工具栏材质。'
               '图标加说明文字。未选中的字用液态玻璃主色（#1A1A1A / #EDEDED），并降低透明度。'
               '选中的图标和说明是系统蓝。悬浮胶囊是跑道形，圆角不是 18 / 26 / 34。'
@@ -159,6 +162,20 @@ class _TabBarPageState extends State<TabBarPage> {
                     items: _systemItems,
                     currentIndex: _system,
                     onChanged: (i) => setState(() => _system = i),
+                  ),
+                ),
+                _LabeledStage(
+                  width: stageWidth,
+                  kicker: '降级 · Flutter 系统程序坞',
+                  stageKey: const Key('tab-stage-system-fallback'),
+                  child: GlassTabBar(
+                    key: const Key('tab-bar-system-fallback'),
+                    systemDock: true,
+                    style: GlassTabBarStyle.floatingPill,
+                    glassStyle: LiquidGlassStyle.dock,
+                    items: _systemItems,
+                    currentIndex: _fallback,
+                    onChanged: (i) => setState(() => _fallback = i),
                   ),
                 ),
                 _LabeledStage(

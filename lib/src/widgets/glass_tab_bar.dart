@@ -118,9 +118,11 @@ class GlassTabBarItem {
 /// system chrome stays on the native track (`LingyunTabBar`).
 ///
 /// [systemDock] is the Flutter stand-in for the system tab bar: a wide
-/// floating capsule, larger symbols, a light selection segment, and
-/// secondary unselected labels. The kit specimen leaves it false and keeps
-/// the 266 / 352 group widths. `LingyunTabBar` turns it on off iOS.
+/// floating capsule, larger symbols, a light selection lens, and secondary
+/// unselected labels. The platter is Liquid Glass only — blur, veil, and
+/// rim. It does not paint an opaque bar behind the capsule. The kit
+/// specimen leaves it false and keeps the 266 / 352 group widths.
+/// `LingyunTabBar` turns it on off iOS and floats that dock over the page.
 class GlassTabBar extends StatelessWidget {
   const GlassTabBar({
     super.key,
@@ -184,11 +186,12 @@ class GlassTabBar extends StatelessWidget {
   ///
   /// Compact boards inset 16pt each side (8pt under 360). Boards at least
   /// 600pt cap the capsule at 480 so a desktop window does not stretch one
-  /// dock across the monitor. Symbols are 22pt. The selection segment is a
-  /// lighter glass chip. Unselected captions use Liquid Glass secondary
-  /// (`#727272` / `#8A8A8A`), which is the system bar's quieter label, not
-  /// the kit's near-primary mix. Sizes are measured against the system bar
-  /// and are still **待核验 vs 真机**.
+  /// dock across the monitor. Symbols are 22pt. The selection lens is a
+  /// brighter glass chip that stretches and springs between tabs. Unselected
+  /// captions use Liquid Glass secondary (`#727272` / `#8A8A8A`) at regular
+  /// weight; the selected caption stays semibold in the tint. The platter
+  /// veil stays translucent. Nothing behind the capsule is an opaque fill.
+  /// Sizes are measured against the system bar and are still **待核验 vs 真机**.
   final bool systemDock;
 
   static Color systemBlueFor(Brightness brightness) {
@@ -505,7 +508,13 @@ class _Platter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final base = LiquidGlassTheme.styleOf(context, bar.glassStyle);
-    final tokens = bar.tintedBar ? _tintedTokens(base, tint) : base;
+    final tokens = _platterTokens(
+      base,
+      tint: tint,
+      brightness: brightness,
+      tintedBar: bar.tintedBar,
+      systemDock: bar.systemDock,
+    );
     return GlassSurface(
       tokens: tokens,
       borderRadius: borderRadius,
@@ -520,6 +529,58 @@ class _Platter extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Kit Dock stays on [base]. [systemDock] uses a frostier veil and a
+/// brighter rim so the capsule reads as the system tab bar. The tint alpha
+/// stays a veil — the slot outside this platter is not painted here.
+LiquidGlassTokens _platterTokens(
+  LiquidGlassTokens base, {
+  required Color tint,
+  required Brightness brightness,
+  required bool tintedBar,
+  required bool systemDock,
+}) {
+  if (tintedBar) return _tintedTokens(base, tint);
+  if (!systemDock) return base;
+  final dark = brightness == Brightness.dark;
+  if (dark) {
+    return base.copyWith(
+      blurSigma: 24,
+      saturation: 1.4,
+      tintColor: const Color(0x59101418),
+      overlayColor: const Color(0x14FFFFFF),
+      overlayBlend: BlendMode.softLight,
+      edgeHighlightColor: const Color(0xD6FFFFFF),
+      refractionColor: const Color(0xC7FFFFFF),
+      borderColor: const Color(0x33FFFFFF),
+      shadowColor: const Color(0x59000000),
+      shadowBlurRadius: 28,
+      shadowOffset: const Offset(0, 10),
+      shadowSpread: -8,
+      rimColor: const Color(0x8CFFFFFF),
+      innerShadowExtent: 7,
+      optics: LiquidGlassOptics.lens,
+    );
+  }
+  return base.copyWith(
+    blurSigma: 20,
+    saturation: 1.5,
+    tintColor: const Color(0x47F7F8FA),
+    overlayColor: const Color(0x14FFFFFF),
+    overlayBlend: BlendMode.softLight,
+    edgeHighlightColor: const Color(0xF7FFFFFF),
+    refractionColor: const Color(0xF2FFFFFF),
+    borderColor: const Color(0x59FFFFFF),
+    shadowColor: const Color(0x24000000),
+    shadowBlurRadius: 28,
+    shadowOffset: const Offset(0, 10),
+    shadowSpread: -8,
+    rimColor: const Color(0xF2FFFFFF),
+    innerShadowColor: const Color(0x10282828),
+    innerShadowExtent: 7,
+    optics: LiquidGlassOptics.lens,
+  );
 }
 
 LiquidGlassTokens _tintedTokens(LiquidGlassTokens base, Color tint) {
@@ -590,6 +651,35 @@ class _LensMotion {
   }
 }
 
+/// System-dock lens. Separate from the kit specimen so the Sketch pill
+/// keeps its critically damped quick spring.
+///
+/// Bounce is the Flutter `withDurationAndBounce` argument (SwiftUI's
+/// duration/bounce spring). Apple has not published tab-lens ω/ζ. The
+/// value is a stand-in for the gel travel on the system bar — **待核验 vs
+/// 真机**.
+class _DockSpring {
+  const _DockSpring._();
+
+  static const double bounce = 0.22;
+  static const double pressLift = 1.08;
+  static const Offset pressSlide = Offset(0, -0.06);
+  static const double lensPressScale = 1.06;
+  static const double pulseAmp = 0.04;
+  static const double travelStretch = 0.46;
+  static const double speedStretch = 0.046;
+  static const double maxStretch = 0.72;
+  static const double squash = 0.2;
+  static const double maxLeadPx = 18;
+  static const double leadPerSlot = 3.4;
+  static const Duration dragDuration = Duration(milliseconds: 340);
+
+  static Duration settleDuration(double slots) {
+    final ms = 460 + 70 * slots;
+    return Duration(milliseconds: ms.round().clamp(460, 820));
+  }
+}
+
 class _IndexSample {
   const _IndexSample(this.time, this.index);
 
@@ -616,7 +706,13 @@ class _LensDriver {
   double get velocity => _controller.velocity;
   double get target => _target;
 
-  void go(double target, {double? velocity, required bool distanceScaled}) {
+  void go(
+    double target, {
+    double? velocity,
+    required bool distanceScaled,
+    double bounce = 0,
+    bool systemDock = false,
+  }) {
     final previous = _target;
     _target = target;
     if (reduceMotion) {
@@ -631,12 +727,22 @@ class _LensDriver {
     if (sameTarget) return;
 
     final from = _controller.value;
-    final duration = distanceScaled
-        ? _LensMotion.settleDuration((target - from).abs())
-        : LiquidGlassMotion.defaults.quick;
+    final Duration duration;
+    if (systemDock && !distanceScaled) {
+      duration = _DockSpring.dragDuration;
+    } else if (systemDock) {
+      duration = _DockSpring.settleDuration((target - from).abs());
+    } else if (distanceScaled) {
+      duration = _LensMotion.settleDuration((target - from).abs());
+    } else {
+      duration = LiquidGlassMotion.defaults.quick;
+    }
     _controller.animateWith(
       SpringSimulation(
-        SpringDescription.withDurationAndBounce(duration: duration),
+        SpringDescription.withDurationAndBounce(
+          duration: duration,
+          bounce: bounce,
+        ),
         from,
         target,
         velocity ?? _controller.velocity,
@@ -691,7 +797,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
     final flipped = _lens.reduceMotion != reduce;
     _lens.reduceMotion = reduce;
     if (reduce && flipped && !_interacting) {
-      _lens.go(widget.bar.currentIndex.toDouble(), distanceScaled: false);
+      _goLens(widget.bar.currentIndex.toDouble(), distanceScaled: false);
     }
   }
 
@@ -706,7 +812,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
     final indexChanged = oldWidget.bar.currentIndex != widget.bar.currentIndex;
     final countChanged = oldWidget.bar.items.length != widget.bar.items.length;
     if (indexChanged || countChanged) {
-      _lens.go(widget.bar.currentIndex.toDouble(), distanceScaled: true);
+      _goLens(widget.bar.currentIndex.toDouble(), distanceScaled: true);
     }
   }
 
@@ -718,6 +824,22 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
   }
 
   bool get _rtl => Directionality.of(context) == TextDirection.rtl;
+
+  bool get _systemDock => widget.bar.systemDock;
+
+  void _goLens(
+    double target, {
+    double? velocity,
+    required bool distanceScaled,
+  }) {
+    _lens.go(
+      target,
+      velocity: velocity,
+      distanceScaled: distanceScaled,
+      bounce: _systemDock ? _DockSpring.bounce : 0,
+      systemDock: _systemDock,
+    );
+  }
 
   bool _enabled(int index) {
     if (index < 0 || index >= widget.bar.items.length) return false;
@@ -766,7 +888,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
       _interacting = true;
       _pressedIndex = slot;
     });
-    _lens.go(slot.toDouble(), distanceScaled: true);
+    _goLens(slot.toDouble(), distanceScaled: true);
     if (slot == widget.bar.currentIndex) _startPulse();
   }
 
@@ -789,7 +911,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
       _interacting = true;
       _pressedIndex = _enabled(nearest) ? nearest : null;
     });
-    _lens.go(index, distanceScaled: false);
+    _goLens(index, distanceScaled: false);
   }
 
   void _onPointerUp(PointerUpEvent event) {
@@ -826,7 +948,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
       _interacting = false;
       _pressedIndex = null;
     });
-    _lens.go(widget.bar.currentIndex.toDouble(), distanceScaled: true);
+    _goLens(widget.bar.currentIndex.toDouble(), distanceScaled: true);
   }
 
   void _finish(int index, {required double velocity, required bool fromDrag}) {
@@ -841,7 +963,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
     final settle = enabled ? index : current;
     final alreadyThere = !fromDrag && (settle - _lens.target).abs() < 0.01;
     if (!alreadyThere) {
-      _lens.go(
+      _goLens(
         settle.toDouble(),
         velocity: fromDrag ? velocity : null,
         distanceScaled: true,
@@ -860,30 +982,41 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
         if (_pendingCommit != index) return;
         _pendingCommit = null;
         if (widget.bar.currentIndex != index) {
-          _lens.go(widget.bar.currentIndex.toDouble(), distanceScaled: true);
+          _goLens(widget.bar.currentIndex.toDouble(), distanceScaled: true);
         }
       });
     });
   }
 
   _LensFrame _frameFor(double position, double velocity, double target) {
-    const insetH = 1.0;
-    const insetV = 2.0;
+    final dock = _systemDock;
+    final insetH = dock ? 4.0 : 1.0;
+    final insetV = dock ? 5.0 : 2.0;
     final layout = widget.layout;
     final baseWidth = math.max(36.0, layout.itemExtent - insetH * 2);
     final baseHeight = _TabBarMetrics.controlHeight - insetV * 2;
     final travel = (target - position).abs();
     final speed = velocity.abs();
     final stretch =
-        (travel * _LensMotion.travelStretch + speed * _LensMotion.speedStretch)
-            .clamp(0.0, _LensMotion.maxStretch);
+        (travel *
+                    (dock
+                        ? _DockSpring.travelStretch
+                        : _LensMotion.travelStretch) +
+                speed *
+                    (dock
+                        ? _DockSpring.speedStretch
+                        : _LensMotion.speedStretch))
+            .clamp(0.0, dock ? _DockSpring.maxStretch : _LensMotion.maxStretch);
     final width = math.min(baseWidth * (1 + stretch), layout.groupWidth);
-    final height = baseHeight * (1 - stretch * _LensMotion.squash);
+    final height =
+        baseHeight *
+        (1 - stretch * (dock ? _DockSpring.squash : _LensMotion.squash));
     final visualLead = _rtl ? -velocity : velocity;
-    final lead = (visualLead * _LensMotion.leadPerSlot).clamp(
-      -_LensMotion.maxLeadPx,
-      _LensMotion.maxLeadPx,
-    );
+    final leadPerSlot = dock
+        ? _DockSpring.leadPerSlot
+        : _LensMotion.leadPerSlot;
+    final maxLead = dock ? _DockSpring.maxLeadPx : _LensMotion.maxLeadPx;
+    final lead = (visualLead * leadPerSlot).clamp(-maxLead, maxLead);
     final rawLeft =
         layout.leftFor(position, rtl: _rtl) +
         insetH -
@@ -933,9 +1066,14 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
               _lens.target,
             );
             final pulse = math.sin(math.pi * _pulse.value.clamp(0.0, 1.0));
+            final pressScale = _systemDock
+                ? _DockSpring.lensPressScale
+                : _LensMotion.lensPressScale;
+            final pulseAmp = _systemDock
+                ? _DockSpring.pulseAmp
+                : _LensMotion.pulseAmp;
             final lensScale =
-                (_interacting ? _LensMotion.lensPressScale : 1.0) *
-                (1 + _LensMotion.pulseAmp * pulse);
+                (_interacting ? pressScale : 1.0) * (1 + pulseAmp * pulse);
             return Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
@@ -1024,7 +1162,7 @@ class _SelectionLens extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
+    final lens = SizedBox.expand(
       key: const Key('glass-tab-selection-lens'),
       child: Stack(
         fit: StackFit.expand,
@@ -1056,6 +1194,23 @@ class _SelectionLens extends StatelessWidget {
           ),
         ],
       ),
+    );
+    if (!systemDock || solid || tintedBar) return lens;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(100)),
+        boxShadow: [
+          BoxShadow(
+            color: brightness == Brightness.dark
+                ? const Color(0x66000000)
+                : const Color(0x26000000),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: lens,
     );
   }
 }
@@ -1105,18 +1260,20 @@ class _LiquidLensPainter extends CustomPainter {
       lip = const Color(0x80FFFFFF);
       shade = const Color(0x40000000);
     } else if (systemDock && brightness == Brightness.dark) {
-      // Lighter glass segment. The system selected tab is a bright chip
-      // on the dock, not the kit's dark veil.
-      top = const Color(0x47FFFFFF);
-      bottom = const Color(0x1AFFFFFF);
-      caustic = const Color(0x38FFFFFF);
-      lip = const Color(0x8CFFFFFF);
-      shade = const Color(0x66000000);
-    } else if (systemDock) {
+      // Bright chip on the dark dock. Still a veil, not a solid pill.
       top = const Color(0x73FFFFFF);
-      bottom = const Color(0x3DF7F8FA);
+      bottom = const Color(0x38FFFFFF);
       caustic = const Color(0x66FFFFFF);
-      lip = const Color(0xE6FFFFFF);
+      lip = const Color(0xC7FFFFFF);
+      shade = const Color(0x80000000);
+    } else if (systemDock) {
+      // Near-white lens inside the frosted platter. The system selected
+      // tab reads as its own glass chip; the platter stays visible at the
+      // rim. Alphas stay under an opaque fill.
+      top = const Color(0xC7FFFFFF);
+      bottom = const Color(0x8CF4F5F7);
+      caustic = const Color(0xB3FFFFFF);
+      lip = const Color(0xF7FFFFFF);
       shade = const Color(0x14000000);
     } else if (brightness == Brightness.dark) {
       top = const Color(0x66101418);
@@ -1298,7 +1455,7 @@ class _TabItemState extends State<_TabItem> {
     final symbolSize = widget.systemDock
         ? _TabBarMetrics.systemSymbolSize
         : _TabBarMetrics.symbolSize;
-    final gap = widget.selected ? 1.0 : 0.5;
+    final gap = widget.systemDock ? 2.0 : (widget.selected ? 1.0 : 0.5);
     final duration =
         widget.pressDuration ??
         LiquidGlassMotion.durationOf(context, LiquidGlassMotion.defaults.quick);
@@ -1309,13 +1466,19 @@ class _TabItemState extends State<_TabItem> {
           LiquidGlassMotion.defaults.quickCurve,
         );
     final lifted = _down && item.enabled;
+    final pressLift = widget.systemDock
+        ? _DockSpring.pressLift
+        : _LensMotion.pressLift;
+    final pressSlide = widget.systemDock
+        ? _DockSpring.pressSlide
+        : _LensMotion.pressSlide;
 
     final visual = AnimatedSlide(
-      offset: lifted ? _LensMotion.pressSlide : Offset.zero,
+      offset: lifted ? pressSlide : Offset.zero,
       duration: duration,
       curve: curve,
       child: AnimatedScale(
-        scale: lifted ? _LensMotion.pressLift : 1,
+        scale: lifted ? pressLift : 1,
         duration: duration,
         curve: curve,
         child: Padding(
@@ -1353,9 +1516,11 @@ class _TabItemState extends State<_TabItem> {
                   fontSize: _TabBarMetrics.labelSize,
                   height: 1.15,
                   fontWeight: widget.systemDock && !widget.selected
-                      ? FontWeight.w500
+                      ? FontWeight.w400
                       : FontWeight.w600,
-                  letterSpacing: widget.selected ? -0.1 : 0,
+                  letterSpacing: widget.selected
+                      ? (widget.systemDock ? -0.2 : -0.1)
+                      : 0,
                 ),
               ),
             ],

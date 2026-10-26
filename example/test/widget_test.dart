@@ -490,6 +490,14 @@ void main() {
     expect(rootTabs.items.map((item) => item.label), isNot(contains('标签栏')));
     expect(find.byKey(const Key('tab-stage-system')), findsOneWidget);
     expect(find.byKey(const Key('tab-bar-system')), findsOneWidget);
+    expect(find.byKey(const Key('tab-stage-system-fallback')), findsOneWidget);
+    expect(find.byKey(const Key('tab-bar-system-fallback')), findsOneWidget);
+    expect(
+      tester
+          .widget<GlassTabBar>(find.byKey(const Key('tab-bar-system-fallback')))
+          .systemDock,
+      isTrue,
+    );
     await tester.scrollUntilVisible(
       find.byKey(const Key('tab-stage-tinted')),
       300,
@@ -1896,6 +1904,26 @@ void main() {
     expect(find.byKey(const Key('lingyun-page-sidebar')), findsNothing);
     expect(find.byType(NavigationBar), findsNothing);
     expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
+    final pageFill = tester.getRect(
+      find.byKey(const Key('gallery-workbench-background')),
+    );
+    final dockGlass = tester.getRect(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.byType(GlassSurface),
+      ),
+    );
+    expect(pageFill.bottom, greaterThan(dockGlass.top + 8));
+    final dockMaterials = tester.widgetList<Material>(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(dockMaterials, isNotEmpty);
+    for (final material in dockMaterials) {
+      expect(material.type, MaterialType.transparency);
+    }
     await openGalleryEntry(tester, 'native');
     expect(find.byKey(const Key('native-page-title')), findsOneWidget);
   });

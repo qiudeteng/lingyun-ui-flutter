@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../layout/lingyun_layout.dart';
 import '../page/lingyun_native_page.dart';
 import '../tokens/liquid_glass_style.dart';
 import 'glass_tab_bar.dart';
@@ -122,7 +123,9 @@ bool lingyunTabBarPaintsFlutterDock({
 /// a vertical bar when iOS 27.1 moves it). [child] stays in Flutter: the
 /// workbench and pushed demos are not replaced by the LYPage metrics panes.
 /// Other platforms paint [GlassTabBar] with [GlassTabBar.systemDock], the
-/// same items, and the same callback.
+/// same items, and the same callback. That dock floats over [child]. The
+/// page keeps painting underneath, and the bar does not add an opaque fill
+/// outside the glass capsule.
 ///
 /// [style], [glassStyle], [tint], [brightness], and [tintedBar] match
 /// [GlassTabBar]. [style] shapes the Flutter dock. The iOS bar is the
@@ -169,7 +172,9 @@ class LingyunTabBar extends StatefulWidget {
   /// Bottom space reserved before the system reports its frame.
   ///
   /// Matches a phone dock: 8pt top gap, 62pt capsule, and the home-indicator
-  /// overlap the Flutter dock already uses.
+  /// overlap the Flutter dock already uses. The Flutter dock also uses this
+  /// as the content clearance while it floats over [child]. It is not a
+  /// painted bar.
   static const double fallbackBottomInset = 96;
 
   /// Arguments for `LYTabBarPlatformView`. Same map as `update`.
@@ -312,13 +317,7 @@ class _LingyunTabBarState extends State<LingyunTabBar> {
               Expanded(child: body),
             ],
           )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: body),
-              dock,
-            ],
-          );
+        : _FloatingDockOverlay(dock: dock, child: body);
 
     if (native == null) {
       return flutterChrome ?? body;
@@ -351,6 +350,28 @@ class _LingyunTabBarState extends State<LingyunTabBar> {
       );
     }
     return metrics.contentPadding(bounds);
+  }
+}
+
+/// Page full-bleed, dock painted on top. No color in the bar slot.
+class _FloatingDockOverlay extends StatelessWidget {
+  const _FloatingDockOverlay({required this.dock, required this.child});
+
+  final Widget dock;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        LingyunOverlayClearance(
+          bottom: LingyunTabBar.fallbackBottomInset,
+          child: child,
+        ),
+        Positioned(left: 0, right: 0, bottom: 0, child: dock),
+      ],
+    );
   }
 }
 
