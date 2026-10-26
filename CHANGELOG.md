@@ -46,6 +46,10 @@ All notable changes to this project will be documented in this file.
 - Wide breakpoint **1200** matches `LingyunBreakpoints.large` and is not a kit token. Flutter rail width **96** is **待核验 vs design**.
 - The Flutter skeleton does not paint iOS 27.1 vertical system chrome, `ArrangementView`, or real reserved regions. Those link in `ios/` when `LY_IOS_27_1_SDK=1`.
 
+### Fixed
+
+- Example gallery shell stays the Flutter Dock on an iOS process (simulator and TestFlight). `LingyunPage.embedNativeHost` defaults to true, so the layout demo and `LingyunNativePage` still mount `LYPage`. The gallery passes false. Previously that shell became `LYPageScaffold`: two system tabs, both labeled with the current group (「基础」), plus the metrics pane, and the workbench list never appeared.
+
 ### Changed
 
 - Example workbench pages (**基础** / **控件** / **浮层** / **导航壳**) no longer wrap each section list in a Liquid Glass Regular Medium card. The embedded list is `GlassListStyle.inset`: Materials Regular (`GlassSurface(material: MaterialTier.regular)`, no `style`, no tokens) around `CupertinoListSection.insetGrouped`. Plain lists still have no platter. The workbench page background is `CupertinoColors.systemGroupedBackground`. On-screen copy stays Simplified Chinese. `GlassButton`, `GlassTabBar`, and `GlassTextField` are unchanged. The device preview stage is unchanged.

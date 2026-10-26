@@ -11,7 +11,11 @@ import 'wallpaper.dart';
 /// Three levels, on every width:
 /// 1. [LingyunPage] Dock tabs for the four groups. This is
 ///    [GlassTabBarStyle.floatingPill] with [LiquidGlassStyle.dock], drawn
-///    by [LingyunPage]. It is not a sidebar rail and not Material navigation.
+///    by the Flutter skeleton. [LingyunPage.embedNativeHost] is false, so
+///    an iOS process does not replace this shell with `LYPageScaffold`
+///    (two metric panes, both labeled from the spec). The layout demo and
+///    the native page still embed that host. It is not a sidebar rail and
+///    not Material navigation.
 /// 2. The selected tab's workbench page (「基础工作台」and the same
 ///    pattern for the other three). Several sections. Each section is an
 ///    inset grouped list on Materials Regular, labeled with that workbench
@@ -207,6 +211,7 @@ class _GalleryShellState extends State<GalleryShell> {
     final page = widget.bare
         ? stage
         : LingyunPage(
+            embedNativeHost: false,
             spec: LingyunPageSpec(
               chrome: LingyunPageChrome.tab,
               navigation: LingyunPageNavigation.stack,

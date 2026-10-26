@@ -8,7 +8,9 @@ Each workbench has several sections. Every section is an inset grouped
 list (Materials Regular, not Liquid Glass) labeled with the workbench
 name. The page sits on the system grouped background.
 A row pushes the demo; **返回** goes back to the workbench. These tabs are
-not the **标签栏** component demo (`?page=tabs`).
+not the **标签栏** component demo (`?page=tabs`). On iOS the shell keeps
+this Flutter Dock (`embedNativeHost: false`). The layout demo and the
+native page still embed `LYPage`.
 
 No `?page=` opens the 基础 workbench. `?home=` or `?tab=`
 (`foundation`, `controls`, `overlays`, `chrome`) opens that workbench

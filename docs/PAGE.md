@@ -6,11 +6,11 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 
 | 层 | 谁画 | 何时 |
 | --- | --- | --- |
-| `LingyunPage` 骨架 | Flutter | 非 iOS，以及画廊里的 bounds 模拟 |
-| `LingyunNativePage` / `LYPage` | `ios/` | iOS。同一个 `LingyunPageSpec` |
+| `LingyunPage` 骨架 | Flutter | 非 iOS。iOS 上默认不画，除非 `embedNativeHost: false`（示例画廊壳） |
+| `LingyunNativePage` / `LYPage` | `ios/` | iOS，且 `embedNativeHost` 为 true（默认）。布局页和原生页走这条。同一个 `LingyunPageSpec` |
 | 竖向系统 Toolbar / Tab、`ArrangementView`、真实 `reservedRegions` | 原生 | 只在 `LY_IOS_27_1_SDK=1` 时链接。未设标志时不自绘铰链 |
 
-`LingyunPage` 在 iOS 上把 spec 交给 `LingyunNativePage`，Flutter 子节点只作为非 iOS 的 placeholder。业务不要为外屏 / 半开 / 全开各写一套 UI。
+`LingyunPage` 在 iOS 上默认把 spec 交给 `LingyunNativePage`，Flutter 子节点只作为非 iOS 的 placeholder。示例画廊壳传 `embedNativeHost: false`，在模拟器和真机上仍画四组 Flutter Dock 和工作台；否则 `LYPageScaffold` 只认 spec 的两个标签，会盖住整个壳。布局页保持默认，继续嵌入宿主。业务不要为外屏 / 半开 / 全开各写一套 UI。
 
 ## 桶
 
@@ -52,4 +52,4 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 
 ## English summary
 
-`LingyunPage` consumes `LingyunPageSpec` / `LingyunPageWidthBucket` / `LingyunNativePage`. Off iOS it paints a Dock tab or a glass sidebar rail from `resolveLingyunPageContainer`. On iOS the same spec is the native host. Compact recommends tab + stack. Regular and wide recommend sidebar + split. There is no Duo pose enum. Vertical system chrome, `ArrangementView`, and real reserved regions stay in `ios/` and link only when `LY_IOS_27_1_SDK=1`. The 96px rail and the 1200pt wide cut are drafts (1200 matches `LingyunBreakpoints.large`, not a kit token).
+`LingyunPage` consumes `LingyunPageSpec` / `LingyunPageWidthBucket` / `LingyunNativePage`. Off iOS it paints a Dock tab or a glass sidebar rail from `resolveLingyunPageContainer`. On iOS the same spec is the native host unless `embedNativeHost` is false. The example gallery shell sets that so its four Dock tabs stay Flutter on device; the layout demo leaves the default. Compact recommends tab + stack. Regular and wide recommend sidebar + split. There is no Duo pose enum. Vertical system chrome, `ArrangementView`, and real reserved regions stay in `ios/` and link only when `LY_IOS_27_1_SDK=1`. The 96px rail and the 1200pt wide cut are drafts (1200 matches `LingyunBreakpoints.large`, not a kit token).

@@ -80,11 +80,17 @@ LingyunPageRegion lingyunPageDivisionStub(Size size) {
   );
 }
 
-/// Page shell. On iOS this is [LingyunNativePage] with [spec].
+/// Page shell.
 ///
-/// Everywhere else (and in the gallery simulation) it paints a Flutter
-/// skeleton from [resolveLingyunPageContainer]: bottom Dock tab, a glass
-/// sidebar rail, or a plain stack/split. Arrangement is not drawn here.
+/// When [embedNativeHost] is true (the default) and this process is iOS,
+/// the shell is [LingyunNativePage]. [primary], [secondary], and
+/// [destinations] are not mounted. The native view paints `LYPageScaffold`
+/// from the two [LingyunPageSpec] labels.
+///
+/// Otherwise it paints a Flutter skeleton from [resolveLingyunPageContainer]:
+/// bottom Dock tab, a glass sidebar rail, or a plain stack/split. That is
+/// the non-iOS placeholder, and it is what the example gallery keeps on iOS
+/// by passing `embedNativeHost: false`. Arrangement is not drawn here.
 /// iOS 27.1 vertical system chrome, `ArrangementView`, and reserved regions
 /// link in the native host only when `LY_IOS_27_1_SDK=1`.
 ///
@@ -101,6 +107,7 @@ class LingyunPage extends StatelessWidget {
     this.horizontalSizeClass,
     this.regions = const [],
     this.onSnapshot,
+    this.embedNativeHost = true,
   });
 
   /// Same object the iOS host receives. Not a pose enum.
@@ -115,7 +122,8 @@ class LingyunPage extends StatelessWidget {
 
   /// Flutter tab / rail items. Empty falls back to [LingyunPageSpec] labels.
   ///
-  /// Ignored on iOS, where the system tab or sidebar is native.
+  /// Not mounted when [embedNativeHost] embeds [LingyunNativePage]. That
+  /// host's tab has only the spec's two labels.
   final List<GlassTabBarItem> destinations;
 
   final int currentIndex;
@@ -134,6 +142,14 @@ class LingyunPage extends StatelessWidget {
   final List<LingyunPageRegion> regions;
 
   final ValueChanged<LingyunPageSnapshot>? onSnapshot;
+
+  /// When true, an iOS process replaces this shell with [LingyunNativePage].
+  ///
+  /// The layout demo leaves this at the default so the host still mounts.
+  /// The example gallery shell sets it false: its Dock is the Flutter
+  /// skeleton, including on device. [onSnapshot] runs only when the native
+  /// view is actually embedded.
+  final bool embedNativeHost;
 
   /// Flutter glass-rail width, excluding the leading safe area.
   ///
@@ -160,15 +176,18 @@ class LingyunPage extends StatelessWidget {
           onDestinationSelected: onDestinationSelected,
           regions: regions,
         );
+        final Widget shell = embedNativeHost
+            ? LingyunNativePage(
+                spec: spec,
+                onSnapshot: onSnapshot,
+                placeholder: skeleton,
+              )
+            : skeleton;
         return LingyunPageScope(
           spec: spec,
           bucket: bucket,
           container: container,
-          child: LingyunNativePage(
-            spec: spec,
-            onSnapshot: onSnapshot,
-            placeholder: skeleton,
-          ),
+          child: shell,
         );
       },
     );
