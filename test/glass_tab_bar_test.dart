@@ -478,6 +478,135 @@ void main() {
       expect(index, 2);
     });
 
+    testWidgets('system dock veil is glass, not an opaque bar', (tester) async {
+      await tester.pumpWidget(
+        harness(
+          bar: GlassTabBar(
+            systemDock: true,
+            items: items,
+            currentIndex: 0,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      expect(find.byType(GlassSurface), findsOneWidget);
+      final fills = tester.widgetList<ColoredBox>(
+        find.descendant(
+          of: find.byType(GlassTabBar),
+          matching: find.byType(ColoredBox),
+        ),
+      );
+      for (final fill in fills) {
+        expect(fill.color.a, 0);
+      }
+      final materials = tester.widgetList<Material>(
+        find.descendant(
+          of: find.byType(GlassTabBar),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(materials, isNotEmpty);
+      for (final material in materials) {
+        expect(material.type, MaterialType.transparency);
+      }
+      final veil = tester.widget<AnimatedContainer>(
+        find.descendant(
+          of: find.byType(GlassSurface),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      final color = (veil.decoration! as BoxDecoration).color!;
+      expect(color.a, greaterThan(0.15));
+      expect(color.a, lessThan(0.5));
+
+      final home = tester.widget<Text>(find.text('Home'));
+      final library = tester.widget<Text>(find.text('Library'));
+      expect(home.style?.color, GlassTabBar.systemBlueLight);
+      expect(home.style?.fontWeight, FontWeight.w600);
+      expect(library.style?.color, const Color(0xFF727272));
+      expect(library.style?.fontWeight, FontWeight.w400);
+      expect(tester.widget<Icon>(find.byIcon(Icons.home)).size, 22);
+
+      final glass = tester.getSize(find.byType(GlassSurface));
+      expect(glass.width, closeTo(370, 1));
+      expect(glass.height, closeTo(62, 1));
+      final lens = tester.getSize(
+        find.byKey(const Key('glass-tab-selection-lens')),
+      );
+      expect(lens.height, greaterThan(24));
+      expect(lens.height, lessThan(50));
+    });
+
+    testWidgets('system dock press lifts less than the kit pill', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        harness(
+          bar: GlassTabBar(
+            systemDock: true,
+            items: items,
+            currentIndex: 0,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Home')),
+      );
+      await tester.pump(const Duration(milliseconds: 90));
+      final scale = tester.widget<AnimatedScale>(
+        find.descendant(
+          of: find.byKey(const Key('glass-tab-item-0')),
+          matching: find.byType(AnimatedScale),
+        ),
+      );
+      expect(scale.scale, greaterThan(1.05));
+      expect(scale.scale, lessThan(1.11));
+      expect(
+        tester
+            .widget<Opacity>(find.byKey(const Key('glass-tab-lens-glow')))
+            .opacity,
+        1,
+      );
+      await gesture.up();
+      await tester.pump();
+    });
+
+    testWidgets('system dock lens springs across a far selection', (
+      tester,
+    ) async {
+      const lensKey = Key('glass-tab-selection-lens');
+      Future<void> show(int index) {
+        return tester.pumpWidget(
+          harness(
+            bar: GlassTabBar(
+              key: const Key('dock-travel-bar'),
+              systemDock: true,
+              items: items,
+              currentIndex: index,
+              onChanged: (_) {},
+            ),
+          ),
+        );
+      }
+
+      await show(0);
+      final start = tester.getCenter(find.byKey(lensKey)).dx;
+      await show(4);
+      await tester.pump(const Duration(milliseconds: 90));
+      final mid = tester.getCenter(find.byKey(lensKey)).dx;
+      final profile = tester.getCenter(find.text('Profile')).dx;
+      expect(mid, greaterThan(start + 0.5));
+      expect((profile - mid).abs(), greaterThan(24));
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 20),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 3),
+      );
+      expect(tester.getCenter(find.byKey(lensKey)).dx, closeTo(profile, 8));
+    });
+
     testWidgets('opaque fallback skips backdrop blur', (tester) async {
       await tester.pumpWidget(
         LingyunAdaptivity(

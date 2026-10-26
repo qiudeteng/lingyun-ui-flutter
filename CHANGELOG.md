@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- Flutter `GlassTabBar.systemDock` (what `LingyunTabBar` paints off iOS) floats over the page. The band outside the capsule is not an opaque fill, so the canvas and the page show through the platter. The platter uses a stronger frost, rim, and a brighter selection lens; the lens stretches and settles on a bouncing spring. Selected captions stay semibold in the tint; unselected captions are regular secondary. The iOS `UITabBarController` path is unchanged. The tab-bar specimen adds a **降级** stage that forces the Flutter dock so it can be reviewed next to the system bar.
+
 ### Added
 
 - `LingyunTabBar` is the shared tab chrome. On an iOS process it embeds `UITabBarController` (`lingyun_ui_flutter/ly_tab_bar`) so Liquid Glass and iOS 27.1 side placement come from the system. The Flutter body stays mounted: gallery workbenches and pushed demos are not the LYPage metrics panes. Other platforms paint `GlassTabBar.systemDock` (wide capsule, 16pt side inset, 480pt cap, 22pt symbols, light selection segment, Liquid Glass secondary unselected labels, the same spring lens). Callers pass `GlassTabBarItem` (`systemImage` / `selectedSystemImage` for SF Symbols), `currentIndex`, and `onChanged` once. `LingyunPage` tab chrome uses this when `embedNativeHost` is false. The metrics host (`embedNativeHost: true`, layout demo, native page) is unchanged. The Flutter dock geometry is **待核验 vs 真机**.

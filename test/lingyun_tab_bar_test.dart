@@ -226,6 +226,59 @@ void main() {
       expect(index, 2);
     });
 
+    testWidgets('flutter dock floats on the page without a solid bar fill', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          LingyunTabBar(
+            items: items,
+            currentIndex: 0,
+            onChanged: (_) {},
+            child: const ColoredBox(
+              key: Key('page-fill'),
+              color: Color(0xFF88AACC),
+              child: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      final fill = tester.getRect(find.byKey(const Key('page-fill')));
+      final glass = tester.getRect(find.byType(GlassSurface));
+      expect(fill.bottom, greaterThan(glass.bottom - 1));
+      expect(fill.top, lessThan(glass.top));
+      expect(fill.left, lessThanOrEqualTo(glass.left));
+      expect(fill.right, greaterThanOrEqualTo(glass.right));
+      final fills = tester.widgetList<ColoredBox>(
+        find.descendant(
+          of: find.byType(GlassTabBar),
+          matching: find.byType(ColoredBox),
+        ),
+      );
+      for (final fill in fills) {
+        expect(fill.color.a, 0);
+      }
+      final materials = tester.widgetList<Material>(
+        find.descendant(
+          of: find.byType(GlassTabBar),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(materials, isNotEmpty);
+      for (final material in materials) {
+        expect(material.type, MaterialType.transparency);
+      }
+      final veil = tester.widget<AnimatedContainer>(
+        find.descendant(
+          of: find.byType(GlassSurface),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      final color = (veil.decoration! as BoxDecoration).color!;
+      expect(color.a, greaterThan(0));
+      expect(color.a, lessThan(0.5));
+    });
+
     testWidgets('wide boards cap the system capsule', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

@@ -369,7 +369,12 @@ class GalleryWorkbench extends StatelessWidget {
                 Expanded(
                   child: ListView(
                     key: const Key('gallery-workbench'),
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      8,
+                      20,
+                      8 + LingyunOverlayClearance.bottomOf(context),
+                    ),
                     children: [
                       for (final section in group.sections)
                         _WorkbenchSection(
