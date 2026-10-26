@@ -517,8 +517,11 @@ void main() {
         ),
       );
       final color = (veil.decoration! as BoxDecoration).color!;
-      expect(color.a, greaterThan(0.15));
-      expect(color.a, lessThan(0.5));
+      // Same Dock veil. A milkier override (higher blur / white overlay)
+      // read as a solid gray capsule.
+      expect(color, LiquidGlassTokens.lightDock.tintColor);
+      expect(color.a, greaterThan(0.10));
+      expect(color.a, lessThan(0.22));
 
       final home = tester.widget<Text>(find.text('Home'));
       final library = tester.widget<Text>(find.text('Library'));
@@ -536,6 +539,29 @@ void main() {
       );
       expect(lens.height, greaterThan(24));
       expect(lens.height, lessThan(50));
+
+      await tester.pumpWidget(
+        harness(
+          brightness: Brightness.dark,
+          bar: GlassTabBar(
+            systemDock: true,
+            items: items,
+            currentIndex: 0,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final darkVeil = tester.widget<AnimatedContainer>(
+        find.descendant(
+          of: find.byType(GlassSurface),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      expect(
+        (darkVeil.decoration! as BoxDecoration).color,
+        LiquidGlassTokens.darkDock.tintColor,
+      );
     });
 
     testWidgets('system dock press lifts less than the kit pill', (

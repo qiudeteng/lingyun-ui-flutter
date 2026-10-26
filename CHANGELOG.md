@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Flutter `GlassTabBar.systemDock` (what `LingyunTabBar` paints off iOS) floats over the page. The band outside the capsule is not an opaque fill, so the canvas and the page show through the platter. The platter uses a stronger frost, rim, and a brighter selection lens; the lens stretches and settles on a bouncing spring. Selected captions stay semibold in the tint; unselected captions are regular secondary. The iOS `UITabBarController` path is unchanged. The tab-bar specimen adds a **降级** stage that forces the Flutter dock so it can be reviewed next to the system bar.
+- Flutter `GlassTabBar.systemDock` (what `LingyunTabBar` paints off iOS, and the **降级** specimen) floats over the page and uses the Liquid Glass Dock veil. It does not add a second frost or a near-white selection block; the lens is a sheer chip with a hairline catch and still stretches on the bouncing spring. Selected captions stay semibold in the tint; unselected captions are regular secondary. On iOS, `UITabBarController` still replaces that dock once the platform view is ready. The page stays full-bleed under it: the reported frame is clearance and safe-area padding, not a shrunk child, so the gallery canvas is not left as a solid band in the tab slot. The band outside the capsule is not an opaque fill.
 
 ### Added
 
