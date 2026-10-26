@@ -63,8 +63,11 @@
 /// Public APIs are adaptive (MediaQuery size / width classes, tokens,
 /// ThemeExtension). They do not depend on device-model checks.
 ///
-/// [LingyunPage] is the Flutter page shell. On iOS it hands the same
-/// [LingyunPageSpec] to [LingyunNativePage]. Off iOS it paints the skeleton.
+/// [LingyunPage] is the page shell. On iOS, `embedNativeHost` (the default)
+/// hands the same [LingyunPageSpec] to [LingyunNativePage]. With that flag
+/// off, tab chrome is [LingyunTabBar]: the system `UITabBarController` on
+/// iOS, and a Flutter system dock on every other platform. The item model
+/// is [GlassTabBarItem] either way.
 library;
 
 export 'src/adaptivity/lingyun_adaptivity.dart';
@@ -102,6 +105,7 @@ export 'src/widgets/lingyun_popover.dart';
 export 'src/widgets/lingyun_segmented_control.dart';
 export 'src/widgets/lingyun_sheet.dart';
 export 'src/widgets/lingyun_sidebar.dart';
+export 'src/widgets/lingyun_tab_bar.dart';
 export 'src/widgets/lingyun_toolbar.dart';
 export 'src/widgets/lingyun_slider.dart';
 export 'src/widgets/lingyun_stepper.dart';

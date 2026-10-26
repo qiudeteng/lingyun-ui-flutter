@@ -177,11 +177,11 @@ Breakpoints (logical px): compact &lt; 600, regular 600–839, expanded 840–11
 
 ## LingyunPage
 
-`LingyunPage` takes a `LingyunPageSpec` (the same object as `LingyunNativePage`). On iOS the native host is what you see, unless `embedNativeHost` is false. The example gallery shell sets that so its four Dock tabs and workbench stay Flutter on device. The layout demo leaves the default and still embeds the host. Off iOS, the Flutter skeleton follows `resolveLingyunPageContainer`.
+`LingyunPage` takes a `LingyunPageSpec` (the same object as `LingyunNativePage`). On iOS the metrics host is what you see, unless `embedNativeHost` is false. The example gallery shell sets that so its four workbenches stay Flutter on device, while the tab bar is still the system `UITabBarController` (`LingyunTabBar`). Other platforms use the same widget, items, and selection callback, and paint a Flutter system dock. The layout demo leaves the default and still embeds the metrics host. Off iOS, the Flutter skeleton follows `resolveLingyunPageContainer`.
 
 | Bucket | Recommended spec | Flutter skeleton |
 | --- | --- | --- |
-| `compact` | `tab` + `stack` | One column, bottom Dock `GlassTabBar` |
+| `compact` | `tab` + `stack` | One column, `LingyunTabBar` (system bar on iOS, Flutter system dock elsewhere) |
 | `regular` | `sidebar` + `split` | Glass rail + primary. Compact width collapses the rail |
 | `wide` | `sidebar` + `split`, width ≥ 1200 | Rail + secondary + primary |
 

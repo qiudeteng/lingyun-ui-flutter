@@ -204,16 +204,27 @@ void main() {
     await tester.pumpWidget(const LingyunGlassDemoApp());
     await tester.pump();
 
-    expect(find.byType(UiKitView), findsNothing);
     expect(find.textContaining('宿主安全区'), findsNothing);
     expect(find.textContaining('LY_IOS_27_1_SDK'), findsNothing);
     expect(
       tester.widget<LingyunPage>(find.byType(LingyunPage)).embedNativeHost,
       isFalse,
     );
+    expect(find.byType(UiKitView), findsOneWidget);
+    final tabHost = tester.widget<UiKitView>(find.byType(UiKitView));
+    expect(tabHost.viewType, LingyunTabBarHost.viewType);
+    final wired = (tabHost.creationParams! as Map)['items'] as List;
+    expect(wired.map((item) => (item as Map)['label']), [
+      '基础',
+      '控件',
+      '浮层',
+      '导航壳',
+    ]);
+    expect((wired.first as Map)['systemImage'], 'square.grid.2x2');
     final tabs = tester.widget<GlassTabBar>(
       find.byKey(const Key('lingyun-page-tab-bar')),
     );
+    expect(tabs.systemDock, isTrue);
     expect(tabs.style, GlassTabBarStyle.floatingPill);
     expect(tabs.glassStyle, LiquidGlassStyle.dock);
     expect(tabs.items.map((item) => item.label).toList(), [
@@ -222,6 +233,7 @@ void main() {
       '浮层',
       '导航壳',
     ]);
+    expect(find.byType(LingyunTabBar), findsOneWidget);
     expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
     expect(
       tester
@@ -238,7 +250,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byType(UiKitView), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
+    expect(
+      tester.widget<UiKitView>(find.byType(UiKitView)).viewType,
+      LingyunTabBarHost.viewType,
+    );
     expect(
       tester
           .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
@@ -248,20 +264,29 @@ void main() {
 
     await openGalleryEntry(tester, 'lists');
     expect(find.byKey(const Key('lists-title')), findsOneWidget);
-    expect(find.byType(UiKitView), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
+    expect(
+      tester.widget<UiKitView>(find.byType(UiKitView)).viewType,
+      LingyunTabBarHost.viewType,
+    );
     expect(find.byKey(const Key('gallery-back')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('gallery-back')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
-    expect(find.byType(UiKitView), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
 
     await openGalleryEntry(tester, 'native');
     expect(find.byKey(const Key('native-page-title')), findsOneWidget);
     expect(find.byKey(const Key('native-page-placeholder')), findsNothing);
-    expect(find.byType(UiKitView), findsOneWidget);
-    final nativeHost = tester.widget<UiKitView>(find.byType(UiKitView));
-    expect(nativeHost.viewType, LingyunPageHost.viewType);
+    final nativeHosts = tester.widgetList<UiKitView>(find.byType(UiKitView));
+    expect(
+      nativeHosts.map((view) => view.viewType),
+      containsAll([LingyunTabBarHost.viewType, LingyunPageHost.viewType]),
+    );
+    final nativeHost = nativeHosts.firstWhere(
+      (view) => view.viewType == LingyunPageHost.viewType,
+    );
     expect((nativeHost.creationParams! as Map)['primaryLabel'], '主栏');
     expect(
       tester
@@ -273,14 +298,23 @@ void main() {
 
     await tester.tap(find.byKey(const Key('gallery-back')));
     await tester.pumpAndSettle();
-    expect(find.byType(UiKitView), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
+    expect(
+      tester.widget<UiKitView>(find.byType(UiKitView)).viewType,
+      LingyunTabBarHost.viewType,
+    );
 
     await openGalleryEntry(tester, 'layout');
     expect(find.byKey(const Key('layout-title')), findsOneWidget);
     expect(find.byKey(const Key('layout-class-label')), findsNothing);
-    expect(find.byType(UiKitView), findsOneWidget);
-    final layoutHost = tester.widget<UiKitView>(find.byType(UiKitView));
-    expect(layoutHost.viewType, LingyunPageHost.viewType);
+    final layoutHosts = tester.widgetList<UiKitView>(find.byType(UiKitView));
+    expect(
+      layoutHosts.map((view) => view.viewType),
+      containsAll([LingyunTabBarHost.viewType, LingyunPageHost.viewType]),
+    );
+    final layoutHost = layoutHosts.firstWhere(
+      (view) => view.viewType == LingyunPageHost.viewType,
+    );
     expect((layoutHost.creationParams! as Map)['primaryLabel'], '首页');
     expect((layoutHost.creationParams! as Map)['chrome'], 'sidebar');
     final shells = tester.widgetList<LingyunPage>(find.byType(LingyunPage));
@@ -300,6 +334,7 @@ void main() {
     final tabs = tester.widget<GlassTabBar>(
       find.byKey(const Key('lingyun-page-tab-bar')),
     );
+    expect(tabs.systemDock, isTrue);
     expect(tabs.style, GlassTabBarStyle.floatingPill);
     expect(tabs.glassStyle, LiquidGlassStyle.dock);
     expect(tabs.items.map((item) => item.label).toList(), [
@@ -308,6 +343,7 @@ void main() {
       '浮层',
       '导航壳',
     ]);
+    expect(find.byType(LingyunTabBar), findsOneWidget);
     expect(find.text('标签栏'), findsNothing);
     expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
     expect(find.byType(GridView), findsNothing);
@@ -452,6 +488,8 @@ void main() {
       find.byKey(const Key('lingyun-page-tab-bar')),
     );
     expect(rootTabs.items.map((item) => item.label), isNot(contains('标签栏')));
+    expect(find.byKey(const Key('tab-stage-system')), findsOneWidget);
+    expect(find.byKey(const Key('tab-bar-system')), findsOneWidget);
     await tester.scrollUntilVisible(
       find.byKey(const Key('tab-stage-tinted')),
       300,

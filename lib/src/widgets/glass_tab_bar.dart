@@ -5,6 +5,7 @@ import 'package:flutter/physics.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/liquid_glass_theme.dart';
+import '../tokens/lingyun_colors.dart';
 import '../tokens/liquid_glass_labels.dart';
 import '../tokens/liquid_glass_motion.dart';
 import '../tokens/liquid_glass_style.dart';
@@ -49,6 +50,8 @@ class GlassTabBarItem {
     this.selectedIcon,
     this.badge,
     this.enabled = true,
+    this.systemImage,
+    this.selectedSystemImage,
   });
 
   final IconData icon;
@@ -67,6 +70,15 @@ class GlassTabBarItem {
   /// Disabled items stay visible at reduced contrast and do not call
   /// [GlassTabBar.onChanged].
   final bool enabled;
+
+  /// SF Symbol used by the iOS system tab bar.
+  ///
+  /// The Flutter dock still draws [icon]. Null falls back to `circle` on
+  /// the native bar. `LingyunTabBar` sends this with the same item.
+  final String? systemImage;
+
+  /// SF Symbol drawn when this item is selected. Falls back to [systemImage].
+  final String? selectedSystemImage;
 }
 
 /// iOS 27 **Liquid Glass** tab bar.
@@ -103,7 +115,12 @@ class GlassTabBarItem {
 /// Dock tokens.
 ///
 /// [GlassTabBarStyle.sidebar] is the Flutter glass rail. iOS 27.1 vertical
-/// system chrome stays on the native track.
+/// system chrome stays on the native track (`LingyunTabBar`).
+///
+/// [systemDock] is the Flutter stand-in for the system tab bar: a wide
+/// floating capsule, larger symbols, a light selection segment, and
+/// secondary unselected labels. The kit specimen leaves it false and keeps
+/// the 266 / 352 group widths. `LingyunTabBar` turns it on off iOS.
 class GlassTabBar extends StatelessWidget {
   const GlassTabBar({
     super.key,
@@ -115,6 +132,7 @@ class GlassTabBar extends StatelessWidget {
     this.tint,
     this.brightness,
     this.tintedBar = false,
+    this.systemDock = false,
   });
 
   /// Kit Tint on the Tab Bars page — System Blue, light.
@@ -161,6 +179,17 @@ class GlassTabBar extends StatelessWidget {
   /// white icons. The platter is still Liquid Glass, not a flat Material
   /// banner.
   final bool tintedBar;
+
+  /// Flutter geometry for the system tab bar, not the Sketch kit pill.
+  ///
+  /// Compact boards inset 16pt each side (8pt under 360). Boards at least
+  /// 600pt cap the capsule at 480 so a desktop window does not stretch one
+  /// dock across the monitor. Symbols are 22pt. The selection segment is a
+  /// lighter glass chip. Unselected captions use Liquid Glass secondary
+  /// (`#727272` / `#8A8A8A`), which is the system bar's quieter label, not
+  /// the kit's near-primary mix. Sizes are measured against the system bar
+  /// and are still **待核验 vs 真机**.
+  final bool systemDock;
 
   static Color systemBlueFor(Brightness brightness) {
     return brightness == Brightness.dark ? systemBlueDark : systemBlueLight;
@@ -247,6 +276,19 @@ class _TabBarMetrics {
   static const double itemPaddingH = 8;
   static const double floatingTopGap = 16;
 
+  /// Gap above the system capsule. Smaller than the kit pill so the bar
+  /// sits in the same band as a system tab bar above the home indicator.
+  static const double systemTopGap = 8;
+
+  /// Side inset of the system capsule on a phone-width board.
+  static const double systemSideInset = 16;
+
+  /// Widest system capsule on regular and wide boards.
+  static const double systemWideCap = 480;
+
+  /// System tab symbol. The kit specimen stays at [symbolSize] (18).
+  static const double systemSymbolSize = 22;
+
   /// Content-group width on a 402pt board (kit Type=Default).
   ///
   /// 2 → 180, 3 → 266, 4 → 352, 5 → 352. Four and five items share the
@@ -258,6 +300,19 @@ class _TabBarMetrics {
       3 => 266.0,
       _ => 352.0,
     };
+  }
+
+  /// Outer width of the system capsule, including the platter outset.
+  static double systemOuterWidth(double board) {
+    final available = board.isFinite && board > 0 ? board : 402.0;
+    final inset = available < 360 ? 8.0 : systemSideInset;
+    final raw = math.max(96.0, available - inset * 2);
+    if (available >= 600) return math.min(raw, systemWideCap);
+    return math.min(raw, available);
+  }
+
+  static double systemContentWidth(double board) {
+    return math.max(88.0, systemOuterWidth(board) - platterOutset * 2);
   }
 
   static double floatingContentWidth(int itemCount, double boardWidth) {
@@ -390,10 +445,9 @@ class _FloatingPlatter extends StatelessWidget {
         final board = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : 402.0;
-        final content = _TabBarMetrics.floatingContentWidth(
-          bar.items.length,
-          board,
-        );
+        final content = bar.systemDock
+            ? _TabBarMetrics.systemContentWidth(board)
+            : _TabBarMetrics.floatingContentWidth(bar.items.length, board);
         final layout = _ItemLayout.even(
           count: bar.items.length,
           groupWidth: content,
@@ -402,7 +456,9 @@ class _FloatingPlatter extends StatelessWidget {
         final glassWidth = content + _TabBarMetrics.platterOutset * 2;
         return Padding(
           padding: EdgeInsets.only(
-            top: _TabBarMetrics.floatingTopGap,
+            top: bar.systemDock
+                ? _TabBarMetrics.systemTopGap
+                : _TabBarMetrics.floatingTopGap,
             bottom: _TabBarMetrics.floatingBottomGap(safeBottom),
           ),
           child: Align(
@@ -898,6 +954,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
                         tintedBar: bar.tintedBar,
                         solid: solid,
                         illuminated: _interacting,
+                        systemDock: bar.systemDock,
                       ),
                     ),
                   ),
@@ -921,6 +978,7 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
                     tint: widget.tint,
                     brightness: widget.brightness,
                     tintedBar: bar.tintedBar,
+                    systemDock: bar.systemDock,
                     onChanged: bar.onChanged,
                     pressed: _pressedIndex == i,
                     ownsPointer: false,
@@ -937,10 +995,11 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
   }
 }
 
-/// Darker glass lens nested in the Dock platter.
+/// Glass selection segment nested in the Dock platter.
 ///
-/// The body is a sheer dark veil so the platter and the backdrop read
-/// through it. It is not a white capsule and not a second [GlassSurface].
+/// The kit body is a sheer dark veil so the platter and the backdrop read
+/// through it. [systemDock] uses a lighter segment, closer to the system
+/// tab bar's selected chip. It is not a second [GlassSurface].
 /// A nested backdrop blur would stack glass on glass (WWDC25 219
 /// principles) and would sample the Dock's own blur. A thin edge catch
 /// and a faint caustic keep the thickness. It does not draw the Dock
@@ -954,12 +1013,14 @@ class _SelectionLens extends StatelessWidget {
     required this.tintedBar,
     required this.solid,
     required this.illuminated,
+    required this.systemDock,
   });
 
   final Brightness brightness;
   final bool tintedBar;
   final bool solid;
   final bool illuminated;
+  final bool systemDock;
 
   @override
   Widget build(BuildContext context) {
@@ -973,6 +1034,7 @@ class _SelectionLens extends StatelessWidget {
               brightness: brightness,
               tintedBar: tintedBar,
               solid: solid,
+              systemDock: systemDock,
             ),
             child: const SizedBox.expand(),
           ),
@@ -1003,11 +1065,13 @@ class _LiquidLensPainter extends CustomPainter {
     required this.brightness,
     required this.tintedBar,
     required this.solid,
+    required this.systemDock,
   });
 
   final Brightness brightness;
   final bool tintedBar;
   final bool solid;
+  final bool systemDock;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1040,6 +1104,20 @@ class _LiquidLensPainter extends CustomPainter {
       caustic = const Color(0x33FFFFFF);
       lip = const Color(0x80FFFFFF);
       shade = const Color(0x40000000);
+    } else if (systemDock && brightness == Brightness.dark) {
+      // Lighter glass segment. The system selected tab is a bright chip
+      // on the dock, not the kit's dark veil.
+      top = const Color(0x47FFFFFF);
+      bottom = const Color(0x1AFFFFFF);
+      caustic = const Color(0x38FFFFFF);
+      lip = const Color(0x8CFFFFFF);
+      shade = const Color(0x66000000);
+    } else if (systemDock) {
+      top = const Color(0x73FFFFFF);
+      bottom = const Color(0x3DF7F8FA);
+      caustic = const Color(0x66FFFFFF);
+      lip = const Color(0xE6FFFFFF);
+      shade = const Color(0x14000000);
     } else if (brightness == Brightness.dark) {
       top = const Color(0x66101418);
       bottom = const Color(0x33101418);
@@ -1136,7 +1214,8 @@ class _LiquidLensPainter extends CustomPainter {
   bool shouldRepaint(covariant _LiquidLensPainter oldDelegate) {
     return oldDelegate.brightness != brightness ||
         oldDelegate.tintedBar != tintedBar ||
-        oldDelegate.solid != solid;
+        oldDelegate.solid != solid ||
+        oldDelegate.systemDock != systemDock;
   }
 }
 
@@ -1149,6 +1228,7 @@ class _TabItem extends StatefulWidget {
     required this.tint,
     required this.brightness,
     required this.tintedBar,
+    this.systemDock = false,
     required this.onChanged,
     this.pressed = false,
     this.ownsPointer = true,
@@ -1162,6 +1242,7 @@ class _TabItem extends StatefulWidget {
   final Color tint;
   final Brightness brightness;
   final bool tintedBar;
+  final bool systemDock;
   final ValueChanged<int> onChanged;
 
   /// Parent-owned press, used when [ownsPointer] is false.
@@ -1188,6 +1269,11 @@ class _TabItemState extends State<_TabItem> {
           : Colors.white.withValues(alpha: GlassTabBar.tintedUnselectedOpacity);
     }
     if (widget.selected) return widget.tint;
+    if (widget.systemDock) {
+      return LingyunColors.forBrightness(widget.brightness)
+          .liquidGlassLabels
+          .secondary;
+    }
     return LiquidGlassLabels.primaryFor(widget.brightness)
         .withValues(alpha: GlassTabBar.unselectedOpacity);
   }
@@ -1209,6 +1295,9 @@ class _TabItemState extends State<_TabItem> {
     final item = widget.item;
     final color = _color;
     final icon = widget.selected ? (item.selectedIcon ?? item.icon) : item.icon;
+    final symbolSize = widget.systemDock
+        ? _TabBarMetrics.systemSymbolSize
+        : _TabBarMetrics.symbolSize;
     final gap = widget.selected ? 1.0 : 0.5;
     final duration =
         widget.pressDuration ??
@@ -1243,7 +1332,7 @@ class _TabItemState extends State<_TabItem> {
                   clipBehavior: Clip.none,
                   alignment: Alignment.center,
                   children: [
-                    Icon(icon, size: _TabBarMetrics.symbolSize, color: color),
+                    Icon(icon, size: symbolSize, color: color),
                     if (item.badge != null)
                       Positioned(
                         top: -2,
@@ -1263,7 +1352,9 @@ class _TabItemState extends State<_TabItem> {
                   color: color,
                   fontSize: _TabBarMetrics.labelSize,
                   height: 1.15,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: widget.systemDock && !widget.selected
+                      ? FontWeight.w500
+                      : FontWeight.w600,
                   letterSpacing: widget.selected ? -0.1 : 0,
                 ),
               ),

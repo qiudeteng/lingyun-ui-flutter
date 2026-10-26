@@ -55,6 +55,8 @@ class GalleryGroup {
     required this.homeKey,
     required this.icon,
     required this.selectedIcon,
+    required this.systemImage,
+    required this.selectedSystemImage,
     required this.sections,
   });
 
@@ -69,6 +71,10 @@ class GalleryGroup {
 
   final IconData icon;
   final IconData selectedIcon;
+
+  /// SF Symbol for the system tab bar. The Flutter dock still uses [icon].
+  final String systemImage;
+  final String selectedSystemImage;
   final List<GallerySection> sections;
 
   /// Page title and the label above every section list in this workbench.
@@ -100,6 +106,8 @@ const List<GalleryGroup> galleryGroups = [
     homeKey: 'foundation',
     icon: Icons.grid_view_outlined,
     selectedIcon: Icons.grid_view,
+    systemImage: 'square.grid.2x2',
+    selectedSystemImage: 'square.grid.2x2.fill',
     sections: [
       GallerySection(
         id: 'surface',
@@ -176,6 +184,8 @@ const List<GalleryGroup> galleryGroups = [
     homeKey: 'controls',
     icon: Icons.tune_outlined,
     selectedIcon: Icons.tune,
+    systemImage: 'slider.horizontal.3',
+    selectedSystemImage: 'slider.horizontal.3',
     sections: [
       GallerySection(
         id: 'content',
@@ -252,6 +262,8 @@ const List<GalleryGroup> galleryGroups = [
     homeKey: 'overlays',
     icon: Icons.flip_to_front_outlined,
     selectedIcon: Icons.flip_to_front,
+    systemImage: 'square.on.square',
+    selectedSystemImage: 'square.fill.on.square.fill',
     sections: [
       GallerySection(
         id: 'modal',
@@ -308,6 +320,8 @@ const List<GalleryGroup> galleryGroups = [
     homeKey: 'chrome',
     icon: Icons.view_quilt_outlined,
     selectedIcon: Icons.view_quilt,
+    systemImage: 'rectangle.split.3x1',
+    selectedSystemImage: 'rectangle.split.3x1.fill',
     sections: [
       GallerySection(
         id: 'bars',

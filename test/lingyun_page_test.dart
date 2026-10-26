@@ -141,6 +141,15 @@ void main() {
       final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
       expect(bar.style, GlassTabBarStyle.floatingPill);
       expect(bar.glassStyle, LiquidGlassStyle.dock);
+      expect(bar.systemDock, isTrue);
+      expect(
+        tester
+            .widget<GlassTabBar>(find.byKey(const Key('lingyun-page-tab-bar')))
+            .items
+            .map((item) => item.label),
+        ['Home', 'Search'],
+      );
+      expect(find.byType(LingyunTabBar), findsOneWidget);
       final scope = LingyunPageScope.of(
         tester.element(find.text('primary-body')),
       );
@@ -393,12 +402,16 @@ void main() {
           primary: Text('primary-body', key: Key('page-primary')),
         ),
       );
-      expect(find.byType(UiKitView), findsNothing);
+      expect(find.byType(UiKitView), findsOneWidget);
+      final tabHost = tester.widget<UiKitView>(find.byType(UiKitView));
+      expect(tabHost.viewType, LingyunTabBarHost.viewType);
       expect(find.byKey(const Key('lingyun-page-skeleton')), findsOneWidget);
       expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
       expect(find.byKey(const Key('page-primary')), findsOneWidget);
+      expect(find.text('Home'), findsOneWidget);
       final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
       expect(bar.style, GlassTabBarStyle.floatingPill);
+      expect(bar.systemDock, isTrue);
       expect(bar.glassStyle, LiquidGlassStyle.dock);
       expect(bar.items.map((item) => item.label), ['Home', 'Search']);
       expect(

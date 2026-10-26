@@ -9,8 +9,10 @@ list (Materials Regular, not Liquid Glass) labeled with the workbench
 name. The page sits on the system grouped background.
 A row pushes the demo; **返回** goes back to the workbench. These tabs are
 not the **标签栏** component demo (`?page=tabs`). On iOS the shell keeps
-this Flutter Dock (`embedNativeHost: false`). The layout demo and the
-native page still embed `LYPage`.
+the four Flutter workbenches (`embedNativeHost: false`) and draws the
+system tab bar (`LingyunTabBar` / `UITabBarController`). Other platforms
+use that same widget as a Flutter system dock. The layout demo and the
+native page still embed the `LYPage` metrics host.
 
 No `?page=` opens the 基础 workbench. `?home=` or `?tab=`
 (`foundation`, `controls`, `overlays`, `chrome`) opens that workbench

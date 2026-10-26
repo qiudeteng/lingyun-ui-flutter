@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../layout/lingyun_layout.dart';
 import '../tokens/liquid_glass_style.dart';
 import '../widgets/glass_tab_bar.dart';
+import '../widgets/lingyun_tab_bar.dart';
 import 'lingyun_native_page.dart';
 import 'lingyun_page_spec.dart';
 
@@ -85,14 +86,19 @@ LingyunPageRegion lingyunPageDivisionStub(Size size) {
 /// When [embedNativeHost] is true (the default) and this process is iOS,
 /// the shell is [LingyunNativePage]. [primary], [secondary], and
 /// [destinations] are not mounted. The native view paints `LYPageScaffold`
-/// from the two [LingyunPageSpec] labels.
+/// from the two [LingyunPageSpec] labels. The layout demo and the native
+/// page use that host.
 ///
-/// Otherwise it paints a Flutter skeleton from [resolveLingyunPageContainer]:
-/// bottom Dock tab, a glass sidebar rail, or a plain stack/split. That is
-/// the non-iOS placeholder, and it is what the example gallery keeps on iOS
-/// by passing `embedNativeHost: false`. Arrangement is not drawn here.
-/// iOS 27.1 vertical system chrome, `ArrangementView`, and reserved regions
-/// link in the native host only when `LY_IOS_27_1_SDK=1`.
+/// When [embedNativeHost] is false, [primary] stays mounted. Tab chrome is
+/// [LingyunTabBar]: `UITabBarController` on iOS (system Liquid Glass, and a
+/// vertical bar when the system moves it), and the Flutter system dock on
+/// every other platform. The same [GlassTabBarItem] list and
+/// [onDestinationSelected] callback drive both. The example gallery uses
+/// this so the four workbenches stay Flutter while the device tab bar is
+/// the system one. A glass sidebar rail is still the Flutter skeleton.
+/// Arrangement is not drawn here. iOS 27.1 `ArrangementView` and reserved
+/// regions link in the native page host only when `LY_IOS_27_1_SDK=1`.
+/// The system tab bar does not need that flag.
 ///
 /// The shell needs a bounded box.
 class LingyunPage extends StatelessWidget {
@@ -120,10 +126,11 @@ class LingyunPage extends StatelessWidget {
   /// Leading content column when the container has two content columns.
   final Widget? secondary;
 
-  /// Flutter tab / rail items. Empty falls back to [LingyunPageSpec] labels.
+  /// Tab / rail items. Empty falls back to [LingyunPageSpec] labels.
   ///
   /// Not mounted when [embedNativeHost] embeds [LingyunNativePage]. That
-  /// host's tab has only the spec's two labels.
+  /// host's tab has only the spec's two labels. With the host off, tab
+  /// chrome passes this list to [LingyunTabBar].
   final List<GlassTabBarItem> destinations;
 
   final int currentIndex;
@@ -145,10 +152,10 @@ class LingyunPage extends StatelessWidget {
 
   /// When true, an iOS process replaces this shell with [LingyunNativePage].
   ///
-  /// The layout demo leaves this at the default so the host still mounts.
-  /// The example gallery shell sets it false: its Dock is the Flutter
-  /// skeleton, including on device. [onSnapshot] runs only when the native
-  /// view is actually embedded.
+  /// The layout demo leaves this at the default so the metrics host still
+  /// mounts. The example gallery shell sets it false: [primary] stays, and
+  /// tab chrome is still the system tab bar on iOS via [LingyunTabBar].
+  /// [onSnapshot] runs only when the page host is actually embedded.
   final bool embedNativeHost;
 
   /// Flutter glass-rail width, excluding the leading safe area.
@@ -314,33 +321,30 @@ class _LingyunPageSkeleton extends StatelessWidget {
       columns = primaryPane;
     }
 
+    final body = Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_showRail)
+          _Rail(items: _items, index: _index, onChanged: onDestinationSelected),
+        Expanded(child: columns),
+      ],
+    );
+
     return Column(
       key: const Key('lingyun-page-skeleton'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_showRail)
-                _Rail(
+          child: _showTab
+              ? LingyunTabBar(
+                  barKey: const Key('lingyun-page-tab-bar'),
                   items: _items,
-                  index: _index,
-                  onChanged: onDestinationSelected,
-                ),
-              Expanded(child: columns),
-            ],
-          ),
+                  currentIndex: _index,
+                  onChanged: (index) => onDestinationSelected?.call(index),
+                  child: body,
+                )
+              : body,
         ),
-        if (_showTab)
-          GlassTabBar(
-            key: const Key('lingyun-page-tab-bar'),
-            style: GlassTabBarStyle.floatingPill,
-            glassStyle: LiquidGlassStyle.dock,
-            items: _items,
-            currentIndex: _index,
-            onChanged: (index) => onDestinationSelected?.call(index),
-          ),
       ],
     );
   }

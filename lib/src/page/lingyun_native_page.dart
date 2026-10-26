@@ -21,6 +21,14 @@ class LingyunPageHost {
   @visibleForTesting
   static bool? debugIsIOSHostOverride;
 
+  /// True when a test has set [debugIsIOSHostOverride].
+  ///
+  /// Production leaves the override null. `LingyunTabBar` reads this so a
+  /// widget test can still tap the Flutter dock; there is no UITabBar in
+  /// that binding. The real iOS process hides the dock once the platform
+  /// view exists.
+  static bool get debugHostOverrideActive => debugIsIOSHostOverride != null;
+
   /// True only when this process is iOS.
   ///
   /// `Platform.isIOS`, not `defaultTargetPlatform`. A gallery board may set
