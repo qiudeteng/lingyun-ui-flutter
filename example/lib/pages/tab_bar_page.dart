@@ -21,6 +21,7 @@ class _TabBarPageState extends State<TabBarPage> {
   int _float4 = 0;
   int _float5 = 0;
   int _tinted = 2;
+  int _system = 0;
 
   static const _standardItems = <GlassTabBarItem>[
     GlassTabBarItem(
@@ -69,6 +70,34 @@ class _TabBarPageState extends State<TabBarPage> {
     ),
   ];
 
+  static const _systemItems = <GlassTabBarItem>[
+    GlassTabBarItem(
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home_rounded,
+      label: '首页',
+      systemImage: 'house',
+      selectedSystemImage: 'house.fill',
+    ),
+    GlassTabBarItem(
+      icon: Icons.search,
+      label: '搜索',
+      systemImage: 'magnifyingglass',
+    ),
+    GlassTabBarItem(
+      icon: Icons.grid_view_rounded,
+      label: '资料库',
+      systemImage: 'square.grid.2x2',
+      selectedSystemImage: 'square.grid.2x2.fill',
+    ),
+    GlassTabBarItem(
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+      label: '我的',
+      systemImage: 'person',
+      selectedSystemImage: 'person.fill',
+    ),
+  ];
+
   static const _float3Items = <GlassTabBarItem>[
     GlassTabBarItem(
       icon: Icons.home_outlined,
@@ -106,7 +135,10 @@ class _TabBarPageState extends State<TabBarPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '液态玻璃程序坞托盘，不是材质厚，也不是工具栏材质。'
+              '应用壳的四个分组走 LingyunTabBar：iOS 上是系统标签栏'
+              '（液态玻璃，系统把它贴到侧面时也跟着走），其他平台是同一套条目的'
+              'Flutter 系统程序坞。下面第一块就是这套 API。'
+              '其余几块是稿面 GlassTabBar：不是材质厚，也不是工具栏材质。'
               '图标加说明文字。未选中的字用液态玻璃主色（#1A1A1A / #EDEDED），并降低透明度。'
               '选中的图标和说明是系统蓝。悬浮胶囊是跑道形，圆角不是 18 / 26 / 34。'
               'LingyunPage 在常规和宽屏上把 GlassTabBarStyle.sidebar 画成玻璃侧栏。'
@@ -118,6 +150,17 @@ class _TabBarPageState extends State<TabBarPage> {
               spacing: 28,
               runSpacing: 28,
               children: [
+                _LabeledStage(
+                  width: stageWidth,
+                  kicker: '系统标签栏 · 同一套 API',
+                  stageKey: const Key('tab-stage-system'),
+                  child: LingyunTabBar(
+                    key: const Key('tab-bar-system'),
+                    items: _systemItems,
+                    currentIndex: _system,
+                    onChanged: (i) => setState(() => _system = i),
+                  ),
+                ),
                 _LabeledStage(
                   width: stageWidth,
                   kicker: '标准 · 贴底',

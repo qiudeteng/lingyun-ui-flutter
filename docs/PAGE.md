@@ -6,11 +6,12 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 
 | 层 | 谁画 | 何时 |
 | --- | --- | --- |
-| `LingyunPage` 骨架 | Flutter | 非 iOS。iOS 上默认不画，除非 `embedNativeHost: false`（示例画廊壳） |
-| `LingyunNativePage` / `LYPage` | `ios/` | iOS，且 `embedNativeHost` 为 true（默认）。布局页和原生页走这条。同一个 `LingyunPageSpec` |
-| 竖向系统 Toolbar / Tab、`ArrangementView`、真实 `reservedRegions` | 原生 | 只在 `LY_IOS_27_1_SDK=1` 时链接。未设标志时不自绘铰链 |
+| `LingyunTabBar` | iOS：`UITabBarController`。其他平台：Flutter 系统程序坞（`GlassTabBar.systemDock`） | 页壳的标签饰条。同一套 `GlassTabBarItem` / `currentIndex` / `onChanged`。iOS 上系统会把这条栏贴到侧面（含液态玻璃）；不需要 `LY_IOS_27_1_SDK` |
+| `LingyunPage` 骨架 | Flutter 内容 + 上面的标签栏 | `embedNativeHost: false`。示例画廊走这条：四组工作台仍是 Flutter，标签栏在 iOS 上是系统栏 |
+| `LingyunNativePage` / `LYPage` | `ios/` 度量页 | iOS，且 `embedNativeHost` 为 true（默认）。布局页和原生页走这条。同一个 `LingyunPageSpec`。它不挂目的地，只画两个标签 |
+| 竖向系统 Toolbar、`ArrangementView`、真实 `reservedRegions` | 原生度量页 | 只在 `LY_IOS_27_1_SDK=1` 时链接。未设标志时不自绘铰链。系统标签栏的竖向位置不靠这个标志 |
 
-`LingyunPage` 在 iOS 上默认把 spec 交给 `LingyunNativePage`，Flutter 子节点只作为非 iOS 的 placeholder。示例画廊壳传 `embedNativeHost: false`，在模拟器和真机上仍画四组 Flutter Dock 和工作台；否则 `LYPageScaffold` 只认 spec 的两个标签，会盖住整个壳。布局页保持默认，继续嵌入宿主。业务不要为外屏 / 半开 / 全开各写一套 UI。
+`LingyunPage` 在 iOS 上默认把 spec 交给 `LingyunNativePage`，Flutter 子节点只作为非 iOS 的 placeholder。示例画廊壳传 `embedNativeHost: false`：正文仍是四组工作台和压栈示例，标签饰条交给 `LingyunTabBar`（iOS 为系统 `UITabBarController`，其他平台为同一 API 的 Flutter 系统程序坞）。不要把画廊改回默认宿主，否则 `LYPageScaffold` 又会只画两个「基础」度量页。布局页和原生页保持默认。业务不要为外屏 / 半开 / 全开各写一套 UI。
 
 ## 桶
 
@@ -32,7 +33,7 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 
 | 桶 | chrome | navigation | Flutter 骨架 |
 | --- | --- | --- | --- |
-| compact | `tab` | `stack` | 单栏 + 底 `GlassTabBar`（浮动 Dock） |
+| compact | `tab` | `stack` | 单栏 + `LingyunTabBar`（iOS 系统栏，其他平台 Flutter 系统程序坞） |
 | regular | `sidebar` | `split` | 玻璃 rail + primary。Compact 宽度下 rail 收起，对齐系统 `NavigationSplitView` |
 | wide | `sidebar` | `split` | rail + secondary + primary（三列） |
 
@@ -52,4 +53,4 @@ Flutter 骨架笔记。契约以 [IOS-LYPAGE.md](IOS-LYPAGE.md) 的 `LingyunPage
 
 ## English summary
 
-`LingyunPage` consumes `LingyunPageSpec` / `LingyunPageWidthBucket` / `LingyunNativePage`. Off iOS it paints a Dock tab or a glass sidebar rail from `resolveLingyunPageContainer`. On iOS the same spec is the native host unless `embedNativeHost` is false. The example gallery shell sets that so its four Dock tabs stay Flutter on device; the layout demo leaves the default. Compact recommends tab + stack. Regular and wide recommend sidebar + split. There is no Duo pose enum. Vertical system chrome, `ArrangementView`, and real reserved regions stay in `ios/` and link only when `LY_IOS_27_1_SDK=1`. The 96px rail and the 1200pt wide cut are drafts (1200 matches `LingyunBreakpoints.large`, not a kit token).
+`LingyunPage` consumes `LingyunPageSpec` / `LingyunPageWidthBucket` / `LingyunNativePage`. Off iOS it paints a system-matched Dock tab (`LingyunTabBar` → `GlassTabBar.systemDock`) or a glass sidebar rail from `resolveLingyunPageContainer`. On iOS the same spec is the metrics host unless `embedNativeHost` is false. The example gallery shell sets that so the four workbenches stay Flutter, while tab chrome is still `UITabBarController` (Liquid Glass, and a side bar when the system moves it). The layout demo leaves the default metrics host. Callers use one item model (`GlassTabBarItem`, `currentIndex`, `onChanged`) and do not branch on the platform. Compact recommends tab + stack. Regular and wide recommend sidebar + split. There is no Duo pose enum. `ArrangementView` and real reserved regions stay in `ios/` and link only when `LY_IOS_27_1_SDK=1`. The system tab bar does not. The 96px rail and the 1200pt wide cut are drafts (1200 matches `LingyunBreakpoints.large`, not a kit token). The Flutter system dock (16pt side inset, 480pt cap, 22pt symbols, light selection segment, secondary unselected labels) is **待核验 vs 真机**.
