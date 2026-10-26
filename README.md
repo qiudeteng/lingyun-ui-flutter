@@ -177,7 +177,7 @@ Breakpoints (logical px): compact &lt; 600, regular 600–839, expanded 840–11
 
 ## LingyunPage
 
-`LingyunPage` takes a `LingyunPageSpec` (the same object as `LingyunNativePage`). On iOS the native host is what you see. Off iOS, and in the gallery, the Flutter skeleton follows `resolveLingyunPageContainer`.
+`LingyunPage` takes a `LingyunPageSpec` (the same object as `LingyunNativePage`). On iOS the native host is what you see, unless `embedNativeHost` is false. The example gallery shell sets that so its four Dock tabs and workbench stay Flutter on device. The layout demo leaves the default and still embeds the host. Off iOS, the Flutter skeleton follows `resolveLingyunPageContainer`.
 
 | Bucket | Recommended spec | Flutter skeleton |
 | --- | --- | --- |

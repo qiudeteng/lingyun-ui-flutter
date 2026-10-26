@@ -229,7 +229,7 @@ Dart 契约是 `LingyunPageSpec` / `LingyunNativePage`（[IOS-LYPAGE.md](IOS-LYP
 
 - 桶：`LingyunPageWidthBucket` = `compact` / `regular` / `wide`。wide 与 `LingyunBreakpoints.large`（**1200**）对齐，不是 kit token。没有 Duo 姿态枚举。
 - 非 iOS：Compact 建议 `tab` + 底 Dock。Regular / wide 建议 `sidebar` + `GlassTabBarStyle.sidebar` 玻璃 rail（不是 Materials Thick，也不是 iOS 27.1 竖向系统条）。
-- iOS：同一个 `LingyunPageSpec` 交给 `LingyunNativePage`。竖向系统 chrome、`ArrangementView`、真实 `reservedRegions` 只在 `LY_IOS_27_1_SDK=1` 时链接。
+- iOS：同一个 `LingyunPageSpec` 默认交给 `LingyunNativePage`（`embedNativeHost: true`）。示例画廊壳设为 false，继续画 Flutter Dock。竖向系统 chrome、`ArrangementView`、真实 `reservedRegions` 只在 `LY_IOS_27_1_SDK=1` 时链接。
 
 ## E. Alerts（系统对话框，cupertino_ui）
 

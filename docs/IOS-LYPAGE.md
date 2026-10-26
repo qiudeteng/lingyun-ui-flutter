@@ -1,8 +1,8 @@
 # iOS LYPage 宿主 / native page host
 
-Dart 侧 `LingyunPage` 已经接上同一套 `LingyunPageSpec`。非 iOS 和画廊模拟画 Flutter 骨架；iOS 上 `LingyunPage` 把该 spec 交给 `LingyunNativePage`。竖向系统条、`ArrangementView`、`reservedRegions` 只在原生侧，并且只在 `LY_IOS_27_1_SDK=1` 时链接。骨架说明见 [PAGE.md](PAGE.md)。
+Dart 侧 `LingyunPage` 已经接上同一套 `LingyunPageSpec`。非 iOS 画 Flutter 骨架。iOS 上 `embedNativeHost` 默认为 true，把该 spec 交给 `LingyunNativePage`。示例画廊壳把它设为 false，避免 `LYPageScaffold` 用两个标签盖住 Dock 和工作台。布局页和原生页仍嵌入宿主。竖向系统条、`ArrangementView`、`reservedRegions` 只在原生侧，并且只在 `LY_IOS_27_1_SDK=1` 时链接。骨架说明见 [PAGE.md](PAGE.md)。
 
-`LingyunPage` now consumes this spec. Off iOS it paints the Flutter skeleton. On iOS it embeds `LingyunNativePage`. Vertical system chrome, `ArrangementView`, and `reservedRegions` stay native and link only when `LY_IOS_27_1_SDK=1`. See [PAGE.md](PAGE.md).
+`LingyunPage` now consumes this spec. Off iOS it paints the Flutter skeleton. On iOS it embeds `LingyunNativePage` when `embedNativeHost` is true (the default). The example gallery shell sets it false so `LYPageScaffold` does not replace the Dock and workbench. The layout demo and the native page still embed the host. Vertical system chrome, `ArrangementView`, and `reservedRegions` stay native and link only when `LY_IOS_27_1_SDK=1`. See [PAGE.md](PAGE.md).
 
 ## 契约 / Contract
 

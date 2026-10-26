@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart' show SystemChannels;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:example/foundation_app.dart';
@@ -180,6 +181,112 @@ Future<void> _expectWorkbenchLists(
 }
 
 void main() {
+  testWidgets('iOS host keeps the Flutter gallery and the native demos', (
+    tester,
+  ) async {
+    LingyunPageHost.debugIsIOSHostOverride = true;
+    addTearDown(() => LingyunPageHost.debugIsIOSHostOverride = null);
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform_views,
+      (call) async => null,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform_views,
+        null,
+      ),
+    );
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(440, 956);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(const LingyunGlassDemoApp());
+    await tester.pump();
+
+    expect(find.byType(UiKitView), findsNothing);
+    expect(find.textContaining('宿主安全区'), findsNothing);
+    expect(find.textContaining('LY_IOS_27_1_SDK'), findsNothing);
+    expect(
+      tester.widget<LingyunPage>(find.byType(LingyunPage)).embedNativeHost,
+      isFalse,
+    );
+    final tabs = tester.widget<GlassTabBar>(
+      find.byKey(const Key('lingyun-page-tab-bar')),
+    );
+    expect(tabs.style, GlassTabBarStyle.floatingPill);
+    expect(tabs.glassStyle, LiquidGlassStyle.dock);
+    expect(tabs.items.map((item) => item.label).toList(), [
+      '基础',
+      '控件',
+      '浮层',
+      '导航壳',
+    ]);
+    expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '基础工作台',
+    );
+    expect(find.byKey(const Key('gallery-entry-buttons')), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('lingyun-page-tab-bar')),
+        matching: find.text('控件'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(UiKitView), findsNothing);
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('gallery-workbench-title')))
+          .data,
+      '控件工作台',
+    );
+
+    await openGalleryEntry(tester, 'lists');
+    expect(find.byKey(const Key('lists-title')), findsOneWidget);
+    expect(find.byType(UiKitView), findsNothing);
+    expect(find.byKey(const Key('gallery-back')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('gallery-workbench')), findsOneWidget);
+    expect(find.byType(UiKitView), findsNothing);
+
+    await openGalleryEntry(tester, 'native');
+    expect(find.byKey(const Key('native-page-title')), findsOneWidget);
+    expect(find.byKey(const Key('native-page-placeholder')), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
+    final nativeHost = tester.widget<UiKitView>(find.byType(UiKitView));
+    expect(nativeHost.viewType, LingyunPageHost.viewType);
+    expect((nativeHost.creationParams! as Map)['primaryLabel'], '主栏');
+    expect(
+      tester
+          .widgetList<LingyunPage>(find.byType(LingyunPage))
+          .single
+          .embedNativeHost,
+      isFalse,
+    );
+
+    await tester.tap(find.byKey(const Key('gallery-back')));
+    await tester.pumpAndSettle();
+    expect(find.byType(UiKitView), findsNothing);
+
+    await openGalleryEntry(tester, 'layout');
+    expect(find.byKey(const Key('layout-title')), findsOneWidget);
+    expect(find.byKey(const Key('layout-class-label')), findsNothing);
+    expect(find.byType(UiKitView), findsOneWidget);
+    final layoutHost = tester.widget<UiKitView>(find.byType(UiKitView));
+    expect(layoutHost.viewType, LingyunPageHost.viewType);
+    expect((layoutHost.creationParams! as Map)['primaryLabel'], '首页');
+    expect((layoutHost.creationParams! as Map)['chrome'], 'sidebar');
+    final shells = tester.widgetList<LingyunPage>(find.byType(LingyunPage));
+    expect(shells.map((page) => page.embedNativeHost).toList(), [false, true]);
+  });
+
   testWidgets('gallery boots on the basics workbench', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1280, 900);

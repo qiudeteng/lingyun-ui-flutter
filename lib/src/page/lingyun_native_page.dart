@@ -13,12 +13,21 @@ class LingyunPageHost {
 
   static String channelName(int viewId) => 'lingyun_ui_flutter/ly_page_$viewId';
 
+  /// Widget-test stand-in for [lingyunProcessIsIOS].
+  ///
+  /// The VM is not an iOS process, so tests that need the host branch set
+  /// this and clear it afterwards. A null value leaves [isIOSHost] on the
+  /// real process check. Production code leaves it null.
+  @visibleForTesting
+  static bool? debugIsIOSHostOverride;
+
   /// True only when this process is iOS.
   ///
   /// `Platform.isIOS`, not `defaultTargetPlatform`. A gallery board may set
   /// `debugDefaultTargetPlatformOverride` so controls resemble iOS; that
   /// must not swap this page for a [UiKitView] on hosts with no LYPage embed.
-  static bool get isIOSHost => lingyunProcessIsIOS;
+  /// [debugIsIOSHostOverride] is the only stand-in, and only for tests.
+  static bool get isIOSHost => debugIsIOSHostOverride ?? lingyunProcessIsIOS;
 }
 
 /// Embeds the iOS `LYPage` host. On other platforms, builds [placeholder].

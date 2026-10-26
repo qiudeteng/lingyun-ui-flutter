@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show SystemChannels;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lingyun_ui_flutter/lingyun_ui_flutter.dart';
@@ -9,6 +10,18 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     addTearDown(() => debugDefaultTargetPlatformOverride = null);
     expect(defaultTargetPlatform, TargetPlatform.iOS);
+    expect(LingyunPageHost.isIOSHost, isFalse);
+  });
+
+  test('debugIsIOSHostOverride is the only stand-in for the process', () {
+    expect(LingyunPageHost.debugIsIOSHostOverride, isNull);
+    expect(LingyunPageHost.isIOSHost, isFalse);
+    LingyunPageHost.debugIsIOSHostOverride = true;
+    addTearDown(() => LingyunPageHost.debugIsIOSHostOverride = null);
+    expect(LingyunPageHost.isIOSHost, isTrue);
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    LingyunPageHost.debugIsIOSHostOverride = false;
     expect(LingyunPageHost.isIOSHost, isFalse);
   });
 
@@ -327,6 +340,70 @@ void main() {
             .container
             .root,
         'ArrangementView',
+      );
+    });
+
+    testWidgets('iOS host replaces the skeleton unless embed is off', (
+      tester,
+    ) async {
+      LingyunPageHost.debugIsIOSHostOverride = true;
+      addTearDown(() => LingyunPageHost.debugIsIOSHostOverride = null);
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform_views,
+        (call) async => null,
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform_views,
+          null,
+        ),
+      );
+
+      const spec = LingyunPageSpec(
+        chrome: LingyunPageChrome.tab,
+        navigation: LingyunPageNavigation.stack,
+        primaryLabel: '基础',
+        secondaryLabel: '基础',
+      );
+      await pumpPage(
+        tester,
+        size: const Size(440, 956),
+        page: const LingyunPage(
+          spec: spec,
+          destinations: destinations,
+          primary: Text('primary-body', key: Key('page-primary')),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(UiKitView), findsOneWidget);
+      final host = tester.widget<UiKitView>(find.byType(UiKitView));
+      expect(host.viewType, LingyunPageHost.viewType);
+      expect(host.creationParams, spec.toWire());
+      expect(find.byKey(const Key('lingyun-page-skeleton')), findsNothing);
+      expect(find.byKey(const Key('page-primary')), findsNothing);
+      expect(find.text('Home'), findsNothing);
+
+      await pumpPage(
+        tester,
+        size: const Size(440, 956),
+        page: const LingyunPage(
+          embedNativeHost: false,
+          spec: spec,
+          destinations: destinations,
+          primary: Text('primary-body', key: Key('page-primary')),
+        ),
+      );
+      expect(find.byType(UiKitView), findsNothing);
+      expect(find.byKey(const Key('lingyun-page-skeleton')), findsOneWidget);
+      expect(find.byKey(const Key('lingyun-page-tab-bar')), findsOneWidget);
+      expect(find.byKey(const Key('page-primary')), findsOneWidget);
+      final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
+      expect(bar.style, GlassTabBarStyle.floatingPill);
+      expect(bar.glassStyle, LiquidGlassStyle.dock);
+      expect(bar.items.map((item) => item.label), ['Home', 'Search']);
+      expect(
+        tester.widget<LingyunPage>(find.byType(LingyunPage)).embedNativeHost,
+        isFalse,
       );
     });
   });
