@@ -346,5 +346,63 @@ void main() {
       await tester.pump();
       expect(index, 1);
     });
+
+    testWidgets('iOS system bar does not leave a painted slot', (tester) async {
+      LingyunPageHost.debugIsIOSHostOverride = true;
+      LingyunTabBar.debugHideFlutterDockOverride = true;
+      addTearDown(() {
+        LingyunPageHost.debugIsIOSHostOverride = null;
+        LingyunTabBar.debugHideFlutterDockOverride = false;
+      });
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform_views,
+        (call) async => null,
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform_views,
+          null,
+        ),
+      );
+
+      await tester.pumpWidget(
+        host(
+          LingyunTabBar(
+            items: items,
+            currentIndex: 0,
+            onChanged: (_) {},
+            child: const ColoredBox(
+              key: Key('page-fill'),
+              color: Color(0xFFF2F2F7),
+              child: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(UiKitView), findsOneWidget);
+      expect(find.byType(GlassTabBar), findsNothing);
+      expect(find.byType(GlassSurface), findsNothing);
+      final fill = tester.getRect(find.byKey(const Key('page-fill')));
+      final slot = tester.getRect(find.byType(LingyunTabBar));
+      expect(fill.top, closeTo(slot.top, 0.5));
+      expect(fill.left, closeTo(slot.left, 0.5));
+      expect(fill.right, closeTo(slot.right, 0.5));
+      expect(fill.bottom, closeTo(slot.bottom, 0.5));
+      expect(
+        LingyunOverlayClearance.bottomOf(
+          tester.element(find.byKey(const Key('page-fill'))),
+        ),
+        LingyunTabBar.fallbackBottomInset,
+      );
+      final paints = tester.widgetList<ColoredBox>(
+        find.descendant(
+          of: find.byType(LingyunTabBar),
+          matching: find.byType(ColoredBox),
+        ),
+      );
+      expect(paints.map((box) => box.color), [const Color(0xFFF2F2F7)]);
+    });
   });
 }

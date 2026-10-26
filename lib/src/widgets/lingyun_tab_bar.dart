@@ -127,6 +127,13 @@ bool lingyunTabBarPaintsFlutterDock({
 /// page keeps painting underneath, and the bar does not add an opaque fill
 /// outside the glass capsule.
 ///
+/// On iOS the same rule holds after `UITabBarController` takes over. The
+/// page stays full-bleed. The reported chrome frame becomes
+/// [LingyunOverlayClearance] (bottom) and safe-area padding (other edges).
+/// It is not a [Padding] that shrinks [child]: that hole showed whatever
+/// sat behind the shell (the gallery canvas) as a solid band in the tab
+/// slot, and the system glass sampled that band instead of the page.
+///
 /// [style], [glassStyle], [tint], [brightness], and [tintedBar] match
 /// [GlassTabBar]. [style] shapes the Flutter dock. The iOS bar is the
 /// system tab bar; it does not restyle itself into the kit specimen.
@@ -169,6 +176,16 @@ class LingyunTabBar extends StatefulWidget {
   final Brightness? brightness;
   final bool tintedBar;
 
+  /// Hide the Flutter dock and lay out the system-bar slot.
+  ///
+  /// Widget tests set [LingyunPageHost.debugIsIOSHostOverride] to mount
+  /// `UiKitView`. That override also keeps the Flutter dock, so the
+  /// production branch — page full-bleed under `UITabBarController` —
+  /// never runs. Set this with the iOS override to assert that branch.
+  /// Production leaves it false.
+  @visibleForTesting
+  static bool debugHideFlutterDockOverride = false;
+
   /// Bottom space reserved before the system reports its frame.
   ///
   /// Matches a phone dock: 8pt top gap, 62pt capsule, and the home-indicator
@@ -207,11 +224,14 @@ class _LingyunTabBarState extends State<LingyunTabBar> {
   LingyunTabBarMetrics? _metrics;
   Map<String, Object?>? _sent;
 
-  bool get _showFlutterDock => lingyunTabBarPaintsFlutterDock(
-    isIOSHost: LingyunPageHost.isIOSHost,
-    debugOverride: LingyunPageHost.debugHostOverrideActive,
-    platformViewReady: _viewId != null,
-  );
+  bool get _showFlutterDock {
+    if (LingyunTabBar.debugHideFlutterDockOverride) return false;
+    return lingyunTabBarPaintsFlutterDock(
+      isIOSHost: LingyunPageHost.isIOSHost,
+      debugOverride: LingyunPageHost.debugHostOverrideActive,
+      platformViewReady: _viewId != null,
+    );
+  }
 
   @override
   void didUpdateWidget(LingyunTabBar oldWidget) {
@@ -332,7 +352,11 @@ class _LingyunTabBarState extends State<LingyunTabBar> {
             if (flutterChrome != null)
               flutterChrome
             else
-              Padding(padding: _nativePadding(bounds), child: body),
+              _PageUnderChrome(
+                insets: _nativePadding(bounds)
+                    .resolve(Directionality.of(context)),
+                child: body,
+              ),
             Positioned.fill(
               child: IgnorePointer(ignoring: _showFlutterDock, child: native),
             ),
@@ -350,6 +374,39 @@ class _LingyunTabBarState extends State<LingyunTabBar> {
       );
     }
     return metrics.contentPadding(bounds);
+  }
+}
+
+/// Page full-bleed under system chrome. No color in the bar slot.
+///
+/// [insets] keep scrollables and safe-area consumers clear of the bar.
+/// They do not shrink [child], so a background painted by the page still
+/// covers the slot the glass samples.
+class _PageUnderChrome extends StatelessWidget {
+  const _PageUnderChrome({required this.insets, required this.child});
+
+  final EdgeInsets insets;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final padding = media.padding;
+    // Bottom stays on [LingyunOverlayClearance]. Adding it to
+    // [MediaQuery.padding] as well would stack with layout margins.
+    return LingyunOverlayClearance(
+      bottom: insets.bottom,
+      child: MediaQuery(
+        data: media.copyWith(
+          padding: padding.copyWith(
+            left: padding.left + insets.left,
+            top: padding.top + insets.top,
+            right: padding.right + insets.right,
+          ),
+        ),
+        child: child,
+      ),
+    );
   }
 }
 

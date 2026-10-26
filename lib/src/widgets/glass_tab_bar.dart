@@ -118,11 +118,12 @@ class GlassTabBarItem {
 /// system chrome stays on the native track (`LingyunTabBar`).
 ///
 /// [systemDock] is the Flutter stand-in for the system tab bar: a wide
-/// floating capsule, larger symbols, a light selection lens, and secondary
-/// unselected labels. The platter is Liquid Glass only — blur, veil, and
-/// rim. It does not paint an opaque bar behind the capsule. The kit
-/// specimen leaves it false and keeps the 266 / 352 group widths.
-/// `LingyunTabBar` turns it on off iOS and floats that dock over the page.
+/// floating capsule, larger symbols, a sheer selection lens, and secondary
+/// unselected labels. The platter is the Dock recipe
+/// ([LiquidGlassStyle.dock]) — same blur and veil, no second frost and no
+/// opaque bar behind the capsule. The kit specimen leaves it false and
+/// keeps the 266 / 352 group widths. `LingyunTabBar` turns it on off iOS
+/// and floats that dock over the page.
 class GlassTabBar extends StatelessWidget {
   const GlassTabBar({
     super.key,
@@ -187,10 +188,11 @@ class GlassTabBar extends StatelessWidget {
   /// Compact boards inset 16pt each side (8pt under 360). Boards at least
   /// 600pt cap the capsule at 480 so a desktop window does not stretch one
   /// dock across the monitor. Symbols are 22pt. The selection lens is a
-  /// brighter glass chip that stretches and springs between tabs. Unselected
-  /// captions use Liquid Glass secondary (`#727272` / `#8A8A8A`) at regular
-  /// weight; the selected caption stays semibold in the tint. The platter
-  /// veil stays translucent. Nothing behind the capsule is an opaque fill.
+  /// sheer glass chip — a light edge, not a white fill — that stretches
+  /// and springs between tabs. Unselected captions use Liquid Glass
+  /// secondary (`#727272` / `#8A8A8A`) at regular weight; the selected
+  /// caption stays semibold in the tint. The platter veil is the Dock
+  /// veil. Nothing behind the capsule is an opaque fill.
   /// Sizes are measured against the system bar and are still **待核验 vs 真机**.
   final bool systemDock;
 
@@ -531,9 +533,13 @@ class _Platter extends StatelessWidget {
   }
 }
 
-/// Kit Dock stays on [base]. [systemDock] uses a frostier veil and a
-/// brighter rim so the capsule reads as the system tab bar. The tint alpha
-/// stays a veil — the slot outside this platter is not painted here.
+/// Kit Dock and [systemDock] share [base] — Liquid Glass Dock.
+///
+/// A second, milkier veil (higher blur, a white overlay, a near-opaque rim)
+/// read as a solid gray capsule on the gallery's flat page. [systemDock]
+/// only swaps the light Dock's opaque grey rim for a translucent white
+/// edge. The face blur, tint, and overlay stay on the Dock recipe. The
+/// slot outside this platter is not painted here.
 LiquidGlassTokens _platterTokens(
   LiquidGlassTokens base, {
   required Color tint,
@@ -543,43 +549,12 @@ LiquidGlassTokens _platterTokens(
 }) {
   if (tintedBar) return _tintedTokens(base, tint);
   if (!systemDock) return base;
-  final dark = brightness == Brightness.dark;
-  if (dark) {
-    return base.copyWith(
-      blurSigma: 24,
-      saturation: 1.4,
-      tintColor: const Color(0x59101418),
-      overlayColor: const Color(0x14FFFFFF),
-      overlayBlend: BlendMode.softLight,
-      edgeHighlightColor: const Color(0xD6FFFFFF),
-      refractionColor: const Color(0xC7FFFFFF),
-      borderColor: const Color(0x33FFFFFF),
-      shadowColor: const Color(0x59000000),
-      shadowBlurRadius: 28,
-      shadowOffset: const Offset(0, 10),
-      shadowSpread: -8,
-      rimColor: const Color(0x8CFFFFFF),
-      innerShadowExtent: 7,
-      optics: LiquidGlassOptics.lens,
-    );
+  if (brightness == Brightness.dark) {
+    return base.copyWith(overlayColor: const Color(0x00FFFFFF));
   }
   return base.copyWith(
-    blurSigma: 20,
-    saturation: 1.5,
-    tintColor: const Color(0x47F7F8FA),
-    overlayColor: const Color(0x14FFFFFF),
-    overlayBlend: BlendMode.softLight,
-    edgeHighlightColor: const Color(0xF7FFFFFF),
-    refractionColor: const Color(0xF2FFFFFF),
-    borderColor: const Color(0x59FFFFFF),
-    shadowColor: const Color(0x24000000),
-    shadowBlurRadius: 28,
-    shadowOffset: const Offset(0, 10),
-    shadowSpread: -8,
-    rimColor: const Color(0xF2FFFFFF),
-    innerShadowColor: const Color(0x10282828),
-    innerShadowExtent: 7,
-    optics: LiquidGlassOptics.lens,
+    overlayColor: const Color(0x00FFFFFF),
+    rimColor: const Color(0xA6FFFFFF),
   );
 }
 
@@ -1136,8 +1111,8 @@ class _ItemRowState extends State<_ItemRow> with TickerProviderStateMixin {
 /// Glass selection segment nested in the Dock platter.
 ///
 /// The kit body is a sheer dark veil so the platter and the backdrop read
-/// through it. [systemDock] uses a lighter segment, closer to the system
-/// tab bar's selected chip. It is not a second [GlassSurface].
+/// through it. [systemDock] uses a sheer light lens: a low-alpha wash and
+/// a hairline catch, not a white fill. It is not a second [GlassSurface].
 /// A nested backdrop blur would stack glass on glass (WWDC25 219
 /// principles) and would sample the Dock's own blur. A thin edge catch
 /// and a faint caustic keep the thickness. It does not draw the Dock
@@ -1202,11 +1177,11 @@ class _SelectionLens extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: brightness == Brightness.dark
-                ? const Color(0x66000000)
-                : const Color(0x26000000),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-            spreadRadius: -4,
+                ? const Color(0x40000000)
+                : const Color(0x12000000),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
+            spreadRadius: -6,
           ),
         ],
       ),
@@ -1260,21 +1235,22 @@ class _LiquidLensPainter extends CustomPainter {
       lip = const Color(0x80FFFFFF);
       shade = const Color(0x40000000);
     } else if (systemDock && brightness == Brightness.dark) {
-      // Bright chip on the dark dock. Still a veil, not a solid pill.
-      top = const Color(0x73FFFFFF);
-      bottom = const Color(0x38FFFFFF);
-      caustic = const Color(0x66FFFFFF);
-      lip = const Color(0xC7FFFFFF);
-      shade = const Color(0x80000000);
+      // Sheer light lens on the dark dock. The page stays visible through
+      // the chip; the lip is the edge, not a second fill.
+      top = const Color(0x47FFFFFF);
+      bottom = const Color(0x14FFFFFF);
+      caustic = const Color(0x52FFFFFF);
+      lip = const Color(0xB3FFFFFF);
+      shade = const Color(0x66000000);
     } else if (systemDock) {
-      // Near-white lens inside the frosted platter. The system selected
-      // tab reads as its own glass chip; the platter stays visible at the
-      // rim. Alphas stay under an opaque fill.
-      top = const Color(0xC7FFFFFF);
-      bottom = const Color(0x8CF4F5F7);
-      caustic = const Color(0xB3FFFFFF);
-      lip = const Color(0xF7FFFFFF);
-      shade = const Color(0x14000000);
+      // Sheer light lens. A near-white body (the previous ~78% / ~55%
+      // wash) read as a thick white block on the gallery page. The platter
+      // and the page stay visible through the chip; the lip is a hairline.
+      top = const Color(0x52FFFFFF);
+      bottom = const Color(0x1AFFFFFF);
+      caustic = const Color(0x66FFFFFF);
+      lip = const Color(0xB8FFFFFF);
+      shade = const Color(0x10000000);
     } else if (brightness == Brightness.dark) {
       top = const Color(0x66101418);
       bottom = const Color(0x33101418);
