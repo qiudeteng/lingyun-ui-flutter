@@ -31,7 +31,8 @@ class LingyunTheme extends InheritedWidget {
     return CupertinoThemeData(
       brightness: brightness,
       primaryColor: colors.system.blue,
-      primaryContrastingColor: const Color(0xFFFFFFFF),
+      // Labels/Dark/1 Primary is #FFFFFF. Same white in light and dark.
+      primaryContrastingColor: LingyunColors.dark.labels.primary,
       scaffoldBackgroundColor: colors.backgrounds.primary,
       textTheme: LingyunTextStyles.cupertinoTextTheme(colors),
     );
