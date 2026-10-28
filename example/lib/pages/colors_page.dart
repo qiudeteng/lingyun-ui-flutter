@@ -24,9 +24,10 @@ class ColorsPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '色板来自 iOS 27 设计稿。玻璃上的文字用液态玻璃标签，不用系统标签的主要色。'
-          '本页不展示材质配方，也不展示液态玻璃配方。制作用的画布色不收录。'
-          '设计文件里的颜色页没有重新核对。',
+          '色板是 iOS 27 的同名语义，浅色和深色各用自己的色值。'
+          '玻璃上的文字用液态玻璃标签，不用系统标签的主要色。'
+          '浅色没有单独的高层背景，高层背景沿用同一套浅色背景。'
+          '本页不展示材质配方，也不展示液态玻璃配方。制作用的画布色不收录。',
           style: LingyunTextStyles.body(color: label),
         ),
         const SizedBox(height: 20),
@@ -49,10 +50,10 @@ class ColorsPage extends StatelessWidget {
         Text('配色桥接', style: LingyunTextStyles.headline(color: label)),
         const SizedBox(height: 8),
         Text(
-          '主色和错误色取系统蓝、系统红。主色上的字是已验收的填充白。'
+          '主色、次要色和三级色都是系统蓝。错误色是系统红。'
+          '主色上的字是深色主要标签，也就是白色。'
           '表面取背景的主要色。表面上的字取标签的主要色，不是玻璃标签。'
-          '次要色和三级色重复系统蓝，以免把另一套组件库的紫色当成系统色。'
-          '这一重复只是桥接，待核验。',
+          '这里没有第二套色板。',
           style: LingyunTextStyles.footnote(color: colors.labels.secondary),
         ),
       ],

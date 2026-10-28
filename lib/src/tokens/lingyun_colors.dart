@@ -236,19 +236,18 @@ class LingyunSeparatorColors {
 
 /// iOS 27 color variables for one brightness.
 ///
-/// Source of truth: Sketch UI Kit «Apple iOS 27 UI Kit» color variables
-/// (public share `04c24d8b-38fb-4afb-8836-36617e022f02`, document
-/// `ba83456e-909b-40b1-b46e-9513fdc35e2d`). Values are the sRGB token export.
+/// Source of truth: 齐成云全端色系 SoT — Sketch Apple iOS 27 UI Kit Color
+/// Variables (107), as extracted in `colors.json` / `colors.md`. Light and
+/// Dark are the same semantic names. This catalog is that mapping only.
 /// Eight-digit Sketch hex is RRGGBBAA; these [Color]s are Flutter AARRGGBB.
+/// Alpha is the documented fraction rounded half away from zero onto 8 bits
+/// (`0.3` → `0x4D`, matching the pen token `#3C3C434D`).
 ///
 /// Not included, on purpose:
-/// * `x. Kit` (Canvas Color, Symbol BG) — authoring chrome, not a system color.
+/// * `x- Kit` (Canvas Color, Symbol BG) — authoring chrome, not a system color.
 /// * Increased Contrast — this export has no IC mode.
 /// * Materials fills and Liquid Glass blur recipes — different systems.
-///
-/// Figma Colors `0:1746` was not re-read (MCP quota). Where this catalog and
-/// an older Figma note disagree, Sketch wins. Cross-check against the current
-/// Figma file is **待核验**.
+/// * A second brand or platform palette. There is nowhere to put one.
 @immutable
 class LingyunColors {
   const LingyunColors({
